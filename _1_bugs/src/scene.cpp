@@ -4,7 +4,7 @@
 #include "bug.h"
 #include "scene.h"
 
-void Scene::CreateSnake(XY const& headPos, int len) {
+void Scene::CreateBug(XY const& headPos, int len) {
 	auto& h = grid.EmplaceInit(headPos, SpaceWeak<BugBody>{}, SpaceWeak<BugBody>{}, false);
 	h.radians = -gPI / 2;
 	SpaceWeak<BugBody> hgw(h);
@@ -20,30 +20,30 @@ void Scene::CreateSnake(XY const& headPos, int len) {
 void Scene::Init() {
 	gScene = this;
 
-	rootNode.Emplace()->Init();
+	ui.Emplace()->Init();
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"clear", [&]() {
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"clear", [&]() {
 		grid.Clear();
 		});
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
-		CreateSnake(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
+		CreateBug(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
 		});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
 		for (int i = 0; i < 100; i++) {
-			CreateSnake(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
+			CreateBug(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
 		}
 		});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
 		for (int i = 0; i < 1000; i++) {
-			CreateSnake(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
+			CreateBug(gCfg.mapCenterPos, rnd.Next<int>(10, 30));
 		}
 		});
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"zoom in", [&]() {
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"zoom in", [&]() {
 		camera.IncreaseScale(0.1f, 5);
 		});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"zoom out", [&]() {
+	ui->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"zoom out", [&]() {
 		camera.DecreaseScale(0.1f, 0.1f);
 		});
 
@@ -55,7 +55,7 @@ void Scene::Init() {
 	grid.Init(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize);
 }
 
-void Scene::Update() {
+void Scene::BeforeUpdate() {
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
@@ -63,6 +63,12 @@ void Scene::Update() {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 	camera.Calc();
+}
+
+void Scene::Draw() {
+	camera.Calc();
+
+	auto secs = NowEpochSeconds();
 
 	// hit control
 	auto& m = gLooper.mouse;
@@ -79,14 +85,15 @@ void Scene::Update() {
 	grid.Foreach([](BugBody& o)->void {
 		o.Update();
 		});
-}
 
-void Scene::Draw() {
-	camera.Calc();
+	auto updateSecs = NowEpochSeconds(secs);
+
 
 	grid.Foreach([](BugBody& o)->void {
 		o.Draw();
 		});
+
+	auto drawSecs = NowEpochSeconds(secs);
 
 	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, camera.scale)
 		.SetPosition(gLooper.mouse.pos)
@@ -94,8 +101,11 @@ void Scene::Draw() {
 
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   hit: mouse click", RGBA8_Green, { 0.5f, 1 });
 
-	auto str = ToString("total item count = ", grid.Count());
+	auto str = ToString("total item count = ", grid.Count()
+		, " update secs = ", updateSecs
+		, " draw secs = ", drawSecs
+	);
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
 
-	gLooper.DrawNode(rootNode);
+	gLooper.DrawNode(ui);
 }

@@ -3,16 +3,16 @@
 #include "bug.h"
 
 struct Scene : SceneBase {
-	Shared<Node> rootNode;
+	Shared<Node> ui;
 
 	Camera camera;
 	Rnd rnd;
 	SpaceGrid<BugBody> grid;
 
-	void CreateSnake(XY const& headPos, int len);
+	void CreateBug(XY const& headPos, int len);
 
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void BeforeUpdate() override;
 	virtual void Draw() override;
 };
 
