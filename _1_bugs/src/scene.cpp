@@ -65,11 +65,7 @@ void Scene::BeforeUpdate() {
 	camera.Calc();
 }
 
-void Scene::Draw() {
-	camera.Calc();
-
-	auto secs = NowEpochSeconds();
-
+void Scene::Update() {
 	// hit control
 	auto& m = gLooper.mouse;
 	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
@@ -82,30 +78,32 @@ void Scene::Draw() {
 			});
 	}
 
+	// move logic
 	grid.Foreach([](BugBody& o)->void {
 		o.Update();
 		});
+}
 
-	auto updateSecs = NowEpochSeconds(secs);
+void Scene::Draw() {
+	camera.Calc();
 
-
+	// draw all
 	grid.Foreach([](BugBody& o)->void {
 		o.Draw();
 		});
 
-	auto drawSecs = NowEpochSeconds(secs);
 
+	// draw mouse hit area
 	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, camera.scale)
 		.SetPosition(gLooper.mouse.pos)
 		.Draw();
 
+	// draw tips
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   hit: mouse click", RGBA8_Green, { 0.5f, 1 });
 
-	auto str = ToString("total item count = ", grid.Count()
-		, " update secs = ", updateSecs
-		, " draw secs = ", drawSecs
-	);
+	auto str = ToString("total item count = ", grid.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
 
+	// draw ui
 	gLooper.DrawNode(ui);
 }

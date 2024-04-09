@@ -13,6 +13,7 @@ struct Scene : SceneBase {
 
 	virtual void Init() override;
 	virtual void BeforeUpdate() override;
+	virtual void Update() override;	// fixed 60 fps
 	virtual void Draw() override;
 };
 

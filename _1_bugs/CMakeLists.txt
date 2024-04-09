@@ -46,15 +46,23 @@ SET(ZSTD_MULTITHREAD_SUPPORT_DEFAULT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT_DE
 SET(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT" FORCE)
 add_subdirectory(../zstd/build/cmake zstd)
 
-SET(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW_BUILD_DOCS" FORCE)
-SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW_BUILD_EXAMPLES" FORCE)
-SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
-SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
-add_subdirectory(../glfw glfw)
+if (EMSCRIPTEN)
+	target_link_libraries(${name} libzstd_static)
+else()
+	SET(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW_BUILD_DOCS" FORCE)
+	SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW_BUILD_EXAMPLES" FORCE)
+	SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
+	SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
+	add_subdirectory(../glfw glfw)
 
-target_link_libraries(${name} glfw libzstd_static)
+	target_link_libraries(${name} glfw libzstd_static)
+endif()
 
 if (EMSCRIPTEN)
+	macro(append_linker_flags FLAGS)
+	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAGS}")
+	endmacro()
+
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
 	# Link in the JS library file for support code
@@ -146,7 +154,7 @@ if (EMSCRIPTEN)
 	endforeach()
 
 	file(COPY "../xx/favicon.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-	file(COPY "src/index.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+	file(COPY "src/${name}.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
 
 else()
 
