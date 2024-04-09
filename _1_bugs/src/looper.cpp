@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "looper.h"
-#include "scene_test1.h"
+#include "scene.h"
 
 Looper gLooper;
 ResFrames& gRes(gLooper.res);
@@ -15,14 +15,14 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d26";
+	gLooper.title = "xx_examples_1_bugs";
 	gLooper.Init();
 	gLooper.Run<false>();
 }
 #endif
 
 
-xx::Task<> Looper::MainTask() {
+Task<> Looper::MainTask() {
 	sgrdd.Init(128, 32);
 
 	co_await res.AsyncLoad("res/", 128);
@@ -33,5 +33,5 @@ xx::Task<> Looper::MainTask() {
 	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
 
 	// load first scene
-	co_await AsyncSwitchTo<SceneTest1>();
+	co_await AsyncSwitchTo<Scene>();
 }

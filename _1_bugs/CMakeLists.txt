@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(name d26)
+set(name _1_bugs)
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -135,7 +135,7 @@ if (EMSCRIPTEN)
 
 
 	target_precompile_headers(${name}
-		PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/res/pch.h>
+		PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h>
 	)
 
 	file(GLOB_RECURSE assets
@@ -183,7 +183,7 @@ else()
 	else()
 
 		target_precompile_headers(${name}
-			PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.h>
+			PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h>
 		)
 		
 		target_compile_options(${name} PRIVATE -Wno-invalid-offsetof)

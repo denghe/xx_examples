@@ -5,7 +5,7 @@
 constexpr GDesign<1280, 800, 60> gDesign;
 
 struct Looper : Engine<Looper>, decltype(gDesign) {
-	xx::Task<> MainTask();
+	Task<> MainTask();
 
 	// res
 	ResFrames res;
@@ -14,7 +14,7 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 	Scale9SpriteConfig s9cfg_btn;
 
 	// for space grid  FindNearest  ForeachByRange
-	xx::SpaceRingDiffuseData sgrdd;
+	SpaceRingDiffuseData sgrdd;
 };
 
 extern Looper gLooper;
