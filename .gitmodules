@@ -1,0 +1,18 @@
+[submodule "xx"]
+	path = xx
+	url = https://github.com/denghe/xx.git
+[submodule "zstd"]
+	path = zstd
+	url = https://github.com/facebook/zstd.git
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/glfw/glfw
+[submodule "stb"]
+	path = stb
+	url = https://github.com/nothings/stb.git
+[submodule "nameof"]
+	path = nameof
+	url = https://github.com/Neargye/nameof.git
+[submodule "miniaudio"]
+	path = miniaudio
+	url = https://github.com/mackron/miniaudio.git
