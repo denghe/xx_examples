@@ -34,7 +34,7 @@ Task<> BugBody::UpdateTask_() {
 		if (auto d = distance - cDistance; d > 0) {
 			auto inc = v / distance * std::min(d, cSpeed);
 			pos += inc;
-			gScene->grid.Update(*this);
+            gLooper.grid.Update(*this);
 		}
 		co_yield 0;
 	}
@@ -48,10 +48,10 @@ Task<> BugBody::UpdateTask_() {
 			XY inc{ std::cos(radians), std::sin(radians) };
 			if (v.x * v.x + v.y * v.y > cSpeed * cSpeed) {
 				pos += inc * cSpeed;
-				gScene->grid.Update(*this);
+                gLooper.grid.Update(*this);
 			} else {
 				pos = tarPos;
-				gScene->grid.Update(*this);
+                gLooper.grid.Update(*this);
 				break;
 			}
 			co_yield 0;
