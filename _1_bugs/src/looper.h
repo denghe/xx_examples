@@ -1,20 +1,40 @@
 ﻿#pragma once
 #include "pch.h"
+#include "cfg.h"
 #include "res_frames.h"
+#include "bug.h"
 
-constexpr GDesign<1280, 800, 60> gDesign;
+struct Looper : Engine<Looper>, Cfg {
 
-struct Looper : Engine<Looper>, decltype(gDesign) {
-	Task<> MainTask();
-
-	// res
+	// all picture resource here
 	ResFrames res;
 
-	// cfgs
+	// button config
 	Scale9SpriteConfig s9cfg_btn;
+	Shared<Node> ui;
 
-	// for space grid  FindNearest  ForeachByRange
-	SpaceRingDiffuseData sgrdd;
+	Camera camera;
+
+	// bug container
+	SpaceGrid<BugBody> grid;
+	SpaceRingDiffuseData sgrdd;	// for grid.ForeachByRange
+
+	// mouse states
+	bool dragging{}, lastMBState{};
+	XY lastMousePos{}, mouseOffset{};
+
+	float mouseHitRange{};
+
+	// true: loading finished
+	bool ok{};
+
+	void CreateBug(XY const& headPos, int32_t len);
+	void MouseHit();
+
+	Task<> MainTask();		// loading logic
+	void BeforeUpdate();
+	void Update();			// fixed update
+	void Draw();
 };
 
 extern Looper gLooper;

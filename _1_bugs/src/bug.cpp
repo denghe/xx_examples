@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "looper.h"
-#include "cfg.h"
 #include "bug.h"
-#include "scene.h"
 
 void BugBody::Init(XY const& pos_, SpaceWeak<BugBody> head_, SpaceWeak<BugBody> prev_, bool isTail_) {
 	head = head_;
@@ -12,21 +10,15 @@ void BugBody::Init(XY const& pos_, SpaceWeak<BugBody> head_, SpaceWeak<BugBody> 
 }
 
 XY BugBody::GenRndPos(float radius, float safeRadius) {
-	auto& rnd = gScene->rnd;
 	float len = radius - safeRadius;
-	auto r = std::sqrt(rnd.Next<float>() * (len / radius) + safeRadius / radius) * radius;
-	auto a = rnd.Next<float>(gNPI, gPI);
+	float radius_1 = 1 / radius;
+	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len * radius_1) + safeRadius * radius_1) * radius;
+	auto a = gLooper.rnd.Next<float>(gNPI, gPI);
 	auto p = pos + XY{ std::cos(a) * r, std::sin(a) * r };
 	// map edge limit
-	if (p.x < gCfg.mapSafeMinPos.x) {
-		p.x = gCfg.mapSafeMinPos.x - (p.x - gCfg.mapSafeMinPos.x);
-	} else if (p.x >= gCfg.mapSafeMaxPos.x) {
-		p.x = gCfg.mapSafeMaxPos.x - (p.x - gCfg.mapSafeMaxPos.x);
-	}
-	if (p.y < gCfg.mapSafeMinPos.y) {
-		p.y = gCfg.mapSafeMinPos.y - (p.y - gCfg.mapSafeMinPos.y);
-	} else if (p.y >= gCfg.mapSafeMaxPos.y) {
-		p.y = gCfg.mapSafeMaxPos.y - (p.y - gCfg.mapSafeMaxPos.y);
+	if (p.x < Cfg::mapEdgeMin.x || p.x >= Cfg::mapEdgeMax.x
+		|| p.y < Cfg::mapEdgeMin.y || p.y >= Cfg::mapEdgeMax.y) {
+		return Cfg::mapSize_2;
 	}
 	return p;
 }
@@ -70,7 +62,6 @@ Task<> BugBody::UpdateTask_() {
 #else
 
 int BugBody::UpdateCore() {
-	auto& grid = gScene->grid;
 	COR_BEGIN
 		// is body: follow prev
 		while (prev) {
@@ -81,7 +72,7 @@ int BugBody::UpdateCore() {
 				if (auto d = distance - cDistance; d > 0) {
 					auto inc = v / distance * std::min(d, cSpeed);
 					pos += inc;
-					grid.Update(*this);
+					gLooper.grid.Update(*this);
 				}
 			}
 			COR_YIELD
@@ -94,13 +85,13 @@ int BugBody::UpdateCore() {
 				auto v = tarPos - pos;
 				auto r = std::atan2(v.y, v.x);
 				RotateControl::Step(radians, r, cMinRadians);
-				XY inc{ std::cos(radians), std::sin(radians) };
-				if (v.x * v.x + v.y * v.y > cSpeed * cSpeed) {
+				if (v.Mag2() > cSpeed * cSpeed) {
+					XY inc{ std::cos(radians), std::sin(radians) };
 					pos += inc * cSpeed;
-					grid.Update(*this);
+					gLooper.grid.Update(*this);
 				} else {
 					pos = tarPos;
-					grid.Update(*this);
+					gLooper.grid.Update(*this);
 					break;
 				}
 			}
@@ -129,9 +120,9 @@ void BugBody::Draw() {
 		f = &gRes.bug_head1;
 	}
 	auto& q = Quad::DrawOnce(*f);
-	q.pos = gScene->camera.ToGLPos(pos);
+	q.pos = gLooper.camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = gScene->camera.scale * cScale;
+	q.scale = gLooper.camera.scale * cScale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_White;

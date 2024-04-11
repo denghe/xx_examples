@@ -10,7 +10,7 @@ struct BugBody {
 
 	static constexpr float cScale{ 1 };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
-	static constexpr float cSpeed{ 300.f / gDesign.fps };
+	static constexpr float cSpeed{ 300.f / Cfg::fps };
 	static constexpr float cDistance{ 10.f };
 	static constexpr float cMinRadians{ g2PI / 32.f };
 
