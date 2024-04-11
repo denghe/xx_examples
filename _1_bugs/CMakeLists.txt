@@ -58,6 +58,10 @@ else()
 	target_link_libraries(${name} glfw libzstd_static)
 endif()
 
+if (WIN32)
+	target_link_libraries(${name} winmm)
+endif()
+
 if (EMSCRIPTEN)
 	macro(append_linker_flags FLAGS)
 	  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAGS}")
@@ -195,7 +199,7 @@ else()
 		)
 		
 		target_compile_options(${name} PRIVATE -Wno-invalid-offsetof)
-		
+
 	endif()
 
 endif()
