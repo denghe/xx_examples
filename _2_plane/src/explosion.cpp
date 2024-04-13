@@ -5,8 +5,8 @@ int32_t Explosion::UpdateCore() {
 	return 0;
 }
 
-void Explosion::Update() {
-
+bool Explosion::Update() {
+	return false;
 }
 
 void Explosion::Draw() {

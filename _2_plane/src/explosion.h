@@ -9,6 +9,6 @@ struct Explosion {
 	float frameIndex{};
 
 	int32_t UpdateCore();
-	void Update();
+	bool Update();
 	void Draw();
 };

@@ -10,6 +10,6 @@ struct Monster {
 
 	void Hit(int hp);
 	int32_t UpdateCore();
-	void Update();			// fixed update
+	bool Update();
 	void Draw();
 };

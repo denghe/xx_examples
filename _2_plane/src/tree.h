@@ -2,11 +2,13 @@
 #include "pch.h"
 
 struct Tree {
-	xx::FromTo<xx::XY> aabb;
-	int32_t lineNumber{};
+	constexpr static xx::XY cOffset{ 32, 24 };
+	constexpr static xx::XY cSize{ 36, 16 };
+	constexpr static xx::XY cSize_2{ cSize / 2.f };
+
+	xx::XY pos{};
+	xx::FromTo<xx::XY> aabb{};
 
 	void Init(xx::XY const& pos_);
-	int32_t UpdateCore();
-	void Update();			// fixed update
 	void Draw();
 };

@@ -9,8 +9,8 @@ int32_t Monster::UpdateCore() {
 	return 0;
 }
 
-void Monster::Update() {
-
+bool Monster::Update() {
+	return false;
 }
 
 void Monster::Draw() {

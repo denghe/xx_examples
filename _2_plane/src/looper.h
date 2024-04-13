@@ -15,6 +15,7 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::Camera camera;
 	ResTpFrames res;
 	xx::Ref<xx::TMX::Map> tiledMap;
+	xx::XYi mapNumRowsCols{};
 	xx::XY mapSize{}, mapSize_2{};
 	xx::TMX::Layer_Tile* layerBG{}, *layerTrees{};
 
@@ -25,6 +26,11 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::BlockLink<Explosion> explosions;
 	EffectNumberManager enm;
 	xx::Shared<Plane> plane;
+
+	typedef void(*DrawFunc)(void*);
+	xx::Listi32<std::tuple<float, DrawFunc, void*>> yDraws;
+
+	Monster* FindNeighborMonster(xx::XY const& pos, float radius);
 
 	bool ok{};							// true: loading finished
 	xx::Task<> MainTask();				// loading logic

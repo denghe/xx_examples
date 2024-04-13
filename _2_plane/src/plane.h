@@ -1,13 +1,17 @@
 ﻿#pragma once
-#include "pch.h"
+#include "cfg.h"
 
 struct Plane {
-	xx::XY pos{};
-	int32_t lineNumber{};
-	float radians{};
-	float radius{};
+	constexpr static float cRadius{ 32 };
+	constexpr static float cSpeed{ 160 / gCfg.fps };
+	constexpr static float cFrameMaxChangeRadian{ float(M_PI * 10 / gCfg.fps) };
+	constexpr static float cFireDistance{ cRadius * 0.6f };
 
+	xx::XY pos{};
+	float radians{};
+
+	void Init(xx::XY const& bornPos);
 	int32_t UpdateCore();
-	void Update();			// fixed update
+	bool Update();
 	void Draw();
 };
