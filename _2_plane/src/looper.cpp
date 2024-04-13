@@ -28,7 +28,7 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(mapSize_2);
 	//camera.SetScale(1.f);
 
-	sgrdd.Init(128, 32);
+	srdd.Init(128, 32);
 
 	//grid.Init(physNumRows, physNumCols, physCellSize);
 
