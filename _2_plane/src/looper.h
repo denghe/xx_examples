@@ -12,17 +12,19 @@
 
 struct Looper : xx::Engine<Looper>, Cfg {
 
-	xx::SpaceRingDiffuseData srdd;		// for sg.ForeachByRange
-	ResTpFrames res;					// texture packer
-	xx::TMX::Map map;					// tiled map
 	xx::Camera camera;
+	ResTpFrames res;
+	xx::Ref<xx::TMX::Map> tiledMap;
+	xx::XY mapSize{}, mapSize_2{};
+	xx::TMX::Layer_Tile* layerBG{}, *layerTrees{};
 
-	xx::Shared<Plane> plane;
+	xx::SpaceRingDiffuseData srdd;		// for sg.ForeachByRange
 	xx::SpaceGrid<Monster> monsters;
-	xx::SpaceGrid<Tree> trees;
+	xx::SpaceABGrid<Tree> trees;
 	xx::BlockLink<Bullet> bullets;
 	xx::BlockLink<Explosion> explosions;
 	EffectNumberManager enm;
+	xx::Shared<Plane> plane;
 
 	bool ok{};							// true: loading finished
 	xx::Task<> MainTask();				// loading logic

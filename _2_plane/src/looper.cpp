@@ -22,15 +22,55 @@ int32_t main() {
 
 
 xx::Task<> Looper::MainTask() {
+
+	// res init
 	co_await res.AsyncLoad("res/");
 
-	//camera.SetMaxFrameSize(maxItemSize);
-	//camera.SetOriginal(mapSize_2);
-	//camera.SetScale(1.f);
+	// tiled map init
+#ifdef __EMSCRIPTEN__
+	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/tm.bmx");
+#else
+	tiledMap = LoadTiledMap<true>("res/tm.bmx");
+#endif
 
-	srdd.Init(128, 32);
+	// locate layer
+	xx_assert(tiledMap);
+	layerBG = tiledMap->FindLayer<xx::TMX::Layer_Tile>("bg");
+	xx_assert(layerBG);
+	layerTrees = tiledMap->FindLayer<xx::TMX::Layer_Tile>("trees");
+	xx_assert(layerTrees);
 
-	//grid.Init(physNumRows, physNumCols, physCellSize);
+	// get map info
+	auto mw = tiledMap->width;
+	auto mh = tiledMap->height;
+	auto tw = tiledMap->tileWidth;
+	auto th = tiledMap->tileHeight;
+	xx_assert(tw == th && tw == unitSize);
+
+	// fill map info
+	mapSize = { mw * tw, mh * th };
+	mapSize_2 = mapSize / 2;
+
+	// fill map frame, grid trees
+	for (int y = 0, ye = mh; y < ye; ++y) {
+		for (int x = 0, xe = mw; x < xe; ++x) {
+			if (auto info = tiledMap->GetGidInfo(layerTrees, y, x)) {
+				//info->frame == gRes.tree ?
+				trees.EmplaceInit(xx::XY{ x * tw, y * th });
+			}
+		}
+	}
+
+	trees.Init(mh, mw, { tw, th });
+	monsters.Init(mh, mw, tw);
+	srdd.Init(128, (int32_t)unitSize);
+
+	//plane.Emplace()->Init();	// todo
+
+	// camera init
+	camera.SetMaxFrameSize(maxItemSize);
+	camera.SetOriginal(mapSize_2);
+	camera.SetScale(1.f);
 
 	ok = true;
 }
