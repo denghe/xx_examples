@@ -2,10 +2,11 @@
 #include "cfg.h"
 
 struct Plane {
-	constexpr static float cRadius{ 32 };
+	constexpr static float cScale{ 4 };
+	constexpr static float cRadius{ 16 };
 	constexpr static float cSpeed{ 160 / gCfg.fps };
 	constexpr static float cFrameMaxChangeRadian{ float(M_PI * 10 / gCfg.fps) };
-	constexpr static float cFireDistance{ cRadius * 0.6f };
+	constexpr static float cFireDistance{ cRadius };
 
 	xx::XY pos{};
 	float radians{};

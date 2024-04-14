@@ -41,7 +41,7 @@ void Plane::Draw() {
 	auto& q = xx::Quad::DrawOnce( gRes.plane );
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = { 0.5f, 0.5f };
-	q.scale = camera.scale * (cRadius * 0.125f);
+	q.scale = camera.scale * cScale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
