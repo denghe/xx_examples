@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#add_definitions(-DDISABLE_ENGINE_AUDIO)
+add_definitions(-DDISABLE_ENGINE_AUDIO)
 
 include_directories(
 	src/
