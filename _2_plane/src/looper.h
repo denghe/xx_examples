@@ -26,6 +26,7 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::BlockLink<Explosion> explosions;
 	EffectNumberManager enm;
 	xx::Shared<Plane> plane;
+	xx::XY planeLastPos{};
 
 	typedef void(*DrawFunc)(void*);
 	xx::Listi32<std::tuple<float, DrawFunc, void*>> yDraws;

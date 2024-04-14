@@ -2,11 +2,7 @@
 #include "looper.h"
 
 void Plane::Init(xx::XY const& bornPos) {
-	pos = bornPos;
-}
-
-int32_t Plane::UpdateCore() {
-	return 0;
+	gLooper.planeLastPos = pos = bornPos;
 }
 
 bool Plane::Update() {
@@ -14,6 +10,7 @@ bool Plane::Update() {
 		pos += inc->second * cSpeed;
 	}
 	if (pos.IsOutOfEdge(gLooper.mapSize)) return true;
+	gLooper.planeLastPos = pos;
 
 	auto mp = gLooper.camera.ToLogicPos(gLooper.mouse.pos) - pos;
 	auto r = std::atan2(mp.y, mp.x);

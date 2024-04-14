@@ -4,7 +4,7 @@
 struct Bullet {
 	constexpr static int32_t cLife{ 5 * (int32_t)gCfg.fps };
 	constexpr static float cRadius{ 8 };
-	constexpr static float cSpeed{ 240 / gCfg.fps };
+	constexpr static float cSpeed{ 500 / gCfg.fps };
 	constexpr static int32_t cDamage{ 5 }, cMaxDamage{ 20 };
 
 	xx::XY pos{};

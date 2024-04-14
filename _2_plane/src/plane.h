@@ -12,7 +12,6 @@ struct Plane {
 	float radians{};
 
 	void Init(xx::XY const& bornPos);
-	int32_t UpdateCore();
 	bool Update();
 	void Draw();
 };

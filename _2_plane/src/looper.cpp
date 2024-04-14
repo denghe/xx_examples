@@ -49,7 +49,7 @@ xx::Task<> Looper::MainTask() {
 
 
 	// fill fields
-	mapNumRowsCols = { mh, mw };
+	mapNumRowsCols = { mw, mh };
 	mapSize = { mw * tw, mh * th };
 	mapSize_2 = mapSize / 2;
 
@@ -80,9 +80,22 @@ xx::Task<> Looper::MainTask() {
 	// camera init
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
-	camera.SetScale(0.1f);
+	camera.SetScale(0.2f);
 
 	ok = true;
+
+	while (true) {
+		auto& basePos = planeLastPos;
+		for (size_t i = 0; i < 50; i++) {
+			// circle gen , outside the plane's safe range
+			static constexpr float radius = 15000, safeRadius = 100, len = radius - safeRadius;
+			auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius) * radius;
+			auto a = gLooper.rnd.Next<float>(xx::gNPI, xx::gPI);
+			monsters.EmplaceInit(basePos + xx::XY{ std::cos(a), std::sin(a) } * r);
+		}
+		co_yield 0;
+	}
+
 }
 
 
@@ -91,9 +104,9 @@ void Looper::BeforeUpdate() {
 
 	// scale control
 	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.02f)) {
-		camera.IncreaseScale(0.1f, 5);
+		camera.IncreaseScale(0.01f, 5);
 	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.02f)) {
-		camera.DecreaseScale(0.1f, 0.1f);
+		camera.DecreaseScale(0.01f, 0.05f);
 	}
 
 }
@@ -132,7 +145,7 @@ void Looper::Draw() {
 
 	{
 		int32_t rowFrom, rowTo, colFrom, colTo;
-		camera.FillRowColIdxRange(mapNumRowsCols.y, mapNumRowsCols.x, unitSizei,
+		camera.FillRowColIdxRange<1,3,1,2>(mapNumRowsCols.y, mapNumRowsCols.x, unitSizei,
 			rowFrom, rowTo, colFrom, colTo);
 
 		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
@@ -153,38 +166,42 @@ void Looper::Draw() {
 						yDraws.Emplace(tree.pos.y, [](void* self) { ((Tree*)self)->Draw(); }, &tree);
 						});
 				}
+
+				auto cidx = monsters.CrIdxToCIdx({ colIdx, rowIdx });
+				monsters.ForeachCell(cidx, [this](Monster& o) {
+					yDraws.Emplace(o.pos.y, [](void* self) { ((Monster*)self)->Draw(); }, &o);
+				});
 			}
 		}
 	}
 
-	// todo: draw all order by y
-
 	bullets.ForeachFlags([this](Bullet& o) {
 		yDraws.Emplace(o.pos.y, [](void* self) { ((Bullet*)self)->Draw(); }, &o);
+	});
+
+	explosions.ForeachFlags([this](Explosion& o) {
+		yDraws.Emplace(o.pos.y, [](void* self) { ((Explosion*)self)->Draw(); }, &o);
 	});
 
 	if (plane) {
 		yDraws.Emplace(plane->pos.y, [](void* self) { ((Plane*)self)->Draw(); }, plane.pointer);
 	}
 
+	// order by y & draw
 	std::sort(yDraws.buf, yDraws.buf + yDraws.len, [](auto const& a, auto const& b) {
 		return std::get<0>(a) < std::get<0>(b);
 	});
-
 	for (auto& yd : yDraws) {
 		std::get<1>(yd)(std::get<2>(yd));
 	}
-
 	yDraws.Clear();
 
-
+	// override below
 	enm.Draw();
 
 	// draw tips
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: ZX  move: ASDW  fire: MOUSE", xx::RGBA8_Green, { 0.5f, 1 });
-
-	//auto str = xx::ToString("total item count = ", grid.Count());
-	//gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, xx::RGBA8_Green, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 35 }, xx::ToString("monsters.Count() == ", monsters.Count()), xx::RGBA8_Green, { 0.5f, 1 });
 }
 
 Monster* Looper::FindNeighborMonster(xx::XY const& pos, float radius) {

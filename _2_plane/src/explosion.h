@@ -2,13 +2,16 @@
 #include "pch.h"
 
 struct Explosion {
+	constexpr static float cScale{ 2 };
+	constexpr static float cFrameMaxIndex{ 5.f };
+	constexpr static float cFrameInc{ 0.1f };
+
 	xx::XY pos{};
-	int32_t lineNumber{};
 	float radians{};
-	float radius{};
+	float scale{};
 	float frameIndex{};
 
-	int32_t UpdateCore();
+	void Init(xx::XY const& bornPos, float scale_);
 	bool Update();
 	void Draw();
 };

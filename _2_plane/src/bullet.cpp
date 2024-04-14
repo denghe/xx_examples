@@ -21,7 +21,7 @@ bool Bullet::Update() {
 
 	// check hit monsters
 	if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
-		r->Hit(damage);
+		r->Hit(damage, pos);	// unsafe
 		return true;
 	}
 
