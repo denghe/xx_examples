@@ -86,9 +86,9 @@ xx::Task<> Looper::MainTask() {
 
 	while (true) {
 		auto& basePos = planeLastPos;
-		for (size_t i = 0; i < 50; i++) {
+		for (size_t i = 0; i < 30; i++) {
 			// circle gen , outside the plane's safe range
-			static constexpr float radius = 15000, safeRadius = 100, len = radius - safeRadius;
+			static constexpr float radius = 20000, safeRadius = 100, len = radius - safeRadius;
 			auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius) * radius;
 			auto a = gLooper.rnd.Next<float>(xx::gNPI, xx::gPI);
 			monsters.EmplaceInit(basePos + xx::XY{ std::cos(a), std::sin(a) } * r);
