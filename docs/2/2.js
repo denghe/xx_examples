@@ -74,7 +74,7 @@ function ha(a) {
 }
 var xa = a => a.startsWith("data:application/octet-stream;base64,"),
   F;
-F = "_2_plane.wasm";
+F = "2.wasm";
 if (!xa(F)) {
   var ya = F;
   F = g.locateFile ? g.locateFile(ya, l) : l + ya;
