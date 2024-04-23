@@ -33,12 +33,23 @@ xx::Task<> Looper::MainTask() {
 
 	// create code test button
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m, xy7a, s9cfg_btn, U"run code", [&]() {
-		auto n = 100000000;
-		Code::Context c;
-		c.Init(n);
-		auto secs = xx::NowEpochSeconds();
-		c.Run();
-		xx::CoutN("n = ", n," Code Run elapsed secs = ", xx::NowEpochSeconds(secs));
+		auto n = 10000000;
+		for (size_t i = 0; i < 10; i++) {
+
+			Code::Context2 c;
+			c.Init(n);
+			auto secs = xx::NowEpochSeconds();
+			c.Run();
+			xx::CoutN("n = ", n, " Code Run elapsed secs = ", xx::NowEpochSeconds(secs));
+		}
+
+		for (size_t i = 0; i < 10; i++) {
+
+			Code::Context2 c;
+			auto secs = xx::NowEpochSeconds();
+			c.Run2(n);
+			xx::CoutN("n = ", n, " Code Run2 elapsed secs = ", xx::NowEpochSeconds(secs));
+		}
 	});
 
 	camera.SetMaxFrameSize(maxItemSize);
@@ -71,9 +82,9 @@ void Looper::Update() {
 void Looper::Draw() {
 	if (!ok) return;
 
-//	auto str = xx::ToString("total item count = ", grid.Count());
-//	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, xx::RGBA8_Green, { 0.5f, 1 });
+	//	auto str = xx::ToString("total item count = ", grid.Count());
+	//	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, xx::RGBA8_Green, { 0.5f, 1 });
 
-	// draw ui
+		// draw ui
 	gLooper.DrawNode(ui);
 }
