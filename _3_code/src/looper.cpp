@@ -33,11 +33,12 @@ xx::Task<> Looper::MainTask() {
 
 	// create code test button
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m, xy7a, s9cfg_btn, U"run code", [&]() {
+		auto n = 100000000;
 		Code::Context c;
-		c.Init();
+		c.Init(n);
 		auto secs = xx::NowEpochSeconds();
 		c.Run();
-		xx::CoutN(xx::NowEpochSeconds(secs));
+		xx::CoutN("n = ", n," Code Run elapsed secs = ", xx::NowEpochSeconds(secs));
 	});
 
 	camera.SetMaxFrameSize(maxItemSize);

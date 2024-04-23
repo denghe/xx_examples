@@ -16,7 +16,7 @@ namespace Code {
 		// code runtime context
 		int32_t codesCursor{};
 		std::vector<std::unique_ptr<Code_Base>> codes;
-		void Init();	// simulate load code from player config
+		void Init(int32_t count);	// simulate load code from player config
 		bool Update();	// return true: end / finished
 		void Run();		// while(!Update()){}
 

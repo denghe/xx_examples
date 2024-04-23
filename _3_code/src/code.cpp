@@ -29,10 +29,10 @@ namespace Code {
 	}
 
 
-	void Context::Init() {
+	void Context::Init(int32_t count) {
 		/* 0 */	MakeCode<Code_Begin>().Init(this, 1);
 		/* 1 */	MakeCode<Code_Compare<int32_t>>().Init(this
-			, offsetof(Context, a), 10000000, 2, 2, 3);
+			, offsetof(Context, a), count, 2, 2, 3);
 		/* 2 */	MakeCode<Code_Add1<int32_t>>().Init(this
 			, offsetof(Context, a), 1);
 		/* 3 */	MakeCode<Code_End>().Init(this);
