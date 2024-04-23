@@ -34,22 +34,31 @@ xx::Task<> Looper::MainTask() {
 	// create code test button
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m, xy7a, s9cfg_btn, U"run code", [&]() {
 		auto n = 10000000;
-		for (size_t i = 0; i < 10; i++) {
 
+		for (size_t i = 0; i < 10; i++) {
 			Code::Context2 c;
 			c.Init(n);
 			auto secs = xx::NowEpochSeconds();
 			c.Run();
-			xx::CoutN("n = ", n, " Code Run elapsed secs = ", xx::NowEpochSeconds(secs));
+			xx::CoutN("n = ", n, " Context2 Run elapsed secs = ", xx::NowEpochSeconds(secs));
 		}
 
 		for (size_t i = 0; i < 10; i++) {
-
-			Code::Context2 c;
+			Code::Context3 c;
+			c.Init(n);
 			auto secs = xx::NowEpochSeconds();
-			c.Run2(n);
-			xx::CoutN("n = ", n, " Code Run2 elapsed secs = ", xx::NowEpochSeconds(secs));
+			c.Run();
+			xx::CoutN("n = ", n, " Context3 Run elapsed secs = ", xx::NowEpochSeconds(secs));
 		}
+
+		for (size_t i = 0; i < 10; i++) {
+			Code::Context4 c;
+			c.Init(n);
+			auto secs = xx::NowEpochSeconds();
+			c.Run();
+			xx::CoutN("n = ", n, " Context4 Run elapsed secs = ", xx::NowEpochSeconds(secs));
+		}
+
 	});
 
 	camera.SetMaxFrameSize(maxItemSize);
