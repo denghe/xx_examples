@@ -57,7 +57,7 @@ function t(a) {
 }
 var ma = a => a.startsWith("data:application/octet-stream;base64,"),
   F;
-F = "_1_bugs.wasm";
+F = "1.wasm";
 if (!ma(F)) {
   var na = F;
   F = e.locateFile ? e.locateFile(na, k) : k + na;
