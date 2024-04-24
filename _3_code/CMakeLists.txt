@@ -5,7 +5,11 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+if (EMSCRIPTEN)
+set(name 3)
+else()
 set(name _3_code)
+endif()
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -158,7 +162,7 @@ if (EMSCRIPTEN)
 	endforeach()
 
 	file(COPY "../xx/favicon.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-	file(COPY "src/${name}.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+	file(COPY "src/index.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
 
 else()
 
