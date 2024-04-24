@@ -59,6 +59,21 @@ xx::Task<> Looper::MainTask() {
 			xx::CoutN("n = ", n, " Context4 Run elapsed secs = ", xx::NowEpochSeconds(secs));
 		}
 
+		for (size_t i = 0; i < 10; i++) {
+			Code2::Context c;
+			c.Init(n);
+			auto secs = xx::NowEpochSeconds();
+			c.Run();
+			xx::CoutN("n = ", n, " Code2::Context Run elapsed secs = ", xx::NowEpochSeconds(secs));
+		}
+
+		for (size_t i = 0; i < 10; i++) {
+			Code::Context2 c;
+			auto secs = xx::NowEpochSeconds();
+			c.Run2(n);
+			xx::CoutN("n = ", n, " Context2 Run2 elapsed secs = ", xx::NowEpochSeconds(secs));
+		}
+
 	});
 
 	camera.SetMaxFrameSize(maxItemSize);

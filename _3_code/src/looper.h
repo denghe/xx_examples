@@ -3,6 +3,7 @@
 #include "cfg.h"
 #include "res_frames.h"
 #include "code.h"
+#include "code2.h"
 
 struct Looper : xx::Engine<Looper>, Cfg {
 
