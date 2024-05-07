@@ -76,6 +76,10 @@ xx::Task<> Looper::MainTask() {
 
 	});
 
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -50}, xy7a, s9cfg_btn, U"run drop test", [&]() {
+		Drop::Test(rnd, 10000000, 200, 100, { 1, 10000 });
+	});
+
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
 	camera.SetScale(1.f);

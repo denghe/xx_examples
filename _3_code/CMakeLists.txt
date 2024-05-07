@@ -31,6 +31,7 @@ include_directories(
 
 file(GLOB sources
 	../xx/*.h
+	../xx/*.natvis
 	src/*.cpp
 	src/*.c
 	src/*.h

@@ -4,6 +4,7 @@
 #include "res_frames.h"
 #include "code.h"
 #include "code2.h"
+#include "drop.h"
 
 struct Looper : xx::Engine<Looper>, Cfg {
 
