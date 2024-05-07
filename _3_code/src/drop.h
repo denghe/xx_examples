@@ -81,12 +81,30 @@ namespace Drop {
 	};
 
 
-	inline static void Test(xx::Rnd& rnd, int32_t n, int32_t allItemCount, int32_t numDropItems, xx::FromTo<int32_t> weightRange) {
+	inline static void Test1(xx::Rnd& rnd, int32_t n, int32_t allItemCount, int32_t numDropItems, xx::FromTo<int32_t> weightRange) {
 
-		Drop::ItemWeights iws;
+		ItemWeights iws;
 		iws.Init(rnd, allItemCount, weightRange);
 
-		Drop::Generator dg;
+		Generator dg;
+		dg.Init(iws.data, rnd, numDropItems);
+
+		for (int32_t i = 0; i < 10; i++) {
+			auto secs = xx::NowEpochSeconds();
+			int64_t idCount{};
+			for (int32_t j = 0; j < n; j++) {
+				idCount += dg.Calc1(rnd);
+			}
+			xx::CoutN("n = ", n, " Drop::Test1 elapsed secs = ", xx::NowEpochSeconds(secs), " idCount = ", idCount);
+		}
+	}
+
+	inline static void Test2(xx::Rnd& rnd, int32_t n, int32_t allItemCount, int32_t numDropItems, xx::FromTo<int32_t> weightRange) {
+
+		ItemWeights iws;
+		iws.Init(rnd, allItemCount, weightRange);
+
+		Generator dg;
 		dg.Init(iws.data, rnd, numDropItems);
 
 		xx::Listi32<int32_t> rndWeights;
@@ -101,7 +119,7 @@ namespace Drop {
 			for (int32_t j = 0; j < n; j++) {
 				idCount += dg.Calc1(rndWeights[j]);
 			}
-			xx::CoutN("n = ", n, " calculate drop elapsed secs = ", xx::NowEpochSeconds(secs), " idCount = ", idCount);
+			xx::CoutN("n = ", n, " Drop::Test2 elapsed secs = ", xx::NowEpochSeconds(secs), " idCount = ", idCount);
 		}
 	}
 
