@@ -81,6 +81,10 @@ xx::Task<> Looper::MainTask() {
 		Drop::Test2(rnd, 10000000, 200, 100, { 1, 10000 });
 	});
 
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -100}, xy7a, s9cfg_btn, U"run buff test", [&]() {
+		Code3::Test();
+	});
+
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
 	camera.SetScale(1.f);

@@ -119,7 +119,7 @@ namespace Code {
 			auto& kv = codes[codesCursor];
 			auto c = (Code_Base*)&kv.second;	// dangerous ?
 			auto r = kv.first(c, this);
-			assert(r >= 0 && r < 3);
+			assert(r >= -2 && r < 3);
 			switch (r) {
 			case -2: return true;
 			case -1: return false;
