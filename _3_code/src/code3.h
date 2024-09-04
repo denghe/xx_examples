@@ -5,34 +5,35 @@ namespace Code3 {
 
 	// simulate 1 monster walk through, random stun
 
+	// buff == skill == behavior
 	enum class BuffTypes : int32_t {
 		Move,
 		Stun,
 		// ...
+		//Hurt,
+		//RestoreHealth,
+		//// ...
 		MaxValue
 	};
 
+	// data struct
 	struct Buff {
 		BuffTypes type;
-		union {
-			float fs[3];
-			int32_t is[3];
-			struct {
-				union {
-					float f1;
-					int32_t i1;
-				};
-				union {
-					float f2;
-					int32_t i2;
-				};
-				union {
-					float f3;
-					int32_t i3;
-				};
-			};
-		};
+		int32_t _0, _1, _2;
 	};
+
+	// skins ...
+	struct Buff_Move {
+		BuffTypes type;
+		int32_t speed, _1, _2;
+	};
+
+	struct Buff_Stun {
+		BuffTypes type;
+		int32_t timeoutFrameNumber, _1, _2;
+	};
+
+	// ...
 
 	struct Scene;
 	struct Monster {
@@ -75,6 +76,9 @@ namespace Code3 {
 		bool AddBuff_Move(int32_t speed);
 		bool AddBuff_Stun(int32_t numFrames);
 		// ...
+
+		void HandleBuff_Move(Buff& b, int32_t frameNumber, int32_t index);
+		void HandleBuff_Stun(Buff& b, int32_t frameNumber, int32_t index);
 	};
 
 	struct Scene {
@@ -100,7 +104,7 @@ namespace Code3 {
 
 	inline void Monster::Init(Scene* scene_) {
 		scene = scene_;
-		buffs.Reserve(2);
+		buffs.Reserve(6);	// avoid reallocating memory due to adding behavior
 		TryAddBaseBuffs();
 	}
 
@@ -109,15 +113,9 @@ namespace Code3 {
 		for (int32_t i = buffs.len - 1; i >= 0; --i) {
 			auto& b = buffs[i];
 			switch (b.type) {
-			case BuffTypes::Move:
-				pos += b.i1;
-				break;
-			case BuffTypes::Stun:
-				if (b.i1 < frameNumber) {
-					buffs.SwapRemoveAt(i);
-					BuffsClearFlag(BuffTypes::Stun);
-				}
-				break;
+			case BuffTypes::Move: HandleBuff_Move(b, frameNumber, i); break;
+			case BuffTypes::Stun: HandleBuff_Stun(b, frameNumber, i); break;
+			// ... more case
 			}
 		}
 
@@ -125,12 +123,25 @@ namespace Code3 {
 		return 0;
 	}
 
+	XX_INLINE void Monster::HandleBuff_Move(Buff& b, int32_t frameNumber, int32_t index) {
+		auto& o = (Buff_Move&)b;
+		pos += o.speed;
+	}
+
+	XX_INLINE void Monster::HandleBuff_Stun(Buff& b, int32_t frameNumber, int32_t index) {
+		auto& o = (Buff_Stun&)b;
+		if (o.timeoutFrameNumber < frameNumber) {
+			buffs.SwapRemoveAt(index);
+			BuffsClearFlag(BuffTypes::Stun);
+		}
+	}
+
 	inline bool Monster::AddBuff_Move(int32_t speed) {
 		if (BuffsExists(BuffTypes::Move) || BuffsExists(BuffTypes::Stun)) return false;
 		BuffsSetFlag(BuffTypes::Move);
-		auto& buff = buffs.Emplace();
-		buff.type = BuffTypes::Move;
-		buff.i1 = speed;
+		auto& o = (Buff_Move&)buffs.Emplace();
+		o.type = BuffTypes::Move;
+		o.speed = speed;
 		return true;
 	}
 
@@ -138,19 +149,28 @@ namespace Code3 {
 		if (BuffsExists(BuffTypes::Stun)) return false;
 		BuffsRemove(BuffTypes::Move);
 		BuffsSetFlag(BuffTypes::Stun);
-		auto& buff = buffs.Emplace();
-		buff.type = BuffTypes::Stun;
-		buff.i1 = scene->frameNumber + numFrames;
+		auto& o = (Buff_Stun&)buffs.Emplace();
+		o.type = BuffTypes::Stun;
+		o.timeoutFrameNumber = scene->frameNumber + numFrames;
 		return true;
 	}
+
 
 	inline void Test() {
 		Scene scene;
 		scene.Init();
+#if 0
 		for (int32_t i = 0; i < 20; i++) {
-			//xx::CoutTN("frameNumber = ", scene.frameNumber, "\tscene.Update() == ", scene.Update());
 			scene.Update();
 			xx::CoutN(scene.frameNumber, "\tmonster.pos = ", scene.monster.pos);
 		}
+#else
+		auto secs = xx::NowEpochSeconds();
+		for (int32_t i = 0; i < 100000000; i++) {
+			scene.Update();
+		}
+		xx::CoutN("secs = ", xx::NowEpochSeconds(secs));
+		xx::CoutN(scene.frameNumber, "\tmonster.pos = ", scene.monster.pos);
+#endif
 	}
 };
