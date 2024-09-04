@@ -5,6 +5,8 @@ namespace Code3 {
 
 	// simulate 1 monster walk through, random stun
 
+	/*********************************************************************************************/
+
 	// buff == skill == behavior
 	enum class BuffTypes : int32_t {
 		Move,
@@ -15,6 +17,8 @@ namespace Code3 {
 		//// ...
 		MaxValue
 	};
+
+	/*********************************************************************************************/
 
 	// data struct
 	struct Buff {
@@ -34,6 +38,8 @@ namespace Code3 {
 	};
 
 	// ...
+
+	/*********************************************************************************************/
 
 	struct Scene;
 	struct Monster {
@@ -77,9 +83,11 @@ namespace Code3 {
 		bool AddBuff_Stun(int32_t numFrames);
 		// ...
 
-		void HandleBuff_Move(Buff& b, int32_t frameNumber, int32_t index);
-		void HandleBuff_Stun(Buff& b, int32_t frameNumber, int32_t index);
+		void HandleBuff_Move(Buff_Move& b, int32_t frameNumber, int32_t index);
+		void HandleBuff_Stun(Buff_Stun& b, int32_t frameNumber, int32_t index);
 	};
+
+	/*********************************************************************************************/
 
 	struct Scene {
 		int32_t frameNumber{};
@@ -98,6 +106,8 @@ namespace Code3 {
 		}
 	};
 
+	/*********************************************************************************************/
+
 	inline void Monster::TryAddBaseBuffs() {
 		AddBuff_Move(1);
 	}
@@ -108,33 +118,37 @@ namespace Code3 {
 		TryAddBaseBuffs();
 	}
 
+	/*********************************************************************************************/
+
+#define CONCAT_NAME( a, b ) a##b
+#define CASE_BUFF(NAME) case BuffTypes::NAME: CONCAT_NAME(HandleBuff_, NAME)((CONCAT_NAME(Buff_, NAME)&)b, frameNumber, i); break;
+
 	inline int32_t Monster::Update() {
 		auto frameNumber = scene->frameNumber;
 		for (int32_t i = buffs.len - 1; i >= 0; --i) {
 			auto& b = buffs[i];
 			switch (b.type) {
-			case BuffTypes::Move: HandleBuff_Move(b, frameNumber, i); break;
-			case BuffTypes::Stun: HandleBuff_Stun(b, frameNumber, i); break;
-			// ... more case
+				CASE_BUFF(Move);
+				CASE_BUFF(Stun);
+				// ... more case
 			}
 		}
-
 		TryAddBaseBuffs();
 		return 0;
 	}
 
-	XX_INLINE void Monster::HandleBuff_Move(Buff& b, int32_t frameNumber, int32_t index) {
-		auto& o = (Buff_Move&)b;
+	XX_INLINE void Monster::HandleBuff_Move(Buff_Move& o, int32_t frameNumber, int32_t index) {
 		pos += o.speed;
 	}
 
-	XX_INLINE void Monster::HandleBuff_Stun(Buff& b, int32_t frameNumber, int32_t index) {
-		auto& o = (Buff_Stun&)b;
+	XX_INLINE void Monster::HandleBuff_Stun(Buff_Stun& o, int32_t frameNumber, int32_t index) {
 		if (o.timeoutFrameNumber < frameNumber) {
 			buffs.SwapRemoveAt(index);
 			BuffsClearFlag(BuffTypes::Stun);
 		}
 	}
+
+	/*********************************************************************************************/
 
 	inline bool Monster::AddBuff_Move(int32_t speed) {
 		if (BuffsExists(BuffTypes::Move) || BuffsExists(BuffTypes::Stun)) return false;
@@ -155,11 +169,13 @@ namespace Code3 {
 		return true;
 	}
 
+	/*********************************************************************************************/
+	/*********************************************************************************************/
 
 	inline void Test() {
 		Scene scene;
 		scene.Init();
-#if 0
+#if 1
 		for (int32_t i = 0; i < 20; i++) {
 			scene.Update();
 			xx::CoutN(scene.frameNumber, "\tmonster.pos = ", scene.monster.pos);
