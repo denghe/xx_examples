@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "looper.h"
+#include "battle.h"
 
 Looper gLooper;
 ResFrames& gRes(gLooper.res);
@@ -31,13 +32,16 @@ xx::Task<> Looper::MainTask() {
 
 	ui.Emplace()->Init();
 
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, 0}, xy7a, s9cfg_btn, U"run battle test", [&]() {
-		Battle::Test();
-	});
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, 0}, xy7a, s9cfg_btn, U"run battle test", [&]() {
+	//	Battle::Test();
+	//});
 
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
 	camera.SetScale(1.f);
+
+	scene.Emplace();
+	scene->Init();
 
 	ok = true;
 }
@@ -53,21 +57,26 @@ void Looper::BeforeUpdate() {
 	}
 
 	camera.Calc();
+
+	scene->BeforeUpdate();
 }
 
 
 void Looper::Update() {
 	if (!ok) return;
 
+	scene->Update();
 }
 
 
 void Looper::Draw() {
 	if (!ok) return;
 
-	//	auto str = xx::ToString("total item count = ", grid.Count());
-	//	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, xx::RGBA8_Green, { 0.5f, 1 });
+	scene->Draw(camera);
 
-		// draw ui
+	auto str = xx::ToString("monsters count = ", scene->monsters.Count());
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });
+
+	// draw ui
 	gLooper.DrawNode(ui);
 }

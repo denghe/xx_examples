@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <cfg.h>
+#include <looper.h>
 
 namespace Battle {
 
@@ -29,7 +29,7 @@ namespace Battle {
 	// skins ...
 	struct Buff_Move {
 		BuffTypes type;
-		int32_t speed, _1, _2;
+		float speed, _1, _2;
 	};
 
 	struct Buff_Stun {
@@ -44,7 +44,8 @@ namespace Battle {
 	struct Scene;
 	struct Monster {
 		Scene* scene{};
-		int32_t pos{};
+		int32_t id{};
+		XY pos{}, movementDirection{};
 		// ...
 
 		uint64_t buffsFlags{};
@@ -79,7 +80,7 @@ namespace Battle {
 
 		void TryAddBaseBuffs();
 
-		bool AddBuff_Move(int32_t speed);
+		bool AddBuff_Move(float speed);
 		bool AddBuff_Stun(int32_t numFrames);
 		// ...
 
@@ -91,30 +92,68 @@ namespace Battle {
 
 	struct Scene {
 		int32_t frameNumber{};
-		Monster monster;
+		int32_t autoId{};
+		xx::SpaceGrid<Monster> monsters;
+		xx::Rnd rnd;
+		// todo: wall ?
 
 		void Init() {
-			monster.Init(this);
+			monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		}
+
+		void BeforeUpdate() {}
 
 		int32_t Update() {
 			++frameNumber;
-			if (frameNumber % 3 == 0) {
-				monster.AddBuff_Stun(5);		// simulate stun event every 3 frames
+
+			// simulate stun event every ?? frames
+			if (frameNumber % 20 == 0) {
+				monsters.Foreach([](Monster& o)->void {
+					o.AddBuff_Stun(60);
+				});
 			}
-			return monster.Update();
+
+			// update all monsters
+			monsters.Foreach([&](Monster& o)->xx::ForeachResult {
+				auto r = o.Update();
+				if (r == -1) return xx::ForeachResult::RemoveAndContinue;
+				else if (r == 1) {
+					monsters.Update(o);
+				}
+				return xx::ForeachResult::Continue;
+			});
+
+			// make some monsters
+			monsters.EmplaceInit(this);
+
+			return 0;
+		}
+
+		void Draw(xx::Camera& camera) {
+			xx::LineStrip ls;
+			ls.FillCirclePoints({}, 32);
+
+			monsters.Foreach([&](Monster& o)->void {
+				ls.SetPosition(camera.ToGLPos(o.pos)).Draw();
+			});
+
+			monsters.Foreach([&](Monster& o)->void {
+				auto str = xx::ToString("m", o.id);	// todo: show id
+				gLooper.ctcDefault.Draw(camera.ToGLPos(o.pos), str, xx::RGBA8_Green, { 0.5f, 0.5f });
+			});
 		}
 	};
 
 	/*********************************************************************************************/
 
-	inline void Monster::TryAddBaseBuffs() {
-		AddBuff_Move(1);
-	}
-
 	inline void Monster::Init(Scene* scene_) {
 		scene = scene_;
 		buffs.Reserve(6);	// avoid reallocating memory due to adding behavior
+		auto radians = scene->rnd.Next<float>(-gPI, gPI);
+		pos = gLooper.mapSize_2;
+		movementDirection.x = std::cos(radians);
+		movementDirection.y = std::sin(radians);
+		id = ++scene->autoId;
 		TryAddBaseBuffs();
 	}
 
@@ -125,6 +164,7 @@ namespace Battle {
 
 	inline int32_t Monster::Update() {
 		auto frameNumber = scene->frameNumber;
+		auto posBak = pos;
 		for (int32_t i = buffs.len - 1; i >= 0; --i) {
 			auto& b = buffs[i];
 			switch (b.type) {
@@ -134,11 +174,13 @@ namespace Battle {
 			}
 		}
 		TryAddBaseBuffs();
-		return 0;
+		// todo: is dead: return -1 when moved out of the screen?
+		if (posBak == pos) return 0;
+		else return 1;
 	}
 
 	XX_INLINE void Monster::HandleBuff_Move(Buff_Move& o, int32_t frameNumber, int32_t index) {
-		pos += o.speed;
+		pos += movementDirection * o.speed;
 	}
 
 	XX_INLINE void Monster::HandleBuff_Stun(Buff_Stun& o, int32_t frameNumber, int32_t index) {
@@ -150,7 +192,7 @@ namespace Battle {
 
 	/*********************************************************************************************/
 
-	inline bool Monster::AddBuff_Move(int32_t speed) {
+	inline bool Monster::AddBuff_Move(float speed) {
 		if (BuffsExists(BuffTypes::Move) || BuffsExists(BuffTypes::Stun)) return false;
 		BuffsSetFlag(BuffTypes::Move);
 		auto& o = (Buff_Move&)buffs.Emplace();
@@ -169,24 +211,8 @@ namespace Battle {
 		return true;
 	}
 
-	/*********************************************************************************************/
-	/*********************************************************************************************/
-
-	inline void Test() {
-		Scene scene;
-		scene.Init();
-#if 1
-		for (int32_t i = 0; i < 20; i++) {
-			scene.Update();
-			xx::CoutN(scene.frameNumber, "\tmonster.pos = ", scene.monster.pos);
-		}
-#else
-		auto secs = xx::NowEpochSeconds();
-		for (int32_t i = 0; i < 100000000; i++) {
-			scene.Update();
-		}
-		xx::CoutN("secs = ", xx::NowEpochSeconds(secs));
-		xx::CoutN(scene.frameNumber, "\tmonster.pos = ", scene.monster.pos);
-#endif
+	inline void Monster::TryAddBaseBuffs() {
+		AddBuff_Move(1);
 	}
+
 };

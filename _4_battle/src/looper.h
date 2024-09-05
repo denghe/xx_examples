@@ -2,7 +2,10 @@
 #include "pch.h"
 #include "cfg.h"
 #include "res_frames.h"
-#include "battle.h"
+
+namespace Battle {
+	struct Scene;
+}
 
 struct Looper : xx::Engine<Looper>, Cfg {
 
@@ -14,7 +17,7 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::Shared<xx::Node> ui;
 
 	xx::Camera camera;
-
+	xx::Shared<Battle::Scene> scene;
 
 	// true: loading finished
 	bool ok{};
