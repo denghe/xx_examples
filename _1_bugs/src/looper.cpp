@@ -89,7 +89,7 @@ void Looper::CreateBug(XY const& headPos, int32_t len) {
 
 void Looper::MouseHit() {
 	auto p = camera.ToLogicPos(mouse.pos);
-	grid.ForeachByRange(gLooper.sgrdd, { p.x, p.y }, mouseHitRange + maxItemSize_2, [&](BugBody& o) {
+	grid.ForeachByRange(gLooper.sgrdd, p.x, p.y, mouseHitRange + maxItemSize_2, [&](BugBody& o) {
 		if (o.prev) {
 			o.prev().isTail = true;
 		}
@@ -110,9 +110,9 @@ void Looper::BeforeUpdate() {
 
 	// resize mouse hit area size
 	if (gLooper.KeyDownDelay(KeyboardKeys::D, 0.01f)) {
-		if (mouseHitRange > mouseHitRadius.from) mouseHitRange += 5;
+		if (mouseHitRange > mouseHitRadius.from) mouseHitRange -= 5;
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::A, 0.01f)) {
-		if (mouseHitRange < mouseHitRadius.to) ++mouseHitRange += 5;
+		if (mouseHitRange < mouseHitRadius.to) mouseHitRange += 5;
 	}
 
 	// move control

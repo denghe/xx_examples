@@ -6,9 +6,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if (EMSCRIPTEN)
-set(name 1)
+set(name 4)
 else()
-set(name _1_bugs)
+set(name _4_battle)
 endif()
 project(${name})
 

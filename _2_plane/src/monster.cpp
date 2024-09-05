@@ -72,7 +72,7 @@ int32_t Monster::UpdateCore() {
 			// calc neighbor cross force
 			xx::XY combineForce{};
 			int numCross{}, limit = 8;
-			gLooper.monsters.Foreach9(pos, [&](Monster& m)->xx::ForeachResult {
+			gLooper.monsters.Foreach9All(pos.x, pos.y, [&](Monster& m)->xx::ForeachResult {
 				if (&m == this) return xx::ForeachResult::Continue;	// skip self
 				auto d = pos - m.pos;
 				auto rr = (m.radius + radius) * (m.radius + radius);

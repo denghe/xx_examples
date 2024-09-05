@@ -206,7 +206,7 @@ void Looper::Draw() {
 
 Monster* Looper::FindNeighborMonster(xx::XY const& pos, float radius) {
 	Monster* r{};
-	monsters.Foreach9(pos, [&](Monster& m)->bool {
+	monsters.Foreach9All(pos.x, pos.y, [&](Monster& m)->bool {
 		if (xx::Calc::Intersects::CircleCircle<float>(pos.x, pos.y, radius, m.pos.x, m.pos.y, m.radius)) {
 			r = &m;
 			return true;

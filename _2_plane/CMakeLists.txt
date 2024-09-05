@@ -168,7 +168,7 @@ if (EMSCRIPTEN)
 	endforeach()
 
 	file(COPY "../xx/favicon.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-	file(COPY "src/${name}.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+	file(COPY "src/index.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
 
 else()
 

@@ -31,12 +31,17 @@ include_directories(
 
 file(GLOB sources
 	../xx/*.h
-	../xx/*.natvis
 	src/*.cpp
 	src/*.c
 	src/*.h
 )
+
+if (MSVC)
+	list(APPEND sources "../xx/xx.natvis")
+endif()
+
 add_executable(${name} ${sources})
+
 
 source_group("" FILES ${sources})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../ FILES ${sources})
