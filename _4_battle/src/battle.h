@@ -4,13 +4,11 @@
 namespace Battle {
 
 	// simulate 1 monster walk through, random stun
-
-	// todo: Buff -> Action rename
+	// action == skill == behavior == buff
 
 	/*********************************************************************************************/
 
-	// buff == skill == behavior
-	enum class BuffTypes : int32_t {
+	enum class ActionTypes : int32_t {
 		Move,
 		Stun,
 		// ...
@@ -19,26 +17,38 @@ namespace Battle {
 		//// ...
 		MaxValue
 	};
+	static_assert((int32_t)ActionTypes::MaxValue <= 64);	// uint64_t actionFlags limit 
 
 	/*********************************************************************************************/
 
 	// data struct
-	struct Buff {
-		BuffTypes type;
-		int32_t _0, _1, _2;
+	struct Action {
+		union {
+		std::array<uint64_t, 3> _;
+		struct {
+		ActionTypes type;
+		int32_t __;
+		};
+		};
 	};
 
-	// skins ...
-	struct Buff_Move {
-		BuffTypes type;
-		float speed, _1, _2;
+	// skins ... pod & sizeof(T) <= sizeof(Action)
+	struct Action_Move {
+		ActionTypes type;
+		float speed;
 	};
 
-	struct Buff_Stun {
-		BuffTypes type;
-		int32_t timeoutFrameNumber, _1, _2;
+	struct Action_Stun {
+		ActionTypes type;
+		int32_t timeoutFrameNumber;
 	};
 
+	struct Monster;
+	struct Action_MoveTo {
+		ActionTypes type;
+		float speed;
+		xx::SpaceWeak<Monster> target;
+	};
 	// ...
 
 	/*********************************************************************************************/
@@ -47,31 +57,31 @@ namespace Battle {
 	struct Monster {
 		Scene* scene{};
 		int32_t id{};
+		//char32_t id[10];
 		XY pos{}, movementDirection{};
 		// ...
+		int32_t actionsLen{};
+		uint64_t actionFlags{};
+		Action actions[2];		// careful: safe cap need more test
 
-		uint64_t buffsFlags{};
-		static_assert((int32_t)BuffTypes::MaxValue <= sizeof(buffsFlags) * 8);
-		xx::Listi32<Buff> buffs;	// todo: inline ?
-
-		XX_INLINE bool BuffsExists(BuffTypes bt) {
-			return (buffsFlags & (1llu << (int32_t)bt)) > 0;
+		XX_INLINE bool ActionExists(ActionTypes bt) {
+			return (actionFlags & (1llu << (int32_t)bt)) > 0;
 		}
-		XX_INLINE void BuffsSetFlag(BuffTypes bt) {
-			assert(!BuffsExists(bt));
-			buffsFlags |= (1llu << (int32_t)bt);
+		XX_INLINE void ActionSetFlag(ActionTypes bt) {
+			assert(!ActionExists(bt));
+			actionFlags |= (1llu << (int32_t)bt);
 		}
-		XX_INLINE void BuffsClearFlag(BuffTypes bt) {
-			assert(BuffsExists(bt));
-			buffsFlags &= ~(1llu << (int32_t)bt);
+		XX_INLINE void ActionClearFlag(ActionTypes bt) {
+			assert(ActionExists(bt));
+			actionFlags &= ~(1llu << (int32_t)bt);
 		}
 
-		XX_INLINE bool BuffsRemove(BuffTypes bt) {
-			if (!BuffsExists(bt)) return false;
-			buffsFlags &= ~(1llu << (int32_t)bt);
-			for (int32_t i = buffs.len - 1; i >= 0; --i) {
-				if (buffs[i].type == bt) {
-					buffs.SwapRemoveAt(i);
+		XX_INLINE bool ActionRemove(ActionTypes bt) {
+			if (!ActionExists(bt)) return false;
+			actionFlags &= ~(1llu << (int32_t)bt);
+			for (int32_t i = actionsLen - 1; i >= 0; --i) {
+				if (actions[i].type == bt) {
+					actions[i] = actions[--actionsLen];
 				}
 			}
 			return true;
@@ -80,14 +90,14 @@ namespace Battle {
 		void Init(Scene* scene_);
 		int32_t Update();
 
-		void TryAddBaseBuffs();
+		void TryAddBaseActions();
 
-		bool AddBuff_Move(float speed);
-		bool AddBuff_Stun(int32_t numFrames);
+		bool ActionAdd_Move(float speed);
+		bool ActionAdd_Stun(int32_t numFrames);
 		// ...
 
-		void HandleBuff_Move(Buff_Move& b, int32_t frameNumber, int32_t index);
-		void HandleBuff_Stun(Buff_Stun& b, int32_t frameNumber, int32_t index);
+		void ActionHandle_Move(Action_Move& b, int32_t frameNumber, int32_t index);
+		void ActionHandle_Stun(Action_Stun& b, int32_t frameNumber, int32_t index);
 	};
 
 	/*********************************************************************************************/
@@ -117,7 +127,7 @@ namespace Battle {
 			// simulate stun event every ?? frames
 			if (frameNumber % 20 == 0) {
 				monsters.Foreach([](Monster& o)->void {
-					o.AddBuff_Stun(60);
+					o.ActionAdd_Stun(60);
 				});
 			}
 
@@ -150,10 +160,23 @@ namespace Battle {
 				.Draw();
 			});
 
+
+			std::u32string str;
 			monsters.Foreach([&](Monster& o)->void {
-				auto str = xx::ToString("m", o.id);
-				gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), str, xx::RGBA8_Blue, { 0.5f, 0.5f });
+				auto len = xx::IntToStringTo(str, o.id);
+				gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, str);
 			});
+
+			//std::u32string str = U"m";
+			//monsters.Foreach([&](Monster& o)->void {
+			//	auto len = xx::IntToStringTo<false>(str, o.id);
+			//	gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, str);
+			//	str.resize(1);
+			//});
+
+			//monsters.Foreach([&c](Monster& o)->void {
+			//	gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, o.id);
+			//});
 		}
 	};
 
@@ -161,30 +184,32 @@ namespace Battle {
 
 	inline void Monster::Init(Scene* scene_) {
 		scene = scene_;
-		buffs.Reserve(6);	// avoid reallocating memory due to adding behavior
 		auto radians = scene->rnd.Next<float>(-gPI, gPI);
 		pos = gLooper.mapSize_2;
 		movementDirection.x = std::cos(radians);
 		movementDirection.y = std::sin(radians);
-		id = ++scene->autoId;
-		TryAddBaseBuffs();
+		auto n = ++scene->autoId;
+		//id[0] = 'm';
+		//id[1 + xx::ToStringEN(n, id + 1)] = '0';
+		id = n;
+		TryAddBaseActions();
 	}
 
 	/*********************************************************************************************/
 
 #define CONCAT_NAME( a, b ) a##b
-#define CASE_BUFF(NAME) case BuffTypes::NAME: CONCAT_NAME(HandleBuff_, NAME)((CONCAT_NAME(Buff_, NAME)&)b, frameNumber, i); break;
+#define CASE_ACTION(NAME) case ActionTypes::NAME: CONCAT_NAME(ActionHandle_, NAME)((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i); break;
 
 	inline int32_t Monster::Update() {
 		auto frameNumber = scene->frameNumber;
 		auto posBak = pos;
 
-		// execute all buffs
-		for (int32_t i = buffs.len - 1; i >= 0; --i) {
-			auto& b = buffs[i];
+		// execute all actions
+		for (int32_t i = actionsLen - 1; i >= 0; --i) {
+			auto& b = actions[i];
 			switch (b.type) {
-				CASE_BUFF(Move);
-				CASE_BUFF(Stun);
+				CASE_ACTION(Move);
+				CASE_ACTION(Stun);
 				// ... more case
 			}
 		}
@@ -196,47 +221,47 @@ namespace Battle {
 		}
 
 		// 
-		TryAddBaseBuffs();
+		TryAddBaseActions();
 
 		// update space grid?
 		if (posBak == pos) return 0;
 		else return 1;
 	}
 
-	XX_INLINE void Monster::HandleBuff_Move(Buff_Move& o, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::ActionHandle_Move(Action_Move& o, int32_t frameNumber, int32_t index) {
 		pos += movementDirection * o.speed;
 	}
 
-	XX_INLINE void Monster::HandleBuff_Stun(Buff_Stun& o, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::ActionHandle_Stun(Action_Stun& o, int32_t frameNumber, int32_t index) {
 		if (o.timeoutFrameNumber < frameNumber) {
-			buffs.SwapRemoveAt(index);
-			BuffsClearFlag(BuffTypes::Stun);
+			actions[index] = actions[--actionsLen];
+			ActionClearFlag(ActionTypes::Stun);
 		}
 	}
 
 	/*********************************************************************************************/
 
-	inline bool Monster::AddBuff_Move(float speed) {
-		if (BuffsExists(BuffTypes::Move) || BuffsExists(BuffTypes::Stun)) return false;
-		BuffsSetFlag(BuffTypes::Move);
-		auto& o = (Buff_Move&)buffs.Emplace();
-		o.type = BuffTypes::Move;
+	inline bool Monster::ActionAdd_Move(float speed) {
+		if (ActionExists(ActionTypes::Move) || ActionExists(ActionTypes::Stun)) return false;
+		ActionSetFlag(ActionTypes::Move);
+		auto& o = (Action_Move&)actions[actionsLen++];
+		o.type = ActionTypes::Move;
 		o.speed = speed;
 		return true;
 	}
 
-	inline bool Monster::AddBuff_Stun(int32_t numFrames) {
-		if (BuffsExists(BuffTypes::Stun)) return false;
-		BuffsRemove(BuffTypes::Move);
-		BuffsSetFlag(BuffTypes::Stun);
-		auto& o = (Buff_Stun&)buffs.Emplace();
-		o.type = BuffTypes::Stun;
+	inline bool Monster::ActionAdd_Stun(int32_t numFrames) {
+		if (ActionExists(ActionTypes::Stun)) return false;
+		ActionRemove(ActionTypes::Move);
+		ActionSetFlag(ActionTypes::Stun);
+		auto& o = (Action_Stun&)actions[actionsLen++];
+		o.type = ActionTypes::Stun;
 		o.timeoutFrameNumber = scene->frameNumber + numFrames;
 		return true;
 	}
 
-	inline void Monster::TryAddBaseBuffs() {
-		AddBuff_Move(2);
+	inline void Monster::TryAddBaseActions() {
+		ActionAdd_Move(2);
 	}
 
 };
