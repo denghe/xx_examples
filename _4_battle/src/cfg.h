@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include "pch.h"
 
-struct Cfg : xx::GDesign<1280, 800, 60> {
-	static constexpr float maxItemSize{ 32 };
+struct Cfg : xx::GDesign<1920, 1080, 60> {
+	static constexpr float maxItemSize{ 64 };
 	static constexpr float maxItemSize_2{ maxItemSize / 2 };
 
-	static constexpr int32_t physCellSize{ 32 };	// need >= max item size
+	static constexpr int32_t physCellSize{ (int32_t)maxItemSize };
 	static constexpr int32_t physNumRows{ 1024 };
 	static constexpr int32_t physNumCols{ int32_t(physNumRows * w_h) };
 
@@ -14,6 +14,9 @@ struct Cfg : xx::GDesign<1280, 800, 60> {
 
 	static constexpr XY mapEdgeMin{ maxItemSize * 5, maxItemSize * 5 };
 	static constexpr XY mapEdgeMax{ mapSize - mapEdgeMin };
+
+	static constexpr XY screenSafeEdgeMin{ width_2 - maxItemSize_2, height_2 - maxItemSize_2 };
+	static constexpr XY screenSafeEdgeMax{ width_2 + maxItemSize_2, height_2 + maxItemSize_2 };
 
 	static constexpr xx::FromTo<float> mouseHitRadius{ 20, 500 };
 };

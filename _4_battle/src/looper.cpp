@@ -72,7 +72,7 @@ void Looper::Update() {
 void Looper::Draw() {
 	if (!ok) return;
 
-	scene->Draw(camera);
+	scene->Draw();
 
 	auto str = xx::ToString("monsters count = ", scene->monsters.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });

@@ -5,6 +5,8 @@ namespace Battle {
 
 	// simulate 1 monster walk through, random stun
 
+	// todo: Buff -> Action rename
+
 	/*********************************************************************************************/
 
 	// buff == skill == behavior
@@ -93,6 +95,7 @@ namespace Battle {
 	struct Scene {
 		int32_t frameNumber{};
 		int32_t autoId{};
+		XY screenAreaMin{}, screenAreaMax{};
 		xx::SpaceGrid<Monster> monsters;
 		xx::Rnd rnd;
 		// todo: wall ?
@@ -101,7 +104,12 @@ namespace Battle {
 			monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		}
 
-		void BeforeUpdate() {}
+		void BeforeUpdate() {
+			screenAreaMin.x = gLooper.camera.safeMinX;
+			screenAreaMin.y = gLooper.camera.safeMinY;
+			screenAreaMax.x = gLooper.camera.safeMaxX;
+			screenAreaMax.y = gLooper.camera.safeMaxY;
+		}
 
 		int32_t Update() {
 			++frameNumber;
@@ -124,22 +132,27 @@ namespace Battle {
 			});
 
 			// make some monsters
-			monsters.EmplaceInit(this);
+			for (int32_t i = 0; i < 10; i++) {
+				monsters.EmplaceInit(this);
+			}
 
 			return 0;
 		}
 
-		void Draw(xx::Camera& camera) {
+		void Draw() {
+			auto& c = gLooper.camera;
 			xx::LineStrip ls;
 			ls.FillCirclePoints({}, 32);
 
 			monsters.Foreach([&](Monster& o)->void {
-				ls.SetPosition(camera.ToGLPos(o.pos)).Draw();
+				ls.SetPosition(c.ToGLPos(o.pos))
+				.SetScale(c.scale)
+				.Draw();
 			});
 
 			monsters.Foreach([&](Monster& o)->void {
-				auto str = xx::ToString("m", o.id);	// todo: show id
-				gLooper.ctcDefault.Draw(camera.ToGLPos(o.pos), str, xx::RGBA8_Green, { 0.5f, 0.5f });
+				auto str = xx::ToString("m", o.id);
+				gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), str, xx::RGBA8_Blue, { 0.5f, 0.5f });
 			});
 		}
 	};
@@ -165,6 +178,8 @@ namespace Battle {
 	inline int32_t Monster::Update() {
 		auto frameNumber = scene->frameNumber;
 		auto posBak = pos;
+
+		// execute all buffs
 		for (int32_t i = buffs.len - 1; i >= 0; --i) {
 			auto& b = buffs[i];
 			switch (b.type) {
@@ -173,8 +188,17 @@ namespace Battle {
 				// ... more case
 			}
 		}
+
+		// moved out of the screen? suside
+		if (pos.x < scene->screenAreaMin.x || pos.x > scene->screenAreaMax.x ||
+			pos.y < scene->screenAreaMin.y || pos.y > scene->screenAreaMax.y) {
+			return -1;
+		}
+
+		// 
 		TryAddBaseBuffs();
-		// todo: is dead: return -1 when moved out of the screen?
+
+		// update space grid?
 		if (posBak == pos) return 0;
 		else return 1;
 	}
@@ -212,7 +236,7 @@ namespace Battle {
 	}
 
 	inline void Monster::TryAddBaseBuffs() {
-		AddBuff_Move(1);
+		AddBuff_Move(2);
 	}
 
 };
