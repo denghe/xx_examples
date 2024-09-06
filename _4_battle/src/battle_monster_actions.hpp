@@ -18,6 +18,7 @@ namespace Battle {
 	/*********************************************************************************************/
 
 	bool Monster::ActionAdd_Move(float speed) {
+		assert(actionsLen < _countof(actions));
 		if (ActionExists(ActionTypes::Move) || ActionExists(ActionTypes::Stun)) return false;
 		ActionSetFlag(ActionTypes::Move);
 		auto& o = (Action_Move&)actions[actionsLen++];
@@ -27,6 +28,7 @@ namespace Battle {
 	}
 
 	bool Monster::ActionAdd_Stun(int32_t numFrames) {
+		assert(actionsLen < _countof(actions));
 		if (ActionExists(ActionTypes::Stun)) return false;
 		ActionRemove(ActionTypes::Move);
 		ActionSetFlag(ActionTypes::Stun);

@@ -14,6 +14,9 @@ namespace Battle {
 	enum class ActionTypes : int32_t {
 		Move,
 		Stun,
+		AI_SearchTarget,
+		AI_MoveToTarget,
+		AI_HitTarget,
 		// ...
 		MaxValue
 	};
@@ -22,9 +25,9 @@ namespace Battle {
 	/*********************************************************************************************/
 	// base data struct
 
-	struct Action {
+	struct alignas(8) Action {
 		union {
-		std::array<uint64_t, 3> _;
+		std::array<uint64_t, 2> _;	// todo: change length for cross all actions
 		struct {
 		ActionTypes type;
 		int32_t __;
@@ -32,18 +35,43 @@ namespace Battle {
 		};
 	};
 
+	template<typename A>
+	constexpr bool ActionStructCheck = sizeof(Action) >= sizeof(A) && alignof(Action) == alignof(A);
+
 	/*********************************************************************************************/
 	// Action's union types ... pod & sizeof(T) <= sizeof(Action)
 
-	struct Action_Move {
+	struct alignas(8) Action_Move {
 		ActionTypes type;
 		float speed;
 	};
+	static_assert(ActionStructCheck<Action_Move>);
 
-	struct Action_Stun {
+	struct alignas(8) Action_Stun {
 		ActionTypes type;
 		int32_t timeoutFrameNumber;
 	};
+	static_assert(ActionStructCheck<Action_Stun>);
+
+	struct alignas(8) Action_AI_SearchTarget {
+		ActionTypes type;
+		float searchRange, castDelaySeconds;
+		int32_t timeoutFrameNumber;
+	};
+	static_assert(ActionStructCheck<Action_AI_SearchTarget>);
+
+	struct alignas(8) Action_AI_MoveToTarget {
+		ActionTypes type;
+		float movementSpeed, distanceLimit;
+		int32_t timeoutFrameNumber;
+	};
+	static_assert(ActionStructCheck<Action_AI_MoveToTarget>);
+
+	struct alignas(8) Action_AI_HitTarget {
+		ActionTypes type;
+		float distanceLimit;
+	};
+	static_assert(ActionStructCheck<Action_AI_HitTarget>);
 
 	// ...
 
@@ -51,8 +79,11 @@ namespace Battle {
 
 	struct Scene;
 	struct Monster {
+		// for public use
 		Scene* scene{};
 		XY pos{}, movementDirection{};
+		int32_t timeoutFrameNumber;
+		xx::SpaceWeak<Monster> target;
 		// ...
 
 		void Init(Scene* scene_);
@@ -78,11 +109,18 @@ namespace Battle {
 
 		bool ActionAdd_Move(float speed);
 		bool ActionAdd_Stun(int32_t numFrames);
+		bool ActionAdd_AI_SearchTarget(float searchRange, float castDelaySeconds);
+		bool ActionAdd_AI_MoveToTarget(float movementSpeed, float distanceLimit);
+		bool ActionAdd_AI_HitTarget(float distanceLimit);
 		// ...
 
 		void ActionCall_Move(Action_Move& b, int32_t frameNumber, int32_t index);
 		void ActionCall_Stun(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void ActionCall_AI_SearchTarget(Action_Move& b, int32_t frameNumber, int32_t index);
+		void ActionCall_AI_MoveToTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void ActionCall_AI_HitTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
 		// ...
+
 	};
 
 	/*********************************************************************************************/
@@ -107,3 +145,4 @@ namespace Battle {
 #include "battle_monster.hpp"
 #include "battle_monster_action_util.hpp"
 #include "battle_monster_actions.hpp"
+// ...
