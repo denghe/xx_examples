@@ -34,6 +34,7 @@ file(GLOB sources
 	src/*.cpp
 	src/*.c
 	src/*.h
+	src/*.hpp
 )
 
 if (MSVC)

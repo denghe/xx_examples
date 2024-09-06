@@ -7,6 +7,7 @@ namespace Battle {
 	// action == skill == behavior == buff
 
 	// todo: AI actions
+	// todo: random position generate & search & move to & hit
 
 	/*********************************************************************************************/
 
@@ -51,7 +52,6 @@ namespace Battle {
 	struct Scene;
 	struct Monster {
 		Scene* scene{};
-		int32_t id{};
 		XY pos{}, movementDirection{};
 		// ...
 
@@ -60,6 +60,7 @@ namespace Battle {
 		void TryAddBaseActions();
 
 		/***************************************************/
+		int32_t id{};
 		int32_t actionsLen{};
 		uint64_t actionFlags{};
 		Action actions[2];		// todo: set more cap
@@ -101,3 +102,8 @@ namespace Battle {
 	};
 
 };
+
+#include "battle_scene.hpp"
+#include "battle_monster.hpp"
+#include "battle_monster_action_util.hpp"
+#include "battle_monster_actions.hpp"
