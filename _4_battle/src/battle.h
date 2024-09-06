@@ -153,6 +153,7 @@ namespace Battle {
 		xx::SpaceGrid<Monster> monsters;
 		xx::SpaceRingDiffuseData srdd;
 		xx::Rnd rnd;
+		xx::Task<> monsterEmitter;
 		// todo: wall ?
 
 		void Init();

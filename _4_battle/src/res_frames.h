@@ -5,4 +5,7 @@ struct ResFrames {
 	xx::Task<> AsyncLoad(std::string picRoot, int32_t texSiz = 2048);
 
 	xx::Ref<xx::Frame> button;
+	xx::Ref<xx::Frame> circle;
+	xx::Ref<xx::Frame> cring;
+	xx::Ref<xx::Frame> ring;
 };

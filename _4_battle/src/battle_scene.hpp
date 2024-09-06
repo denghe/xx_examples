@@ -5,8 +5,18 @@
 namespace Battle {
 
 	void Scene::Init() {
-		srdd.Init(std::max(gLooper.physNumRows, gLooper.physNumCols), gLooper.physCellSize);
+		srdd.Init(100, gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
+		monsterEmitter = [](Scene* scene)->xx::Task<> {
+			float n{};
+			while (true) {
+				n += 100.f / gLooper.fps;
+				for (; n >= 1.f; --n) {
+					scene->monsters.EmplaceInit(scene);
+				}
+				co_yield 0;
+			}
+		}(this);
 	}
 
 	void Scene::BeforeUpdate() {
@@ -37,19 +47,25 @@ namespace Battle {
 		});
 
 		// make some monsters
-		for (int32_t i = 0; i < 10; i++) {
-			monsters.EmplaceInit(this);
-		}
+		monsterEmitter();
 
 		return 0;
 	}
 
 	void Scene::Draw() {
 		auto& c = gLooper.camera;
-		xx::LineStrip ls;
-		ls.FillCirclePoints({}, 32);
 
-#if 1
+		xx::Quad q;
+		q.SetFrame(gRes.cring);
+		monsters.Foreach([&](Monster& o)->void {
+			q.SetPosition(c.ToGLPos(o.pos))
+				.SetScale(c.scale * (o.radius / 32))
+				.Draw();
+		});
+
+#if 0
+		xx::LineStrip ls;
+		ls.FillCirclePoints({}, 32, {}, 10);
 		monsters.Foreach([&](Monster& o)->void {
 			ls.SetPosition(c.ToGLPos(o.pos))
 				.SetScale(c.scale * (o.radius / 32))

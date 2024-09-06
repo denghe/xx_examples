@@ -8,6 +8,9 @@ xx::Task<> ResFrames::AsyncLoad(std::string picRoot, int32_t texSiz) {
 
 xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<xx::Frame>*>>& ffs, std::string picRoot, int32_t texSiz) {
 	ffs.emplace_back(picRoot + "button.png", &button);
+	ffs.emplace_back(picRoot + "circle.png", &circle);
+	ffs.emplace_back(picRoot + "ring.png", &ring);
+	ffs.emplace_back(picRoot + "cring.png", &cring);
 
 	// load / download
 #ifdef __EMSCRIPTEN__

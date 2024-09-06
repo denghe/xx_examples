@@ -43,6 +43,8 @@ xx::Task<> Looper::MainTask() {
 	scene.Emplace();
 	scene->Init();
 
+	clearColor = { 55, 55, 55, 255 };
+
 	ok = true;
 }
 
