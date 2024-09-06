@@ -14,18 +14,17 @@ namespace Battle {
 		}
 	}
 
-	XX_INLINE void Monster::Case_(Action_AI_SearchTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_SearchTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_(Action_AI_MoveToTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_MoveToTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_(Action_AI_HitTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_HitTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
 	// ...
 };
-

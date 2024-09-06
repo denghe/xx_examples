@@ -14,9 +14,9 @@ namespace Battle {
 	enum class ActionTypes : int32_t {
 		Move,	// deprecated
 		Stun,
-		AI_SearchTarget,
-		AI_MoveToTarget,
-		AI_HitTarget,
+		SearchTarget,
+		MoveToTarget,
+		HitTarget,
 		// ...
 		MaxValue
 	};
@@ -57,30 +57,30 @@ namespace Battle {
 	static_assert(ActionStructCheck<Action_Stun>);
 
 
-	struct alignas(8) Action_AI_SearchTarget {
-		static constexpr ActionTypes cType{ ActionTypes::AI_SearchTarget };
+	struct alignas(8) Action_SearchTarget {
+		static constexpr ActionTypes cType{ ActionTypes::SearchTarget };
 		ActionTypes type;
 		float searchRange, castDelaySeconds;
 		int32_t timeoutFrameNumber;
 	};
-	static_assert(ActionStructCheck<Action_AI_SearchTarget>);
+	static_assert(ActionStructCheck<Action_SearchTarget>);
 
 
-	struct alignas(8) Action_AI_MoveToTarget {
-		static constexpr ActionTypes cType{ ActionTypes::AI_MoveToTarget };
+	struct alignas(8) Action_MoveToTarget {
+		static constexpr ActionTypes cType{ ActionTypes::MoveToTarget };
 		ActionTypes type;
 		float movementSpeed, distanceLimit;
 		int32_t timeoutFrameNumber;
 	};
-	static_assert(ActionStructCheck<Action_AI_MoveToTarget>);
+	static_assert(ActionStructCheck<Action_MoveToTarget>);
 
 
-	struct alignas(8) Action_AI_HitTarget {
-		static constexpr ActionTypes cType{ ActionTypes::AI_HitTarget };
+	struct alignas(8) Action_HitTarget {
+		static constexpr ActionTypes cType{ ActionTypes::HitTarget };
 		ActionTypes type;
 		float distanceLimit;
 	};
-	static_assert(ActionStructCheck<Action_AI_HitTarget>);
+	static_assert(ActionStructCheck<Action_HitTarget>);
 
 	// ...
 
@@ -124,16 +124,16 @@ namespace Battle {
 
 		void Add_Action_Move(float speed);
 		void Add_Action_Stun(float durationSeconds);
-		void Add_Action_AI_SearchTarget(float searchRange, float castDelaySeconds);
-		void Add_Action_AI_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
-		void Add_Action_AI_HitTarget(float distanceLimit);
+		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
+		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
+		void Add_Action_HitTarget(float distanceLimit);
 		// ...
 
 		void Case_(Action_Move& b, int32_t frameNumber, int32_t index);
 		void Case_(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_AI_SearchTarget& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_AI_MoveToTarget& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_AI_HitTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_SearchTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_MoveToTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_HitTarget& b, int32_t frameNumber, int32_t index);
 		// ...
 
 		/***************************************************/

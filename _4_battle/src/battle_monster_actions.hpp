@@ -8,9 +8,9 @@ namespace Battle {
 		if (!ActionExists<Action_Stun>()) {
 			ActionTryRemoves<
 				Action_Move,
-				Action_AI_SearchTarget,
-				Action_AI_MoveToTarget,
-				Action_AI_HitTarget
+				Action_SearchTarget,
+				Action_MoveToTarget,
+				Action_HitTarget
 				// ...
 			>();
 			Add_Action_Stun(durationSeconds);
