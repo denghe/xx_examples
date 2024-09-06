@@ -28,7 +28,7 @@ namespace Battle {
 #define CONCAT_NAME( a, b ) a##b
 #define CASE_ACTION(NAME) \
 	 case ActionTypes::NAME:\
-		 CONCAT_NAME(Case_Action_, NAME)((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i);\
+		 Case_((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i);\
 		 break;
 
 	inline int32_t Monster::Update() {

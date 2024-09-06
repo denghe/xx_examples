@@ -129,11 +129,11 @@ namespace Battle {
 		void Add_Action_AI_HitTarget(float distanceLimit);
 		// ...
 
-		void Case_Action_Move(Action_Move& b, int32_t frameNumber, int32_t index);
-		void Case_Action_Stun(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void Case_Action_AI_SearchTarget(Action_Move& b, int32_t frameNumber, int32_t index);
-		void Case_Action_AI_MoveToTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void Case_Action_AI_HitTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_Move& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_AI_SearchTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_AI_MoveToTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_AI_HitTarget& b, int32_t frameNumber, int32_t index);
 		// ...
 
 		/***************************************************/

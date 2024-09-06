@@ -4,26 +4,25 @@
 
 namespace Battle {
 
-	XX_INLINE void Monster::Case_Action_Move(Action_Move& o, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_Move& o, int32_t frameNumber, int32_t index) {
 		pos += movementDirection * o.speed;
 	}
 
-	XX_INLINE void Monster::Case_Action_Stun(Action_Stun& o, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_Stun& o, int32_t frameNumber, int32_t index) {
 		if (o.timeoutFrameNumber < frameNumber) {
-			actions[index] = actions[--actionsLen];
-			ActionClearFlag(ActionTypes::Stun);
+			ActionRemove<Action_Stun>(index);	// careful: o will be free
 		}
 	}
 
-	XX_INLINE void Monster::Case_Action_AI_SearchTarget(Action_Move& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_AI_SearchTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_Action_AI_MoveToTarget(Action_Stun& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_AI_MoveToTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_Action_AI_HitTarget(Action_Stun& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_AI_HitTarget& b, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
