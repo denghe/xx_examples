@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.10)
 
 # Default to release build if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -175,14 +175,30 @@ else()
 
 	if(MSVC)
 
-		target_link_options(${name} PUBLIC
+		# target_link_options(${name} PRIVATE "/SUBSYSTEM:WINDOWS")
+		add_compile_definitions(UNICODE _UNICODE)
+		add_compile_options("/utf-8")
+
+		target_link_options(${name} PRIVATE
+			$<$<CONFIG:MinSizeRel>:/LTCG>
+			$<$<CONFIG:Release>:/LTCG>
+			$<$<CONFIG:RelWithDebInfo>:/LTCG>
+		)
+
+		target_compile_options(${name} PRIVATE
+			"$<$<CONFIG:MinSizeRel>:/GL>"
+			"$<$<CONFIG:Release>:/GL>"
+			"$<$<CONFIG:RelWithDebInfo>:/GL>"
+		)
+
+		target_link_options(${name} PRIVATE
 			$<$<CONFIG:Debug>:/NODEFAULTLIB:libcmtd.lib>
 			$<$<CONFIG:MinSizeRel>:/NODEFAULTLIB:libcmt.lib>
 			$<$<CONFIG:Release>:/NODEFAULTLIB:libcmt.lib>
 			$<$<CONFIG:RelWithDebInfo>:/NODEFAULTLIB:libcmt.lib>
 		)
 		
-		target_compile_definitions(${name} PUBLIC
+		target_compile_definitions(${name} PRIVATE
 			"$<$<CONFIG:MinSizeRel>:_SECURE_SCL=0>"
 			"$<$<CONFIG:MinSizeRel>:_HAS_ITERATOR_DEBUGGING=0>"
 			"$<$<CONFIG:Release>:_SECURE_SCL=0>"
@@ -192,10 +208,11 @@ else()
 		)
 
 		add_compile_options($<$<PLATFORM_ID:Windows>:/MP${Biogears_BUILD_PARALLEL_LEVEL}>)
-		target_compile_options(${name}
-			PRIVATE $<$<PLATFORM_ID:Windows>:/std:c17>
-			PRIVATE $<$<PLATFORM_ID:Windows>:/bigobj>
-			PRIVATE $<$<PLATFORM_ID:Windows>:/MP${Biogears_BUILD_PARALLEL_LEVEL}>
+		target_compile_options(${name} PRIVATE
+			$<$<PLATFORM_ID:Windows>:/fp:fast>
+			$<$<PLATFORM_ID:Windows>:/std:c17>
+			$<$<PLATFORM_ID:Windows>:/bigobj>
+			$<$<PLATFORM_ID:Windows>:/MP${Biogears_BUILD_PARALLEL_LEVEL}>
 		)
 
 		set_target_properties(${name} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
