@@ -5,6 +5,7 @@
 namespace Battle {
 
 	void Scene::Init() {
+		srdd.Init(std::max(gLooper.physNumRows, gLooper.physNumCols), gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 	}
 
@@ -51,7 +52,7 @@ namespace Battle {
 #if 1
 		monsters.Foreach([&](Monster& o)->void {
 			ls.SetPosition(c.ToGLPos(o.pos))
-				.SetScale(c.scale)
+				.SetScale(c.scale * (o.radius / 32))
 				.Draw();
 		});
 #endif

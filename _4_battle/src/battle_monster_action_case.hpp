@@ -14,15 +14,21 @@ namespace Battle {
 		}
 	}
 
-	XX_INLINE void Monster::Case_(Action_SearchTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_SearchTarget& o, int32_t frameNumber, int32_t index) {
+		if (frameNumber < o.timeoutFrameNumber) return;
+		if (auto m = scene->monsters.FindNearestByRange(scene->srdd, pos.x, pos.y, o.searchRange)) {
+			target = m;
+		}
+		ActionRemove<Action_SearchTarget>(index);
+		Add_Action_MoveToTarget(20, 10, 5);
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_(Action_MoveToTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_MoveToTarget& o, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 
-	XX_INLINE void Monster::Case_(Action_HitTarget& b, int32_t frameNumber, int32_t index) {
+	XX_INLINE void Monster::Case_(Action_HitTarget& o, int32_t frameNumber, int32_t index) {
 		// todo
 	}
 

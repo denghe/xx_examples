@@ -60,7 +60,7 @@ namespace Battle {
 	struct alignas(8) Action_SearchTarget {
 		static constexpr ActionTypes cType{ ActionTypes::SearchTarget };
 		ActionTypes type;
-		float searchRange, castDelaySeconds;
+		float searchRange;
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_SearchTarget>);
@@ -91,6 +91,7 @@ namespace Battle {
 		// for public use
 		Scene* scene{};
 		XY pos{}, movementDirection{};
+		float radius{32};
 		int32_t timeoutFrameNumber;
 		xx::SpaceWeak<Monster> target;
 		// ...
@@ -129,11 +130,11 @@ namespace Battle {
 		void Add_Action_HitTarget(float distanceLimit);
 		// ...
 
-		void Case_(Action_Move& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_SearchTarget& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_MoveToTarget& b, int32_t frameNumber, int32_t index);
-		void Case_(Action_HitTarget& b, int32_t frameNumber, int32_t index);
+		void Case_(Action_Move& o, int32_t frameNumber, int32_t index);
+		void Case_(Action_Stun& o, int32_t frameNumber, int32_t index);
+		void Case_(Action_SearchTarget& o, int32_t frameNumber, int32_t index);
+		void Case_(Action_MoveToTarget& o, int32_t frameNumber, int32_t index);
+		void Case_(Action_HitTarget& o, int32_t frameNumber, int32_t index);
 		// ...
 
 		/***************************************************/
@@ -150,6 +151,7 @@ namespace Battle {
 		int32_t autoId{};
 		XY screenAreaMin{}, screenAreaMax{};
 		xx::SpaceGrid<Monster> monsters;
+		xx::SpaceRingDiffuseData srdd;
 		xx::Rnd rnd;
 		// todo: wall ?
 
