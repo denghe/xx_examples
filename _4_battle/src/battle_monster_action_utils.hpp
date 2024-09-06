@@ -39,7 +39,7 @@ namespace Battle {
 	}
 
 	// return -1 mean not found
-	XX_INLINE bool Monster::ActionRemove(ActionTypes bt) {
+	XX_INLINE bool Monster::ActionTryRemove(ActionTypes bt) {
 		if (!ActionExists(bt)) return false;
 		for (int32_t index = actionsLen - 1; index >= 0; --index) {
 			if (actions[index].type == bt) {
@@ -49,6 +49,53 @@ namespace Battle {
 		}
 		assert(false);
 		return false;
+	}
+
+	template<typename T>
+	XX_INLINE bool Monster::ActionExists() {
+		return ActionExists(T::cType);
+	}
+
+	template<typename T> 
+	XX_INLINE void Monster::ActionSetFlag() {
+		ActionSetFlag(T::cType);
+	}
+
+	template<typename T> 
+	XX_INLINE void Monster::ActionClearFlag() {
+		ActionClearFlag(T::cType);
+	}
+
+	template<typename T>
+	XX_INLINE int32_t Monster::ActionFind() {
+		return ActionFind(T::cType);
+	}
+
+	template<typename T>
+	XX_INLINE void Monster::ActionRemove(int32_t index) {
+		ActionRemove(T::cType, index);
+	}
+
+	template<typename T>
+	XX_INLINE bool Monster::ActionTryRemove() {
+		return ActionTryRemove(T::cType);
+	}
+
+	template<typename...AS> 
+	XX_INLINE void Monster::ActionTryRemoves() {
+		xx::ForEachType<std::tuple<AS...>>([&]<typename T>() {
+			ActionTryRemove(T::cType);
+		});
+	}
+
+	template<typename T>
+	XX_INLINE T& Monster::ActionAdd() {
+		assert(actionsLen < _countof(actions));
+		assert(!ActionExists(T::cType));
+		ActionSetFlag(T::cType);
+		auto& o = (T&)actions[actionsLen++];
+		o.type = T::cType;
+		return o;
 	}
 
 };

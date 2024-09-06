@@ -12,7 +12,7 @@ namespace Battle {
 	/*********************************************************************************************/
 
 	enum class ActionTypes : int32_t {
-		Move,
+		Move,	// deprecated
 		Stun,
 		AI_SearchTarget,
 		AI_MoveToTarget,
@@ -27,7 +27,7 @@ namespace Battle {
 
 	struct alignas(8) Action {
 		union {
-		std::array<uint64_t, 2> _;	// todo: change length for cross all actions
+		std::array<uint64_t, 2> _;	// todo: resize?
 		struct {
 		ActionTypes type;
 		int32_t __;
@@ -39,35 +39,44 @@ namespace Battle {
 	constexpr bool ActionStructCheck = sizeof(Action) >= sizeof(A) && alignof(Action) == alignof(A);
 
 	/*********************************************************************************************/
-	// Action's union types ... pod & sizeof(T) <= sizeof(Action)
+	// Actions
 
 	struct alignas(8) Action_Move {
+		static constexpr ActionTypes cType{ ActionTypes::Move };
 		ActionTypes type;
 		float speed;
 	};
 	static_assert(ActionStructCheck<Action_Move>);
 
+
 	struct alignas(8) Action_Stun {
+		static constexpr ActionTypes cType{ ActionTypes::Stun };
 		ActionTypes type;
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_Stun>);
 
+
 	struct alignas(8) Action_AI_SearchTarget {
+		static constexpr ActionTypes cType{ ActionTypes::AI_SearchTarget };
 		ActionTypes type;
 		float searchRange, castDelaySeconds;
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_AI_SearchTarget>);
 
+
 	struct alignas(8) Action_AI_MoveToTarget {
+		static constexpr ActionTypes cType{ ActionTypes::AI_MoveToTarget };
 		ActionTypes type;
 		float movementSpeed, distanceLimit;
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_AI_MoveToTarget>);
 
+
 	struct alignas(8) Action_AI_HitTarget {
+		static constexpr ActionTypes cType{ ActionTypes::AI_HitTarget };
 		ActionTypes type;
 		float distanceLimit;
 	};
@@ -94,33 +103,44 @@ namespace Battle {
 		int32_t id{};
 		int32_t actionsLen{};
 		uint64_t actionFlags{};
-		Action actions[2];		// todo: set more cap
+		Action actions[2];				// todo: set more cap
 
-		bool ActionExists(ActionTypes bt);
+		bool ActionExists(ActionTypes bt);						// return true: exists
 		void ActionSetFlag(ActionTypes bt);
 		void ActionClearFlag(ActionTypes bt);
-		// return -1 mean not found
-		int32_t ActionFind(ActionTypes bt);
-		// call after ActionFind
+		int32_t ActionFind(ActionTypes bt);						// return -1: not found
 		void ActionRemove(ActionTypes bt, int32_t index);
-		// return -1 mean not found
-		bool ActionRemove(ActionTypes bt);
+		bool ActionTryRemove(ActionTypes bt);					// return -1: not found
+
+		template<typename T> bool ActionExists();
+		template<typename T> void ActionSetFlag();
+		template<typename T> void ActionClearFlag();
+		template<typename T> int32_t ActionFind();
+		template<typename T> void ActionRemove(int32_t index);
+		template<typename T> bool ActionTryRemove();
+		template<typename...AS> void ActionTryRemoves();
+		template<typename T> T& ActionAdd();
 		/***************************************************/
 
-		bool ActionAdd_Move(float speed);
-		bool ActionAdd_Stun(int32_t numFrames);
-		bool ActionAdd_AI_SearchTarget(float searchRange, float castDelaySeconds);
-		bool ActionAdd_AI_MoveToTarget(float movementSpeed, float distanceLimit);
-		bool ActionAdd_AI_HitTarget(float distanceLimit);
+		void Add_Action_Move(float speed);
+		void Add_Action_Stun(float durationSeconds);
+		void Add_Action_AI_SearchTarget(float searchRange, float castDelaySeconds);
+		void Add_Action_AI_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
+		void Add_Action_AI_HitTarget(float distanceLimit);
 		// ...
 
-		void ActionCall_Move(Action_Move& b, int32_t frameNumber, int32_t index);
-		void ActionCall_Stun(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void ActionCall_AI_SearchTarget(Action_Move& b, int32_t frameNumber, int32_t index);
-		void ActionCall_AI_MoveToTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
-		void ActionCall_AI_HitTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void Case_Action_Move(Action_Move& b, int32_t frameNumber, int32_t index);
+		void Case_Action_Stun(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void Case_Action_AI_SearchTarget(Action_Move& b, int32_t frameNumber, int32_t index);
+		void Case_Action_AI_MoveToTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
+		void Case_Action_AI_HitTarget(Action_Stun& b, int32_t frameNumber, int32_t index);
 		// ...
 
+		/***************************************************/
+
+		// for logic call
+		void Stun(float durationSeconds);
+		// ...
 	};
 
 	/*********************************************************************************************/
@@ -143,6 +163,8 @@ namespace Battle {
 
 #include "battle_scene.hpp"
 #include "battle_monster.hpp"
-#include "battle_monster_action_util.hpp"
+#include "battle_monster_action_add.hpp"
+#include "battle_monster_action_case.hpp"
+#include "battle_monster_action_utils.hpp"
 #include "battle_monster_actions.hpp"
 // ...

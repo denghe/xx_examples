@@ -18,13 +18,18 @@ namespace Battle {
 	/*********************************************************************************************/
 
 	XX_INLINE void Monster::TryAddBaseActions() {
-		ActionAdd_Move(2);
+		if (!ActionExists<Action_Stun>() && !ActionExists<Action_Move>()) {
+			Add_Action_Move(2);
+		}
 	}
 
 	/*********************************************************************************************/
 
 #define CONCAT_NAME( a, b ) a##b
-#define CASE_ACTION_CALL(NAME) case ActionTypes::NAME: CONCAT_NAME(ActionCall_, NAME)((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i); break;
+#define CASE_ACTION(NAME) \
+	 case ActionTypes::NAME:\
+		 CONCAT_NAME(Case_Action_, NAME)((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i);\
+		 break;
 
 	inline int32_t Monster::Update() {
 		auto frameNumber = scene->frameNumber;
@@ -34,8 +39,8 @@ namespace Battle {
 		for (int32_t i = actionsLen - 1; i >= 0; --i) {
 			auto& b = actions[i];
 			switch (b.type) {
-				CASE_ACTION_CALL(Move);
-				CASE_ACTION_CALL(Stun);
+				CASE_ACTION(Move);
+				CASE_ACTION(Stun);
 				// ... more case
 			}
 		}

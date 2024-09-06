@@ -21,8 +21,8 @@ namespace Battle {
 		// simulate stun event every ?? frames
 		if (frameNumber % 20 == 0) {
 			monsters.Foreach([](Monster& o)->void {
-				o.ActionAdd_Stun(60);
-				});
+				o.Stun(1);
+			});
 		}
 
 		// update all monsters
@@ -33,7 +33,7 @@ namespace Battle {
 				monsters.Update(o);
 			}
 			return xx::ForeachResult::Continue;
-			});
+		});
 
 		// make some monsters
 		for (int32_t i = 0; i < 10; i++) {
@@ -53,7 +53,7 @@ namespace Battle {
 			ls.SetPosition(c.ToGLPos(o.pos))
 				.SetScale(c.scale)
 				.Draw();
-			});
+		});
 #endif
 
 #if 1
@@ -61,7 +61,7 @@ namespace Battle {
 		monsters.Foreach([&](Monster& o)->void {
 			auto len = xx::IntToStringTo(str, o.id);
 			gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, str);
-			});
+		});
 #endif
 
 	}
