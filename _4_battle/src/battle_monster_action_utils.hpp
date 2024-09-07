@@ -77,6 +77,16 @@ namespace Battle {
 	}
 
 	template<typename T>
+	XX_INLINE void Monster::ActionRemove(T& o) {
+		ActionRemove(T::cType, int32_t(((char*)&o - (char*)actions) / sizeof(Action)));
+	}
+
+	template<typename T>
+	XX_INLINE void Monster::ActionRemove(T&, int32_t index) {
+		ActionRemove(T::cType, index);
+	}
+
+	template<typename T>
 	XX_INLINE bool Monster::ActionTryRemove() {
 		return ActionTryRemove(T::cType);
 	}

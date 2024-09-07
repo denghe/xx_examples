@@ -44,7 +44,7 @@ namespace Battle {
 	struct alignas(8) Action_Move {
 		static constexpr ActionTypes cType{ ActionTypes::Move };
 		ActionTypes type;
-		float speed;
+		float movementSpeed;
 	};
 	static_assert(ActionStructCheck<Action_Move>);
 
@@ -96,7 +96,7 @@ namespace Battle {
 		xx::SpaceWeak<Monster> target;
 		// ...
 
-		void Init(Scene* scene_);
+		void Init(Scene* scene_, XY const& pos_ = Cfg::mapSize_2);
 		int32_t Update();
 		void TryAddBaseActions();
 
@@ -118,23 +118,25 @@ namespace Battle {
 		template<typename T> void ActionClearFlag();
 		template<typename T> int32_t ActionFind();
 		template<typename T> void ActionRemove(int32_t index);
+		template<typename T> void ActionRemove(T& o);
+		template<typename T> void ActionRemove(T&, int32_t index);	// maybe faster
 		template<typename T> bool ActionTryRemove();
 		template<typename...AS> void ActionTryRemoves();
 		template<typename T> T& ActionAdd();
 		/***************************************************/
 
-		void Add_Action_Move(float speed);
+		void Add_Action_Move(float movementSpeed);
 		void Add_Action_Stun(float durationSeconds);
 		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
 		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
 		void Add_Action_HitTarget(float distanceLimit);
 		// ...
 
-		void Case_(Action_Move& o, int32_t frameNumber, int32_t index);
-		void Case_(Action_Stun& o, int32_t frameNumber, int32_t index);
-		void Case_(Action_SearchTarget& o, int32_t frameNumber, int32_t index);
-		void Case_(Action_MoveToTarget& o, int32_t frameNumber, int32_t index);
-		void Case_(Action_HitTarget& o, int32_t frameNumber, int32_t index);
+		void Case_(Action_Move& o);
+		void Case_(Action_Stun& o);
+		void Case_(Action_SearchTarget& o);
+		void Case_(Action_MoveToTarget& o);
+		void Case_(Action_HitTarget& o);
 		// ...
 
 		/***************************************************/

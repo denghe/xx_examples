@@ -4,10 +4,10 @@
 
 namespace Battle {
 
-	inline void Monster::Init(Scene* scene_) {
+	inline void Monster::Init(Scene* scene_, XY const& pos_) {
 		scene = scene_;
 		auto radians = scene->rnd.Next<float>(-gPI, gPI);
-		pos = gLooper.mapSize_2;
+		pos = pos_;
 		movementDirection.x = std::cos(radians);
 		movementDirection.y = std::sin(radians);
 		auto n = ++scene->autoId;
@@ -17,31 +17,19 @@ namespace Battle {
 
 	/*********************************************************************************************/
 
-	XX_INLINE void Monster::TryAddBaseActions() {
-		if (!ActionExists<Action_Stun>() && !ActionExists<Action_Move>()) {
-			Add_Action_Move(2);
-		}
-	}
-
-	/*********************************************************************************************/
-
-#define CONCAT_NAME( a, b ) a##b
-#define CASE_ACTION(NAME) \
-	 case ActionTypes::NAME:\
-		 Case_((CONCAT_NAME(Action_, NAME)&)b, frameNumber, i);\
-		 break;
-
 	inline int32_t Monster::Update() {
-		auto frameNumber = scene->frameNumber;
 		auto posBak = pos;
 
 		// execute all actions
 		for (int32_t i = actionsLen - 1; i >= 0; --i) {
 			auto& b = actions[i];
 			switch (b.type) {
-				CASE_ACTION(Move);
-				CASE_ACTION(Stun);
-				// ... more case
+			case Action_Move::cType: Case_((Action_Move&)b); break;
+			case Action_Stun::cType: Case_((Action_Stun&)b); break;
+			case Action_SearchTarget::cType: Case_((Action_SearchTarget&)b); break;
+			case Action_MoveToTarget::cType: Case_((Action_MoveToTarget&)b); break;
+			case Action_HitTarget::cType: Case_((Action_HitTarget&)b); break;
+			// ... more case
 			}
 		}
 
