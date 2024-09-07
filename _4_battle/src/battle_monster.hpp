@@ -24,7 +24,6 @@ namespace Battle {
 		for (int32_t i = actionsLen - 1; i >= 0; --i) {
 			auto& b = actions[i];
 			switch (b.type) {
-			case Action_Move::cType: Case_((Action_Move&)b); break;
 			case Action_Stun::cType: Case_((Action_Stun&)b); break;
 			case Action_SearchTarget::cType: Case_((Action_SearchTarget&)b); break;
 			case Action_MoveToTarget::cType: Case_((Action_MoveToTarget&)b); break;

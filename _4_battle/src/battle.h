@@ -3,16 +3,14 @@
 
 namespace Battle {
 
-	// simulate 1 monster walk through, random stun
+	// simulate monsters death match battle
 	// action == skill == behavior == buff
 
-	// todo: AI actions
-	// todo: random position generate & search & move to & hit
+	// todo: skills, health, blood bar ...
 
 	/*********************************************************************************************/
 
 	enum class ActionTypes : int32_t {
-		Move,	// deprecated
 		Stun,
 		SearchTarget,
 		MoveToTarget,
@@ -40,14 +38,6 @@ namespace Battle {
 
 	/*********************************************************************************************/
 	// Actions
-
-	struct alignas(8) Action_Move {
-		static constexpr ActionTypes cType{ ActionTypes::Move };
-		ActionTypes type;
-		float movementSpeed;
-	};
-	static_assert(ActionStructCheck<Action_Move>);
-
 
 	struct alignas(8) Action_Stun {
 		static constexpr ActionTypes cType{ ActionTypes::Stun };
@@ -98,7 +88,6 @@ namespace Battle {
 
 		void Init(Scene* scene_, XY const& pos_ = Cfg::mapSize_2);
 		int32_t Update();
-		void TryAddBaseActions();
 
 		/***************************************************/
 		int32_t id{};
@@ -114,8 +103,6 @@ namespace Battle {
 		bool ActionTryRemove(ActionTypes bt);					// return -1: not found
 
 		template<typename T> bool ActionExists();
-		template<typename T> void ActionSetFlag();
-		template<typename T> void ActionClearFlag();
 		template<typename T> int32_t ActionFind();
 		template<typename T> void ActionRemove(int32_t index);
 		template<typename T> void ActionRemove(T& o);
@@ -125,14 +112,12 @@ namespace Battle {
 		template<typename T> T& ActionAdd();
 		/***************************************************/
 
-		void Add_Action_Move(float movementSpeed);
 		void Add_Action_Stun(float durationSeconds);
 		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
 		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
 		void Add_Action_HitTarget(float distanceLimit);
 		// ...
 
-		void Case_(Action_Move& o);
 		void Case_(Action_Stun& o);
 		void Case_(Action_SearchTarget& o);
 		void Case_(Action_MoveToTarget& o);
@@ -142,6 +127,8 @@ namespace Battle {
 		/***************************************************/
 
 		// for logic call
+		void Destroy();
+		void TryAddBaseActions();
 		void Stun(float durationSeconds);
 		// ...
 	};

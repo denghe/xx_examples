@@ -4,11 +4,6 @@
 
 namespace Battle {
 
-	XX_INLINE void Monster::Case_(Action_Move& o) {
-		// move
-		pos += movementDirection * o.movementSpeed;
-	}
-
 	XX_INLINE void Monster::Case_(Action_Stun& o) {
 		// timeout: suicide
 		if (scene->frameNumber > o.timeoutFrameNumber) {
@@ -74,8 +69,10 @@ namespace Battle {
 		// reached
 		if (mag2 <= r * r) {
 			// todo: hit? change to skill action ?
-			scene->monsters.Remove(m);
-			scene->monsters.Remove(*this);
+			// kill target
+			m.Destroy();
+			// kill host
+			this->Destroy();
 		} else {
 			// suicide
 			ActionRemove(o);

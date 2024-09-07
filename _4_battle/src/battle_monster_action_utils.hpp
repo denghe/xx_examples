@@ -56,16 +56,6 @@ namespace Battle {
 		return ActionExists(T::cType);
 	}
 
-	template<typename T> 
-	XX_INLINE void Monster::ActionSetFlag() {
-		ActionSetFlag(T::cType);
-	}
-
-	template<typename T> 
-	XX_INLINE void Monster::ActionClearFlag() {
-		ActionClearFlag(T::cType);
-	}
-
 	template<typename T>
 	XX_INLINE int32_t Monster::ActionFind() {
 		return ActionFind(T::cType);

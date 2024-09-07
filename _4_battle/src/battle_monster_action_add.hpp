@@ -4,16 +4,6 @@
 
 namespace Battle {
 
-	XX_INLINE void Monster::Add_Action_Move(float movementSpeed) {
-		// conflict checks
-		assert(!ActionExists<Action_Stun>());
-
-		// create & init
-		auto& o = ActionAdd<Action_Move>();
-		o.type = ActionTypes::Move;
-		o.movementSpeed = movementSpeed;
-	}
-
 	XX_INLINE void Monster::Add_Action_Stun(float durationSeconds) {
 		// conflict checks
 		assert(!ActionExists<Action_Move>());
