@@ -151,6 +151,7 @@ namespace Battle {
 	struct Scene {
 		int32_t frameNumber{};
 		int32_t autoId{};
+		int32_t genSpeed{1};
 		XY screenAreaMin{}, screenAreaMax{};
 		xx::SpaceGrid<Monster> monsters;
 		xx::SpaceRingDiffuseData srdd;

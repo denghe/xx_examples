@@ -27,7 +27,7 @@ namespace Battle {
 		// suicide
 		ActionRemove(o);
 		// next step
-		Add_Action_MoveToTarget(20, 10, 5);	// todo: get args from cfg?
+		Add_Action_MoveToTarget(2, 10, 10);	// todo: get args from cfg?
 	}
 
 	XX_INLINE void Monster::Case_(Action_MoveToTarget& o) {
@@ -35,10 +35,9 @@ namespace Battle {
 		if (!target.Exists() || scene->frameNumber > o.timeoutFrameNumber) {
 			// suicide
 			ActionRemove(o);
-			// next step
-			Add_Action_SearchTarget(1300, 0.2);	// todo: get args from cfg?
 			return;
 		}
+		// ref to target
 		auto& m = target();
 		// compare distance
 		auto d = m.pos - pos;
@@ -46,11 +45,10 @@ namespace Battle {
 		auto mag2 = d.x * d.x + d.y * d.y;
 		// reached
 		if (mag2 <= r * r) {
-			auto bak = o.distanceLimit;
 			// suicide
 			ActionRemove(o);
 			// next step
-			Add_Action_HitTarget(bak);	// can't use o.distanceLimit because removed
+			Add_Action_HitTarget(10);	// todo: get args from cfg?
 		} else {
 			auto mag = std::sqrt(mag2);
 			if (mag > 0) {
@@ -61,7 +59,27 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_HitTarget& o) {
-		// todo
+		// lost target?
+		if (!target.Exists()) {
+			// suicide
+			ActionRemove(o);
+			return;
+		}
+		// ref to target
+		auto& m = target();
+		// compare distance
+		auto d = m.pos - pos;
+		auto r = m.radius + radius + o.distanceLimit;
+		auto mag2 = d.x * d.x + d.y * d.y;
+		// reached
+		if (mag2 <= r * r) {
+			// todo: hit? change to skill action ?
+			scene->monsters.Remove(m);
+			scene->monsters.Remove(*this);
+		} else {
+			// suicide
+			ActionRemove(o);
+		}
 	}
 
 	// ...

@@ -306,7 +306,7 @@ var za,
     h: (a, b, c, d) => {
       t(`Assertion failed: ${H(a)}, at: ` + [b ? H(b) : "unknown filename", c, d ? H(d) : "unknown function"]);
     },
-    J: (a, b, c) => {
+    x: (a, b, c) => {
       var d = new va(a);
       z[d.ra + 16 >> 2] = 0;
       z[d.ra + 4 >> 2] = b;
@@ -389,7 +389,7 @@ var za,
       e.Na = W = (_La = La) === null || _La === void 0 ? void 0 : _La.Ga;
       return !a || W ? 0 : -5;
     },
-    x: (a, b, c, d) => {
+    y: (a, b, c, d) => {
       for (var f = 0, l = 0; l < c; l++) {
         var g = z[b >> 2],
           n = z[b + 4 >> 2];
@@ -410,14 +410,14 @@ var za,
       return 0;
     },
     ha: a => W.activeTexture(a),
-    B: (a, b) => {
+    C: (a, b) => {
       W.attachShader(Q[a], T[b]);
     },
     c: (a, b) => {
       35051 == a ? W.Ba = b : 35052 == a && (W.xa = b);
       W.bindBuffer(a, P[b]);
     },
-    D: (a, b) => {
+    E: (a, b) => {
       W.bindFramebuffer(a, R[b]);
     },
     b: (a, b) => {
@@ -431,8 +431,8 @@ var za,
     j: (a, b, c, d) => {
       c && b ? W.bufferData(a, w, d, c, b) : W.bufferData(a, b, d);
     },
-    E: a => W.clear(a),
-    F: (a, b, c, d) => W.clearColor(a, b, c, d),
+    F: a => W.clear(a),
+    G: (a, b, c, d) => W.clearColor(a, b, c, d),
     W: a => {
       W.compileShader(T[a]);
     },
@@ -483,7 +483,7 @@ var za,
         f && (W.deleteTexture(f), f.name = 0, S[d] = null);
       }
     },
-    I: (a, b) => {
+    J: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         W.deleteVertexArray(U[d]);
@@ -507,13 +507,13 @@ var za,
     n: (a, b) => {
       X(a, b, "createBuffer", P);
     },
-    y: (a, b) => {
+    z: (a, b) => {
       X(a, b, "createFramebuffer", R);
     },
     k: (a, b) => {
       X(a, b, "createTexture", S);
     },
-    C: (a, b) => {
+    D: (a, b) => {
       X(a, b, "createVertexArray", U);
     },
     g: (a, b) => W.getAttribLocation(Q[a], H(b)),
@@ -522,7 +522,7 @@ var za,
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    A: (a, b, c) => {
+    B: (a, b, c) => {
       if (c && !(a >= Ha)) if (a = Q[a], 35716 == b) y[c >> 2] = W.getProgramInfoLog(a).length + 1;else if (35719 == b) {
         if (!a.wa) for (b = 0; b < W.getProgramParameter(a, 35718); ++b) a.wa = Math.max(a.wa, W.getActiveUniform(a, b).name.length + 1);
         y[c >> 2] = a.wa;
@@ -539,7 +539,7 @@ var za,
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    z: (a, b, c) => {
+    A: (a, b, c) => {
       c && (35716 == b ? (a = W.getShaderInfoLog(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = W.getShaderSource(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = W.getShaderParameter(T[a], b));
     },
     t: (a, b) => {
@@ -590,10 +590,10 @@ var za,
     ga: (a, b) => {
       W.uniform1i(Pa(a), b);
     },
-    G: (a, b, c) => {
+    H: (a, b, c) => {
       W.uniform2f(Pa(a), b, c);
     },
-    H: a => {
+    I: a => {
       a = Q[a];
       W.useProgram(a);
       W.Ia = a;

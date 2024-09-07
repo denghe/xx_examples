@@ -8,11 +8,43 @@ namespace Battle {
 		srdd.Init(100, gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, 0}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"stun", [&]() {
+			monsters.Foreach([](Monster& o)->void {
+				o.Stun(1);
+			});
+		});
+
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -50}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"genSpeed = 1", [&]() {
+				genSpeed = 1;
+		});
+
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -100}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"genSpeed = 10", [&]() {
+				genSpeed = 10;
+		});
+
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -150}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"genSpeed = 100", [&]() {
+				genSpeed = 100;
+		});
+
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -200}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"genSpeed = 1000", [&]() {
+				genSpeed = 1000;
+		});
+
+		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -250}, gLooper.xy7a
+			, gLooper.s9cfg_btn, U"genSpeed = 10000", [&]() {
+				genSpeed = 10000;
+		});
+
 		monsterEmitter = [](Scene* scene)->xx::Task<> {
 			float n{};
 			XY p;
 			while (true) {
-				n += 1.f / gLooper.fps;
+				n += scene->genSpeed / gLooper.fps;
 				for (; n >= 1.f; --n) {
 					p.x = Cfg::mapSize_2.x + scene->rnd.Next<float>(Cfg::width) - Cfg::width_2;
 					p.y = Cfg::mapSize_2.y + scene->rnd.Next<float>(Cfg::height) - Cfg::height_2;
@@ -34,12 +66,8 @@ namespace Battle {
 	int32_t Scene::Update() {
 		++frameNumber;
 
-		// simulate stun event every ??? frames
-		if (frameNumber % 180 == 0) {
-			monsters.Foreach([](Monster& o)->void {
-				o.Stun(1);
-			});
-		}
+#if 0
+#endif
 
 		// update all monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {
