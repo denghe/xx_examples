@@ -10,7 +10,7 @@ namespace Battle {
 		monsterEmitter = [](Scene* scene)->xx::Task<> {
 			float n{};
 			while (true) {
-				n += 100.f / gLooper.fps;
+				n += 300.f / gLooper.fps;
 				for (; n >= 1.f; --n) {
 					scene->monsters.EmplaceInit(scene);
 				}
