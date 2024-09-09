@@ -303,7 +303,7 @@ var za,
   },
   W,
   Qa = {
-    i: (a, b, c, d) => {
+    j: (a, b, c, d) => {
       t(`Assertion failed: ${H(a)}, at: ` + [b ? H(b) : "unknown filename", c, d ? H(d) : "unknown function"]);
     },
     x: (a, b, c) => {
@@ -423,7 +423,7 @@ var za,
     b: (a, b) => {
       W.bindTexture(a, S[b]);
     },
-    j: a => {
+    k: a => {
       W.bindVertexArray(U[a]);
     },
     p: a => W.blendEquation(a),
@@ -491,7 +491,7 @@ var za,
       }
     },
     K: a => W.disable(a),
-    l: (a, b, c, d) => {
+    i: (a, b, c, d) => {
       W.drawArraysInstanced(a, b, c, d);
     },
     fa: (a, b, c, d) => {
@@ -510,7 +510,7 @@ var za,
     z: (a, b) => {
       X(a, b, "createFramebuffer", R);
     },
-    k: (a, b) => {
+    l: (a, b) => {
       X(a, b, "createTexture", S);
     },
     D: (a, b) => {

@@ -10,6 +10,7 @@ namespace Battle {
 		movementDirection.y = std::sin(radians);
 		auto n = ++scene->autoId;
 		id = n;
+		health = maxHealth = scene->rnd.Next<int32_t>(1, 11);	// todo: damage
 		TryAddBaseActions();
 	}
 

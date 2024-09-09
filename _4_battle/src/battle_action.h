@@ -60,7 +60,8 @@ namespace Battle {
 	struct alignas(8) Action_HitTarget {
 		static constexpr ActionTypes cType{ ActionTypes::HitTarget };
 		ActionTypes type;
-		float distanceLimit;
+		float distanceLimit, castDelaySeconds;
+		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_HitTarget>);
 }

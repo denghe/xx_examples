@@ -155,6 +155,22 @@ namespace Battle {
 			});
 		}
 
+		// health bar
+		if constexpr (true) {
+			xx::Quad q;
+			q.SetFrame(gRes.quad).SetAnchor({ 0, 0.5f });
+			monsters.Foreach([&](Monster& o)->void {
+				auto healthBarBaseScaleX = (float)o.health / o.maxHealth;
+				q.SetPosition(c.ToGLPos(o.pos + XY{ -32, -24 }))
+					.SetScale(c.scale * XY{ 1, 0.1})
+					.SetColor(xx::RGBA8_Black)
+					.Draw()
+					.SetPositionX(q.pos.x + 1)
+					.SetScale(c.scale * XY{ healthBarBaseScaleX * (62.f / 64.f), 0.1f * (4.4f / 6.4f) })
+					.SetColor(xx::RGBA8_Red)
+					.Draw();
+			});
+		}
 	}
 
 };

@@ -28,4 +28,12 @@ namespace Battle {
 		}
 	}
 
+	inline bool Monster::Hurt(Monster &tar) {
+		// todo
+		tar.health -= 1;
+		// todo: damage number effect
+		// todo: add change color to red action?
+		return tar.health <= 0;;
+	}
+
 };

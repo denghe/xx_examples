@@ -39,7 +39,7 @@ namespace Battle {
 		o.timeoutFrameNumber = scene->frameNumber + int32_t(timeoutSeconds * gLooper.fps);
 	}
 
-	XX_INLINE void Monster::Add_Action_HitTarget(float distanceLimit) {
+	XX_INLINE void Monster::Add_Action_HitTarget(float distanceLimit, float castDelaySeconds) {
 		// conflict checks
 		assert(!ActionExists<Action_SearchTarget>());
 		assert(!ActionExists<Action_MoveToTarget>());
@@ -48,6 +48,8 @@ namespace Battle {
 		// create & init
 		auto& o = ActionAdd<Action_HitTarget>();
 		o.distanceLimit = distanceLimit;
+		o.castDelaySeconds = castDelaySeconds;
+		o.timeoutFrameNumber = 0;
 	}
 
 	// ...

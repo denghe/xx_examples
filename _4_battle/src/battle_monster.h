@@ -9,7 +9,7 @@ namespace Battle {
 		Scene* scene{};
 		XY pos{}, movementDirection{};
 		float radius{ 32 };
-		int32_t timeoutFrameNumber;
+		int32_t health{}, maxHealth{};
 		xx::SpaceWeak<Monster> target;
 		// ...
 
@@ -42,7 +42,7 @@ namespace Battle {
 		void Add_Action_Stun(float durationSeconds);
 		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
 		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
-		void Add_Action_HitTarget(float distanceLimit);
+		void Add_Action_HitTarget(float distanceLimit, float castDelaySeconds);
 		// ...
 
 		void Case_(Action_Stun& o);
@@ -57,6 +57,7 @@ namespace Battle {
 		void Destroy();
 		void TryAddBaseActions();
 		void Stun(float durationSeconds);
+		bool Hurt(Monster& tar);
 		// ...
 	};
 }

@@ -21,6 +21,7 @@ xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<xx::F
 	ffs.emplace_back(picRoot + "explosion_13_6.png", &this->explosion_13_6);
 	ffs.emplace_back(picRoot + "explosion_13_7.png", &this->explosion_13_7);
 	ffs.emplace_back(picRoot + "ring.png", &this->ring);
+	ffs.emplace_back(picRoot + "quad.png", &this->quad);
 
 	// load / download
 #ifdef __EMSCRIPTEN__

@@ -19,6 +19,7 @@ struct ResFrames {
 	xx::Ref<xx::Frame> explosion_13_6;
 	xx::Ref<xx::Frame> explosion_13_7;
 	xx::Ref<xx::Frame> ring;
+	xx::Ref<xx::Frame> quad;
 
 	xx::Listi32<xx::Ref<xx::Frame>> explosion_13_;
 	static constexpr int32_t frame_count_explosion_13_{ 7 };
