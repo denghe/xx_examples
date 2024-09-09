@@ -5,11 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-if (EMSCRIPTEN)
 set(name 3)
-else()
-set(name _3_code)
-endif()
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)

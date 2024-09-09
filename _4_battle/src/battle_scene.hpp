@@ -69,7 +69,7 @@ namespace Battle {
 #if 0
 #endif
 
-		// update all monsters
+		// update monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {
 			auto r = o.Update();
 			if (r == -1) return xx::ForeachResult::RemoveAndContinue;
@@ -82,39 +82,78 @@ namespace Battle {
 		// make some monsters
 		monsterEmitter();
 
+		// update blade light
+		bladeLights.ForeachFlags([&](BladeLight& o)->xx::ForeachResult {
+			return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
+		});
+
+		// update explosions
+		explosions.ForeachFlags([&](Explosion& o)->xx::ForeachResult {
+			return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
+		});
+
 		return 0;
 	}
 
 	void Scene::Draw() {
 		auto& c = gLooper.camera;
 
-#if 1
-		xx::Quad q;
-		q.SetFrame(gRes.cring);
-		monsters.Foreach([&](Monster& o)->void {
-			q.SetPosition(c.ToGLPos(o.pos))
-				.SetScale(c.scale * (o.radius / 32))
-				.Draw();
-		});
-#endif
+		// monster body
+		if constexpr (true) {
+			xx::Quad q;
+			q.SetFrame(gRes.cring);
+			monsters.Foreach([&](Monster& o)->void {
+				q.SetPosition(c.ToGLPos(o.pos))
+					.SetScale(c.scale * (o.radius / 32))
+					.Draw();
+			});
+		}
 
-#if 0
-		xx::LineStrip ls;
-		ls.FillCirclePoints({}, 32, {}, 10);
-		monsters.Foreach([&](Monster& o)->void {
-			ls.SetPosition(c.ToGLPos(o.pos))
-				.SetScale(c.scale * (o.radius / 32))
-				.Draw();
-		});
-#endif
+		// monster body line
+		if constexpr (false) {
+			xx::LineStrip ls;
+			ls.FillCirclePoints({}, 32, {}, 10);
+			monsters.Foreach([&](Monster& o)->void {
+				ls.SetPosition(c.ToGLPos(o.pos))
+					.SetScale(c.scale * (o.radius / 32))
+					.Draw();
+			});
+		}
 
-#if 1
-		std::u32string str;
-		monsters.Foreach([&](Monster& o)->void {
-			auto len = xx::IntToStringTo(str, o.id);
-			gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, str);
-		});
-#endif
+		// monster id text
+		if constexpr (true) {
+			std::u32string str;
+			monsters.Foreach([&](Monster& o)->void {
+				auto len = xx::IntToStringTo(str, o.id);
+				gLooper.ctcDefault.Draw(c.ToGLPos(o.pos), { 0.5f, 0.5f }, xx::RGBA8_Blue, str);
+			});
+		}
+
+		// blade light
+		if constexpr (true) {
+			xx::Quad q;
+			q.SetFrame(gRes.blade_light);
+			bladeLights.ForeachFlags([&](BladeLight& o)->void {
+				q.SetPosition(c.ToGLPos(o.pos))
+					.SetScale(c.scale * o.scale)
+					.SetRotate(o.radians)
+					.SetColorA(int8_t(255 * o.alpha))
+					.Draw();
+			});
+		}
+
+		// explosions
+		if constexpr (true) {
+			xx::Quad q;
+			q.SetColorA(123);
+			explosions.ForeachFlags([&](Explosion& o)->void {
+				q.SetFrame(gRes.explosion_13_[(size_t)o.frameIndex])
+					.SetPosition(c.ToGLPos(o.pos))
+					.SetScale(c.scale * o.scale)
+					.SetRotate(o.radians)
+					.Draw();
+			});
+		}
 
 	}
 

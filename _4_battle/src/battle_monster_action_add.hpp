@@ -1,12 +1,9 @@
 ﻿#pragma once
-#include "pch.h"
-#include "battle.h"
 
 namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_Stun(float durationSeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_Move>());
 		assert(!ActionExists<Action_SearchTarget>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
@@ -19,7 +16,6 @@ namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_SearchTarget(float searchRange, float castDelaySeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_Move>());
 		assert(!ActionExists<Action_SearchTarget>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
@@ -32,7 +28,6 @@ namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_Move>());
 		assert(!ActionExists<Action_SearchTarget>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
@@ -46,7 +41,6 @@ namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_HitTarget(float distanceLimit) {
 		// conflict checks
-		assert(!ActionExists<Action_Move>());
 		assert(!ActionExists<Action_SearchTarget>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());

@@ -303,7 +303,7 @@ var za,
   },
   W,
   Qa = {
-    h: (a, b, c, d) => {
+    i: (a, b, c, d) => {
       t(`Assertion failed: ${H(a)}, at: ` + [b ? H(b) : "unknown filename", c, d ? H(d) : "unknown function"]);
     },
     x: (a, b, c) => {
@@ -316,7 +316,7 @@ var za,
       throw wa;
     },
     O: () => 1,
-    s: () => {
+    t: () => {
       t("");
     },
     P: () => Date.now(),
@@ -423,12 +423,12 @@ var za,
     b: (a, b) => {
       W.bindTexture(a, S[b]);
     },
-    i: a => {
+    j: a => {
       W.bindVertexArray(U[a]);
     },
-    o: a => W.blendEquation(a),
-    p: (a, b) => W.blendFunc(a, b),
-    j: (a, b, c, d) => {
+    p: a => W.blendEquation(a),
+    q: (a, b) => W.blendFunc(a, b),
+    e: (a, b, c, d) => {
       c && b ? W.bufferData(a, w, d, c, b) : W.bufferData(a, b, d);
     },
     F: a => W.clear(a),
@@ -450,21 +450,21 @@ var za,
       T[b] = W.createShader(a);
       return b;
     },
-    r: (a, b) => {
+    s: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2],
           f = P[d];
         f && (W.deleteBuffer(f), f.name = 0, P[d] = null, d == W.Ba && (W.Ba = 0), d == W.xa && (W.xa = 0));
       }
     },
-    q: (a, b) => {
+    r: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
           f = R[d];
         f && (W.deleteFramebuffer(f), f.name = 0, R[d] = null);
       }
     },
-    l: a => {
+    m: a => {
       if (a) {
         var b = Q[a];
         b && (W.deleteProgram(b), b.name = 0, Q[a] = null);
@@ -491,20 +491,20 @@ var za,
       }
     },
     K: a => W.disable(a),
-    v: (a, b, c, d) => {
+    l: (a, b, c, d) => {
       W.drawArraysInstanced(a, b, c, d);
     },
     fa: (a, b, c, d) => {
       W.drawElements(a, b, c, d);
     },
     ia: a => W.enable(a),
-    e: a => {
+    f: a => {
       W.enableVertexAttribArray(a);
     },
     ca: (a, b, c, d, f) => {
       W.framebufferTexture2D(a, b, c, S[d], f);
     },
-    n: (a, b) => {
+    o: (a, b) => {
       X(a, b, "createBuffer", P);
     },
     z: (a, b) => {
@@ -516,7 +516,7 @@ var za,
     D: (a, b) => {
       X(a, b, "createVertexArray", U);
     },
-    g: (a, b) => W.getAttribLocation(Q[a], H(b)),
+    h: (a, b) => W.getAttribLocation(Q[a], H(b)),
     Z: (a, b, c, d) => {
       a = W.getProgramInfoLog(Q[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
@@ -542,7 +542,7 @@ var za,
     A: (a, b, c) => {
       c && (35716 == b ? (a = W.getShaderInfoLog(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = W.getShaderSource(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = W.getShaderParameter(T[a], b));
     },
-    t: (a, b) => {
+    u: (a, b) => {
       b = H(b);
       if (a = Q[a]) {
         var c = a,
@@ -579,7 +579,7 @@ var za,
       for (var f = "", l = 0; l < b; ++l) f += H(z[c + 4 * l >> 2], d ? z[d + 4 * l >> 2] : void 0);
       W.shaderSource(T[a], f);
     },
-    u: (a, b, c, d, f, l, g, n, m) => {
+    v: (a, b, c, d, f, l, g, n, m) => {
       if (W.xa) W.texImage2D(a, b, c, d, f, l, g, n, m);else if (m) {
         var p = n - 5120;
         p = 0 == p ? ca : 1 == p ? w : 2 == p ? x : 4 == p ? y : 6 == p ? ea : 5 == p || 28922 == p || 28520 == p || 30779 == p || 30782 == p ? z : da;
@@ -598,10 +598,10 @@ var za,
       W.useProgram(a);
       W.Ia = a;
     },
-    m: (a, b) => {
+    n: (a, b) => {
       W.vertexAttribDivisor(a, b);
     },
-    f: (a, b, c, d, f, l) => {
+    g: (a, b, c, d, f, l) => {
       W.vertexAttribPointer(a, b, c, !!d, f, l);
     },
     w: (a, b, c, d) => W.viewport(a, b, c, d),
