@@ -4,15 +4,22 @@
 #include "battle_monster.h"
 #include "battle_bladelight.h"
 #include "battle_explosion.h"
+#include "battle_effect_text.h"
 #include "battle_scene.h"
 
 // simulate monsters death match battle
 // action == skill == behavior == buff
-
-// todo: skills, health, blood bar ...
+// todo:
+// damage effect number
+// knockback
+// hurt: change color
+// drop item
+// pickup
+// projectile?
 
 #include "battle_scene.hpp"
 #include "battle_bladelight.hpp"
+#include "battle_effect_text.hpp"
 #include "battle_explosion.hpp"
 #include "battle_monster.hpp"
 #include "battle_monster_action_add.hpp"

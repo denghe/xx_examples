@@ -10,7 +10,7 @@ namespace Battle {
 
 	inline bool Explosion::Update() {
 		frameIndex += cFrameInc;
-		return frameIndex >= (float)ResFrames::frame_count_explosion_13_;
+		return frameIndex >= (float)ResTpFrames::_countof_explosion_13_;
 	}
 
 };

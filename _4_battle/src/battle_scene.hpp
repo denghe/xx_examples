@@ -5,6 +5,7 @@
 namespace Battle {
 
 	void Scene::Init() {
+		effectTextManager.Init(8192);
 		srdd.Init(100, gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 
@@ -92,6 +93,9 @@ namespace Battle {
 			return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
 		});
 
+		// update effect text
+		effectTextManager.Update();
+
 		return 0;
 	}
 
@@ -171,6 +175,12 @@ namespace Battle {
 					.Draw();
 			});
 		}
+
+		// effect text
+		if constexpr (true) {
+			effectTextManager.Draw();
+		}
+
 	}
 
 };

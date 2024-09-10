@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "pch.h"
 #include "cfg.h"
-#include "res_frames.h"
+#include "res_tp_frames.h"
 
 namespace Battle {
 	struct Scene;
@@ -10,7 +10,7 @@ namespace Battle {
 struct Looper : xx::Engine<Looper>, Cfg {
 
 	// all picture resource here
-	ResFrames res;
+	ResTpFrames res;
 
 	// button config
 	xx::Scale9SpriteConfig s9cfg_btn;
@@ -29,4 +29,4 @@ struct Looper : xx::Engine<Looper>, Cfg {
 };
 
 extern Looper gLooper;
-extern ResFrames& gRes;
+extern ResTpFrames& gRes;

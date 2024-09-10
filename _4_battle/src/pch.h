@@ -5,6 +5,7 @@
 
 #include <xx2d.h>
 using XY = xx::XY;
+using RGBA8 = xx::RGBA8;
 inline static constexpr float gPI = xx::gPI;
 inline static constexpr float gNPI = xx::gNPI;
 inline static constexpr float g2PI = xx::g2PI;

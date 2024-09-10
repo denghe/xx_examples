@@ -3,7 +3,7 @@
 #include "battle.h"
 
 Looper gLooper;
-ResFrames& gRes(gLooper.res);
+ResTpFrames& gRes(gLooper.res);
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {
@@ -23,7 +23,7 @@ int32_t main() {
 
 
 xx::Task<> Looper::MainTask() {
-	co_await res.AsyncLoad("res/", 128);
+	co_await res.AsyncLoad("res/");
 
 	s9cfg_btn.frame = res.button;
 	s9cfg_btn.texScale = { 2, 2 };

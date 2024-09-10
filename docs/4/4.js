@@ -1,333 +1,594 @@
-var e;
-e || (e = typeof Module !== 'undefined' ? Module : {});
-var aa = Object.assign({}, e),
-  h = (a, b) => {
+var g;
+g || (g = typeof Module !== 'undefined' ? Module : {});
+var da = Object.assign({}, g),
+  ea = (a, b) => {
     throw b;
   },
-  k = "";
-"undefined" != typeof document && document.currentScript && (k = document.currentScript.src);
-k = k.startsWith("blob:") ? "" : k.substr(0, k.replace(/[?#].*/, "").lastIndexOf("/") + 1);
-var ba = e.print || console.log.bind(console),
-  q = e.printErr || console.error.bind(console);
-Object.assign(e, aa);
-aa = null;
-e.quit && (h = e.quit);
-var r;
-e.wasmBinary && (r = e.wasmBinary);
-"object" != typeof WebAssembly && t("no native wasm support detected");
-var u,
-  v = !1,
-  ca,
+  l = "";
+"undefined" != typeof document && document.currentScript && (l = document.currentScript.src);
+l = l.startsWith("blob:") ? "" : l.substr(0, l.replace(/[?#].*/, "").lastIndexOf("/") + 1);
+var fa = g.print || console.log.bind(console),
+  n = g.printErr || console.error.bind(console);
+Object.assign(g, da);
+da = null;
+g.quit && (ea = g.quit);
+var q;
+g.wasmBinary && (q = g.wasmBinary);
+"object" != typeof WebAssembly && ha("no native wasm support detected");
+var ia,
+  ja = !1,
+  u,
+  ka,
   w,
   x,
-  da,
+  la,
   y,
-  z,
-  ea,
-  A;
-function fa() {
-  var a = u.buffer;
-  e.HEAP8 = ca = new Int8Array(a);
-  e.HEAP16 = x = new Int16Array(a);
-  e.HEAPU8 = w = new Uint8Array(a);
-  e.HEAPU16 = da = new Uint16Array(a);
-  e.HEAP32 = y = new Int32Array(a);
-  e.HEAPU32 = z = new Uint32Array(a);
-  e.HEAPF32 = ea = new Float32Array(a);
-  e.HEAPF64 = A = new Float64Array(a);
+  A,
+  ma,
+  na;
+function oa() {
+  var a = ia.buffer;
+  g.HEAP8 = ka = new Int8Array(a);
+  g.HEAP16 = x = new Int16Array(a);
+  g.HEAPU8 = w = new Uint8Array(a);
+  g.HEAPU16 = la = new Uint16Array(a);
+  g.HEAP32 = y = new Int32Array(a);
+  g.HEAPU32 = A = new Uint32Array(a);
+  g.HEAPF32 = ma = new Float32Array(a);
+  g.HEAPF64 = na = new Float64Array(a);
 }
-var ha = [],
-  ia = [],
-  ja = [],
-  ka = [];
-function la() {
-  var a = e.preRun.shift();
-  ha.unshift(a);
+var pa = [],
+  qa = [],
+  ra = [],
+  sa = [];
+function ta() {
+  var a = g.preRun.shift();
+  pa.unshift(a);
 }
-var B = 0,
-  C = null,
-  D = null;
-function t(a) {
-  var _e$onAbort, _e;
-  (_e$onAbort = (_e = e).onAbort) === null || _e$onAbort === void 0 || _e$onAbort.call(_e, a);
+var D = 0,
+  ua = null,
+  E = null;
+function va() {
+  var _g$monitorRunDependen, _g;
+  D++;
+  (_g$monitorRunDependen = (_g = g).monitorRunDependencies) === null || _g$monitorRunDependen === void 0 || _g$monitorRunDependen.call(_g, D);
+}
+function wa() {
+  var _g$monitorRunDependen2, _g2;
+  D--;
+  (_g$monitorRunDependen2 = (_g2 = g).monitorRunDependencies) === null || _g$monitorRunDependen2 === void 0 || _g$monitorRunDependen2.call(_g2, D);
+  if (0 == D && (null !== ua && (clearInterval(ua), ua = null), E)) {
+    var a = E;
+    E = null;
+    a();
+  }
+}
+function ha(a) {
+  var _g$onAbort, _g3;
+  (_g$onAbort = (_g3 = g).onAbort) === null || _g$onAbort === void 0 || _g$onAbort.call(_g3, a);
   a = "Aborted(" + a + ")";
-  q(a);
-  v = !0;
+  n(a);
+  ja = !0;
+  u = 1;
   throw new WebAssembly.RuntimeError(a + ". Build with -sASSERTIONS for more info.");
 }
-var ma = a => a.startsWith("data:application/octet-stream;base64,"),
+var xa = a => a.startsWith("data:application/octet-stream;base64,"),
   F;
 F = "4.wasm";
-if (!ma(F)) {
-  var na = F;
-  F = e.locateFile ? e.locateFile(na, k) : k + na;
+if (!xa(F)) {
+  var ya = F;
+  F = g.locateFile ? g.locateFile(ya, l) : l + ya;
 }
-function oa(a) {
-  if (a == F && r) return new Uint8Array(r);
+function za(a) {
+  if (a == F && q) return new Uint8Array(q);
   throw "both async and sync fetching of the wasm failed";
 }
-function pa(a) {
-  return r || "function" != typeof fetch ? Promise.resolve().then(() => oa(a)) : fetch(a, {
+function Aa(a) {
+  return q || "function" != typeof fetch ? Promise.resolve().then(() => za(a)) : fetch(a, {
     credentials: "same-origin"
   }).then(b => {
     if (!b.ok) throw `failed to load wasm binary file at '${a}'`;
     return b.arrayBuffer();
-  }).catch(() => oa(a));
+  }).catch(() => za(a));
 }
-function qa(a, b, c) {
-  return pa(a).then(d => WebAssembly.instantiate(d, b)).then(c, d => {
-    q(`failed to asynchronously prepare wasm: ${d}`);
-    t(d);
+function Ba(a, b, c) {
+  return Aa(a).then(d => WebAssembly.instantiate(d, b)).then(c, d => {
+    n(`failed to asynchronously prepare wasm: ${d}`);
+    ha(d);
   });
 }
-function ra(a, b) {
+function Ca(a, b) {
   var c = F;
-  r || "function" != typeof WebAssembly.instantiateStreaming || ma(c) || "function" != typeof fetch ? qa(c, a, b) : fetch(c, {
+  q || "function" != typeof WebAssembly.instantiateStreaming || xa(c) || "function" != typeof fetch ? Ba(c, a, b) : fetch(c, {
     credentials: "same-origin"
   }).then(d => WebAssembly.instantiateStreaming(d, a).then(b, function (f) {
-    q(`wasm streaming compile failed: ${f}`);
-    q("falling back to ArrayBuffer instantiation");
-    return qa(c, a, b);
+    n(`wasm streaming compile failed: ${f}`);
+    n("falling back to ArrayBuffer instantiation");
+    return Ba(c, a, b);
   }));
 }
-function sa(a) {
+function Da(a) {
   this.name = "ExitStatus";
   this.message = `Program terminated with exit(${a})`;
   this.status = a;
 }
-var G = a => {
-    for (; 0 < a.length;) a.shift()(e);
+var Ea = a => {
+    for (; 0 < a.length;) a.shift()(g);
   },
-  ta = e.noExitRuntime || !0,
-  ua = new TextDecoder("utf8"),
-  H = (a, b) => {
+  Fa = g.noExitRuntime || !0,
+  Ga = new TextDecoder("utf8"),
+  G = (a, b) => {
     if (!a) return "";
     b = a + b;
     for (var c = a; !(c >= b) && w[c];) ++c;
-    return ua.decode(w.subarray(a, c));
+    return Ga.decode(w.subarray(a, c));
   };
-class va {
+class Ha {
   constructor(a) {
-    this.ra = a - 24;
+    this.va = a - 24;
   }
 }
-var wa = 0,
-  xa = 0,
-  I,
-  J = 0,
-  K = [];
-function ya() {
-  if (navigator.userActivation ? navigator.userActivation.isActive : J && za.Ha) for (var a = 0; a < K.length; ++a) {
-    var b = K[a];
-    K.splice(a, 1);
+var Ia = 0,
+  Ja = 0,
+  M,
+  Ka = 0,
+  La = [];
+function Ma() {
+  if (navigator.userActivation ? navigator.userActivation.isActive : Ka && Na.Ma) for (var a = 0; a < La.length; ++a) {
+    var b = La[a];
+    La.splice(a, 1);
     --a;
-    b.Sa(...b.Ma);
+    b.Xa(...b.Ra);
   }
 }
-var L = [];
-function Aa(a) {
-  var b = L[a];
-  b.target.removeEventListener(b.sa, b.Ca, b.za);
-  L.splice(a, 1);
+var N = [];
+function Oa(a) {
+  var b = N[a];
+  b.target.removeEventListener(b.wa, b.Ga, b.Da);
+  N.splice(a, 1);
 }
-function Ba(a) {
+function Pa(a) {
   if (!a.target) return -4;
-  if (a.Aa) a.Ca = function (c) {
-    ++J;
-    za = a;
-    ya();
-    a.Da(c);
-    ya();
-    --J;
-  }, a.target.addEventListener(a.sa, a.Ca, a.za), L.push(a);else for (var b = 0; b < L.length; ++b) L[b].target == a.target && L[b].sa == a.sa && Aa(b--);
+  if (a.Ea) a.Ga = function (c) {
+    ++Ka;
+    Na = a;
+    Ma();
+    a.Ha(c);
+    Ma();
+    --Ka;
+  }, a.target.addEventListener(a.wa, a.Ga, a.Da), N.push(a);else for (var b = 0; b < N.length; ++b) N[b].target == a.target && N[b].wa == a.wa && Oa(b--);
   return 0;
 }
-var za,
-  Ca,
-  M,
-  Da = [0, document, window],
-  N = a => {
-    a = 2 < a ? H(a) : a;
-    return Da[a] || document.querySelector(a);
+var Na,
+  Qa,
+  Ra,
+  Sa = [0, document, window],
+  Ta = a => {
+    a = 2 < a ? G(a) : a;
+    return Sa[a] || document.querySelector(a);
   },
   O = (a, b, c) => {
     var d = w;
     if (!(0 < c)) return 0;
     var f = b;
     c = b + c - 1;
-    for (var l = 0; l < a.length; ++l) {
-      var g = a.charCodeAt(l);
-      if (55296 <= g && 57343 >= g) {
-        var n = a.charCodeAt(++l);
-        g = 65536 + ((g & 1023) << 10) | n & 1023;
+    for (var k = 0; k < a.length; ++k) {
+      var e = a.charCodeAt(k);
+      if (55296 <= e && 57343 >= e) {
+        var m = a.charCodeAt(++k);
+        e = 65536 + ((e & 1023) << 10) | m & 1023;
       }
-      if (127 >= g) {
+      if (127 >= e) {
         if (b >= c) break;
-        d[b++] = g;
+        d[b++] = e;
       } else {
-        if (2047 >= g) {
+        if (2047 >= e) {
           if (b + 1 >= c) break;
-          d[b++] = 192 | g >> 6;
+          d[b++] = 192 | e >> 6;
         } else {
-          if (65535 >= g) {
+          if (65535 >= e) {
             if (b + 2 >= c) break;
-            d[b++] = 224 | g >> 12;
+            d[b++] = 224 | e >> 12;
           } else {
             if (b + 3 >= c) break;
-            d[b++] = 240 | g >> 18;
-            d[b++] = 128 | g >> 12 & 63;
+            d[b++] = 240 | e >> 18;
+            d[b++] = 128 | e >> 12 & 63;
           }
-          d[b++] = 128 | g >> 6 & 63;
+          d[b++] = 128 | e >> 6 & 63;
         }
-        d[b++] = 128 | g & 63;
+        d[b++] = 128 | e & 63;
       }
     }
     d[b] = 0;
     return b - f;
   },
-  Fa = (a, b, c, d, f, l) => {
-    Ca || (Ca = Ea(176));
+  Ua = (a, b, c, d, f, k) => {
+    Qa || (Qa = Q(176));
     a = {
-      target: N(a),
-      sa: l,
-      Aa: d,
-      Da: g => {
-        var n = Ca;
-        A[n >> 3] = g.timeStamp;
-        var m = n >> 2;
-        y[m + 2] = g.location;
-        y[m + 3] = g.ctrlKey;
-        y[m + 4] = g.shiftKey;
-        y[m + 5] = g.altKey;
-        y[m + 6] = g.metaKey;
-        y[m + 7] = g.repeat;
-        y[m + 8] = g.charCode;
-        y[m + 9] = g.keyCode;
-        y[m + 10] = g.which;
-        O(g.key || "", n + 44, 32);
-        O(g.code || "", n + 76, 32);
-        O(g.char || "", n + 108, 32);
-        O(g.locale || "", n + 140, 32);
-        I.get(d)(f, n, b) && g.preventDefault();
+      target: Ta(a),
+      wa: k,
+      Ea: d,
+      Ha: e => {
+        var m = Qa;
+        na[m >> 3] = e.timeStamp;
+        var h = m >> 2;
+        y[h + 2] = e.location;
+        y[h + 3] = e.ctrlKey;
+        y[h + 4] = e.shiftKey;
+        y[h + 5] = e.altKey;
+        y[h + 6] = e.metaKey;
+        y[h + 7] = e.repeat;
+        y[h + 8] = e.charCode;
+        y[h + 9] = e.keyCode;
+        y[h + 10] = e.which;
+        O(e.key || "", m + 44, 32);
+        O(e.code || "", m + 76, 32);
+        O(e.char || "", m + 108, 32);
+        O(e.locale || "", m + 140, 32);
+        M.get(d)(f, m, b) && e.preventDefault();
       },
-      za: c
+      Da: c
     };
-    return Ba(a);
+    return Pa(a);
   },
-  Ga = (a, b, c, d, f, l) => {
-    M || (M = Ea(72));
-    a = N(a);
-    return Ba({
+  Va = (a, b, c, d, f, k) => {
+    Ra || (Ra = Q(72));
+    a = Ta(a);
+    return Pa({
       target: a,
-      Ha: "mousemove" != l && "mouseenter" != l && "mouseleave" != l,
-      sa: l,
-      Aa: d,
-      Da: function () {
-        let g = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : event;
-        var n = a,
-          m = M;
-        A[m >> 3] = g.timeStamp;
-        m >>= 2;
-        y[m + 2] = g.screenX;
-        y[m + 3] = g.screenY;
-        y[m + 4] = g.clientX;
-        y[m + 5] = g.clientY;
-        y[m + 6] = g.ctrlKey;
-        y[m + 7] = g.shiftKey;
-        y[m + 8] = g.altKey;
-        y[m + 9] = g.metaKey;
-        x[2 * m + 20] = g.button;
-        x[2 * m + 21] = g.buttons;
-        y[m + 11] = g.movementX;
-        y[m + 12] = g.movementY;
-        n = 0 > Da.indexOf(n) ? n.getBoundingClientRect() : {
+      Ma: "mousemove" != k && "mouseenter" != k && "mouseleave" != k,
+      wa: k,
+      Ea: d,
+      Ha: function () {
+        let e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : event;
+        var m = a,
+          h = Ra;
+        na[h >> 3] = e.timeStamp;
+        h >>= 2;
+        y[h + 2] = e.screenX;
+        y[h + 3] = e.screenY;
+        y[h + 4] = e.clientX;
+        y[h + 5] = e.clientY;
+        y[h + 6] = e.ctrlKey;
+        y[h + 7] = e.shiftKey;
+        y[h + 8] = e.altKey;
+        y[h + 9] = e.metaKey;
+        x[2 * h + 20] = e.button;
+        x[2 * h + 21] = e.buttons;
+        y[h + 11] = e.movementX;
+        y[h + 12] = e.movementY;
+        m = 0 > Sa.indexOf(m) ? m.getBoundingClientRect() : {
           left: 0,
           top: 0
         };
-        y[m + 13] = g.clientX - n.left;
-        y[m + 14] = g.clientY - n.top;
-        I.get(d)(f, M, b) && g.preventDefault();
+        y[h + 13] = e.clientX - m.left;
+        y[h + 14] = e.clientY - m.top;
+        M.get(d)(f, Ra, b) && e.preventDefault();
       },
-      za: c
+      Da: c
     });
+  };
+function Wa(a) {
+  var b = R,
+    c = b.Ka.pop() || b.va.length;
+  b.va[c] = a;
+  return c;
+}
+class Xa {
+  constructor() {
+    this.va = [void 0];
+    this.Ka = [];
+  }
+  get(a) {
+    return this.va[a];
+  }
+  has(a) {
+    return void 0 !== this.va[a];
+  }
+}
+var R, S;
+function Ya(a, b, c, d, f) {
+  function k() {
+    var v = 0,
+      z = 0;
+    p.response && K && 0 === A[a + 12 >> 2] && (z = p.response.byteLength);
+    0 < z && (v = Q(z), w.set(new Uint8Array(p.response), v));
+    A[a + 12 >> 2] = v;
+    T(a + 16, z);
+    T(a + 24, 0);
+    (v = p.response ? p.response.byteLength : 0) && T(a + 32, v);
+    x[a + 40 >> 1] = p.readyState;
+    x[a + 42 >> 1] = p.status;
+    p.statusText && O(p.statusText, a + 44, 64);
+  }
+  var e = A[a + 8 >> 2];
+  if (e) {
+    var m = G(e),
+      h = a + 112,
+      r = G(h + 0);
+    r || (r = "GET");
+    var C = A[h + 56 >> 2],
+      B = A[h + 68 >> 2],
+      U = A[h + 72 >> 2];
+    e = A[h + 76 >> 2];
+    var L = A[h + 80 >> 2],
+      P = A[h + 84 >> 2],
+      I = A[h + 88 >> 2],
+      H = A[h + 52 >> 2],
+      K = !!(H & 1),
+      aa = !!(H & 2);
+    H = !!(H & 64);
+    B = B ? G(B) : void 0;
+    U = U ? G(U) : void 0;
+    var p = new XMLHttpRequest();
+    p.withCredentials = !!w[h + 60];
+    p.open(r, m, !H, B, U);
+    H || (p.timeout = C);
+    p.va = m;
+    p.responseType = "arraybuffer";
+    L && (m = G(L), p.overrideMimeType(m));
+    if (e) for (;;) {
+      h = A[e >> 2];
+      if (!h) break;
+      m = A[e + 4 >> 2];
+      if (!m) break;
+      e += 8;
+      h = G(h);
+      m = G(m);
+      p.setRequestHeader(h, m);
+    }
+    var J = Wa(p);
+    A[a >> 2] = J;
+    e = P && I ? w.slice(P, P + I) : null;
+    p.onload = v => {
+      R.has(J) && (k(), 200 <= p.status && 300 > p.status ? b === null || b === void 0 ? void 0 : b(a, p, v) : c === null || c === void 0 ? void 0 : c(a, p, v));
+    };
+    p.onerror = v => {
+      R.has(J) && (k(), c === null || c === void 0 ? void 0 : c(a, p, v));
+    };
+    p.ontimeout = v => {
+      R.has(J) && (c === null || c === void 0 ? void 0 : c(a, p, v));
+    };
+    p.onprogress = v => {
+      if (R.has(J)) {
+        var z = K && aa && p.response ? p.response.byteLength : 0,
+          t = 0;
+        0 < z && K && aa && (t = Q(z), w.set(new Uint8Array(p.response), t));
+        A[a + 12 >> 2] = t;
+        T(a + 16, z);
+        T(a + 24, v.loaded - z);
+        T(a + 32, v.total);
+        x[a + 40 >> 1] = p.readyState;
+        3 <= p.readyState && 0 === p.status && 0 < v.loaded && (p.status = 200);
+        x[a + 42 >> 1] = p.status;
+        p.statusText && O(p.statusText, a + 44, 64);
+        d === null || d === void 0 || d(a, p, v);
+        t && Za(t);
+      }
+    };
+    p.onreadystatechange = v => {
+      R.has(J) && (x[a + 40 >> 1] = p.readyState, 2 <= p.readyState && (x[a + 42 >> 1] = p.status), f === null || f === void 0 ? void 0 : f(a, p, v));
+    };
+    try {
+      p.send(e);
+    } catch (v) {
+      c === null || c === void 0 || c(a, p, v);
+    }
+  } else c(a, 0, "no url specified!");
+}
+var $a = a => {
+    a instanceof Da || "unwind" == a || ea(1, a);
   },
-  Ha = 1,
-  P = [],
-  Q = [],
-  R = [],
-  S = [],
-  T = [],
-  U = [],
-  Ia = [],
-  V = a => {
-    for (var b = Ha++, c = a.length; c < b; c++) a[c] = null;
+  ab = a => {
+    var _g$onExit, _g4;
+    u = a;
+    Fa || ((_g$onExit = (_g4 = g).onExit) !== null && _g$onExit !== void 0 && _g$onExit.call(_g4, a), ja = !0);
+    ea(a, new Da(a));
+  },
+  T = (a, b) => {
+    A[a >> 2] = b;
+    A[a + 4 >> 2] = (b - A[a >> 2]) / 4294967296;
+  };
+function bb(a, b, c, d) {
+  var f = S;
+  if (f) {
+    var k = A[a + 112 + 64 >> 2];
+    k || (k = A[a + 8 >> 2]);
+    var e = G(k);
+    try {
+      var m = f.transaction(["FILES"], "readwrite").objectStore("FILES").put(b, e);
+      m.onsuccess = () => {
+        x[a + 40 >> 1] = 4;
+        x[a + 42 >> 1] = 200;
+        O("OK", a + 44, 64);
+        c(a, 0, e);
+      };
+      m.onerror = h => {
+        x[a + 40 >> 1] = 4;
+        x[a + 42 >> 1] = 413;
+        O("Payload Too Large", a + 44, 64);
+        d(a, 0, h);
+      };
+    } catch (h) {
+      d(a, 0, h);
+    }
+  } else d(a, 0, "IndexedDB not available!");
+}
+function cb(a, b, c) {
+  var d = S;
+  if (d) {
+    var f = A[a + 112 + 64 >> 2];
+    f || (f = A[a + 8 >> 2]);
+    f = G(f);
+    try {
+      var k = d.transaction(["FILES"], "readonly").objectStore("FILES").get(f);
+      k.onsuccess = e => {
+        if (e.target.result) {
+          e = e.target.result;
+          var m = e.byteLength || e.length,
+            h = Q(m);
+          w.set(new Uint8Array(e), h);
+          A[a + 12 >> 2] = h;
+          T(a + 16, m);
+          T(a + 24, 0);
+          T(a + 32, m);
+          x[a + 40 >> 1] = 4;
+          x[a + 42 >> 1] = 200;
+          O("OK", a + 44, 64);
+          b(a, 0, e);
+        } else x[a + 40 >> 1] = 4, x[a + 42 >> 1] = 404, O("Not Found", a + 44, 64), c(a, 0, "no data");
+      };
+      k.onerror = e => {
+        x[a + 40 >> 1] = 4;
+        x[a + 42 >> 1] = 404;
+        O("Not Found", a + 44, 64);
+        c(a, 0, e);
+      };
+    } catch (e) {
+      c(a, 0, e);
+    }
+  } else c(a, 0, "IndexedDB not available!");
+}
+function db(a, b, c) {
+  var d = S;
+  if (d) {
+    var f = A[a + 112 + 64 >> 2];
+    f || (f = A[a + 8 >> 2]);
+    f = G(f);
+    try {
+      var k = d.transaction(["FILES"], "readwrite").objectStore("FILES").delete(f);
+      k.onsuccess = e => {
+        e = e.target.result;
+        A[a + 12 >> 2] = 0;
+        T(a + 16, 0);
+        T(a + 24, 0);
+        T(a + 32, 0);
+        x[a + 40 >> 1] = 4;
+        x[a + 42 >> 1] = 200;
+        O("OK", a + 44, 64);
+        b(a, 0, e);
+      };
+      k.onerror = e => {
+        x[a + 40 >> 1] = 4;
+        x[a + 42 >> 1] = 404;
+        O("Not Found", a + 44, 64);
+        c(a, 0, e);
+      };
+    } catch (e) {
+      c(a, 0, e);
+    }
+  } else c(a, 0, "IndexedDB not available!");
+}
+var eb = 1,
+  fb = [],
+  V = [],
+  gb = [],
+  W = [],
+  X = [],
+  hb = [],
+  ib = [],
+  jb = a => {
+    for (var b = eb++, c = a.length; c < b; c++) a[c] = null;
     return b;
   },
-  X = (a, b, c, d) => {
+  kb = (a, b, c, d) => {
     for (var f = 0; f < a; f++) {
-      var l = W[c](),
-        g = l && V(d);
-      l && (l.name = g, d[g] = l);
-      y[b + 4 * f >> 2] = g;
+      var k = Y[c](),
+        e = k && jb(d);
+      k && (k.name = e, d[e] = k);
+      y[b + 4 * f >> 2] = e;
     }
   },
-  Ka = (a, b) => {
-    a.ra || (a.ra = a.getContext, a.getContext = function (d, f) {
-      f = a.ra(d, f);
+  mb = (a, b) => {
+    a.va || (a.va = a.getContext, a.getContext = function (d, f) {
+      f = a.va(d, f);
       return "webgl" == d == f instanceof WebGLRenderingContext ? f : null;
     });
     var c = a.getContext("webgl2", b);
-    return c ? Ja(c, b) : 0;
+    return c ? lb(c, b) : 0;
   },
-  Ja = (a, b) => {
-    var c = V(Ia);
+  lb = (a, b) => {
+    var c = jb(ib);
     b = {
       handle: c,
       attributes: b,
-      version: b.Ka,
-      Ga: a
+      version: b.Pa,
+      La: a
     };
-    a.canvas && (a.canvas.La = b);
-    Ia[c] = b;
+    a.canvas && (a.canvas.Qa = b);
+    ib[c] = b;
     return c;
   },
-  La,
-  Ma = ["default", "low-power", "high-performance"],
-  Na = [null, [], []],
-  Oa = a => "]" == a.slice(-1) && a.lastIndexOf("["),
-  Pa = a => {
-    var b = W.Ia,
-      c = b.ta[a];
-    "number" == typeof c && (b.ta[a] = c = W.getUniformLocation(b, b.Ea[a] + (0 < c ? `[${c}]` : "")));
+  nb,
+  ob = ["default", "low-power", "high-performance"],
+  pb = [null, [], []],
+  qb = a => "]" == a.slice(-1) && a.lastIndexOf("["),
+  rb = a => {
+    var b = Y.Na,
+      c = b.xa[a];
+    "number" == typeof c && (b.xa[a] = c = Y.getUniformLocation(b, b.Ia[a] + (0 < c ? `[${c}]` : "")));
     return c;
-  },
-  W,
-  Qa = {
-    j: (a, b, c, d) => {
-      t(`Assertion failed: ${H(a)}, at: ` + [b ? H(b) : "unknown filename", c, d ? H(d) : "unknown function"]);
+  };
+R = new Xa();
+va();
+(function (a, b) {
+  try {
+    var c = indexedDB.open("emscripten_filesystem", 1);
+  } catch (d) {
+    b(d);
+    return;
+  }
+  c.onupgradeneeded = d => {
+    d = d.target.result;
+    d.objectStoreNames.contains("FILES") && d.deleteObjectStore("FILES");
+    d.createObjectStore("FILES");
+  };
+  c.onsuccess = d => a(d.target.result);
+  c.onerror = b;
+})(a => {
+  S = a;
+  wa();
+}, () => {
+  S = !1;
+  wa();
+});
+var Y,
+  sb = {
+    e: (a, b, c, d) => {
+      ha(`Assertion failed: ${G(a)}, at: ` + [b ? G(b) : "unknown filename", c, d ? G(d) : "unknown function"]);
     },
-    x: (a, b, c) => {
-      var d = new va(a);
-      z[d.ra + 16 >> 2] = 0;
-      z[d.ra + 4 >> 2] = b;
-      z[d.ra + 8 >> 2] = c;
-      wa = a;
-      xa++;
-      throw wa;
+    v: (a, b, c) => {
+      var d = new Ha(a);
+      A[d.va + 16 >> 2] = 0;
+      A[d.va + 4 >> 2] = b;
+      A[d.va + 8 >> 2] = c;
+      Ia = a;
+      Ja++;
+      throw Ia;
     },
-    O: () => 1,
-    t: () => {
-      t("");
+    R: function (a) {
+      if (R.has(a)) {
+        var b = R.get(a),
+          c = R;
+        c.va[a] = void 0;
+        c.Ka.push(a);
+        0 < b.readyState && 4 > b.readyState && b.abort();
+      }
     },
-    P: () => Date.now(),
-    R: () => performance.now(),
-    ba: (a, b) => {
+    N: () => 1,
+    s: () => {
+      ha("");
+    },
+    O: () => Date.now(),
+    Q: () => performance.now(),
+    T: () => !0,
+    ea: (a, b) => {
       function c(d) {
-        I.get(a)(d, b) && requestAnimationFrame(c);
+        M.get(a)(d, b) && requestAnimationFrame(c);
       }
       return requestAnimationFrame(c);
     },
-    Q: a => {
+    P: a => {
       var b = w.length;
       a >>>= 0;
       if (2147483648 < a) return !1;
@@ -337,32 +598,98 @@ var za,
         var f = Math;
         d = Math.max(a, d);
         a: {
-          f = (f.min.call(f, 2147483648, d + (65536 - d % 65536) % 65536) - u.buffer.byteLength + 65535) / 65536;
+          f = (f.min.call(f, 2147483648, d + (65536 - d % 65536) % 65536) - ia.buffer.byteLength + 65535) / 65536;
           try {
-            u.grow(f);
-            fa();
-            var l = 1;
+            ia.grow(f);
+            oa();
+            var k = 1;
             break a;
-          } catch (g) {}
-          l = void 0;
+          } catch (e) {}
+          k = void 0;
         }
-        if (l) return !0;
+        if (k) return !0;
       }
       return !1;
     },
-    la: (a, b, c) => {
-      a = N(a);
+    oa: (a, b, c) => {
+      a = Ta(a);
       if (!a) return -4;
       a.width = b;
       a.height = c;
       return 0;
     },
-    _: (a, b, c, d) => Fa(a, b, c, d, 2, "keydown"),
-    S: (a, b, c, d) => Fa(a, b, c, d, 3, "keyup"),
-    N: (a, b, c, d) => Ga(a, b, c, d, 5, "mousedown"),
-    L: (a, b, c, d) => Ga(a, b, c, d, 8, "mousemove"),
-    M: (a, b, c, d) => Ga(a, b, c, d, 6, "mouseup"),
-    ka: (a, b) => {
+    ba: (a, b, c, d) => Ua(a, b, c, d, 2, "keydown"),
+    U: (a, b, c, d) => Ua(a, b, c, d, 3, "keyup"),
+    M: (a, b, c, d) => Va(a, b, c, d, 5, "mousedown"),
+    K: (a, b, c, d) => Va(a, b, c, d, 8, "mousemove"),
+    L: (a, b, c, d) => Va(a, b, c, d, 6, "mouseup"),
+    S: function (a, b, c, d, f) {
+      function k(t) {
+        if (U) t();else if (!ja) try {
+          if (t(), !Fa) try {
+            u = t = u, ab(t);
+          } catch (ba) {
+            $a(ba);
+          }
+        } catch (ba) {
+          $a(ba);
+        }
+      }
+      var e = a + 112,
+        m = A[e + 36 >> 2],
+        h = A[e + 40 >> 2],
+        r = A[e + 44 >> 2],
+        C = A[e + 48 >> 2],
+        B = A[e + 52 >> 2],
+        U = !!(B & 64),
+        L = t => {
+          k(() => {
+            m ? M.get(m)(t) : b === null || b === void 0 ? void 0 : b(t);
+          });
+        },
+        P = t => {
+          k(() => {
+            r ? M.get(r)(t) : d === null || d === void 0 ? void 0 : d(t);
+          });
+        },
+        I = t => {
+          k(() => {
+            h ? M.get(h)(t) : c === null || c === void 0 ? void 0 : c(t);
+          });
+        },
+        H = t => {
+          k(() => {
+            C ? M.get(C)(t) : f === null || f === void 0 ? void 0 : f(t);
+          });
+        },
+        K = t => {
+          Ya(t, L, I, P, H);
+        },
+        aa = (t, ba) => {
+          bb(t, ba.response, ca => {
+            k(() => {
+              m ? M.get(m)(ca) : b === null || b === void 0 ? void 0 : b(ca);
+            });
+          }, ca => {
+            k(() => {
+              m ? M.get(m)(ca) : b === null || b === void 0 ? void 0 : b(ca);
+            });
+          });
+        },
+        p = t => {
+          Ya(t, aa, I, P, H);
+        },
+        J = G(e + 0),
+        v = !!(B & 16),
+        z = !!(B & 4);
+      B = !!(B & 32);
+      if ("EM_IDB_STORE" === J) K = A[e + 84 >> 2], bb(a, w.slice(K, K + A[e + 88 >> 2]), L, I);else if ("EM_IDB_DELETE" === J) db(a, L, I);else if (v) {
+        if (B) return 0;
+        Ya(a, z ? aa : L, I, P, H);
+      } else cb(a, L, B ? I : z ? p : K);
+      return a;
+    },
+    na: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -371,341 +698,337 @@ var za,
         antialias: !!y[b + 3],
         premultipliedAlpha: !!y[b + 4],
         preserveDrawingBuffer: !!y[b + 5],
-        powerPreference: Ma[y[b + 6]],
+        powerPreference: ob[y[b + 6]],
         failIfMajorPerformanceCaveat: !!y[b + 7],
-        Ka: y[b + 8],
-        Pa: y[b + 9],
-        Oa: y[b + 10],
-        Ja: y[b + 11],
-        Qa: y[b + 12],
-        Ra: y[b + 13]
+        Pa: y[b + 8],
+        Ua: y[b + 9],
+        Ta: y[b + 10],
+        Oa: y[b + 11],
+        Va: y[b + 12],
+        Wa: y[b + 13]
       };
-      a = N(a);
-      return !a || b.Ja ? 0 : Ka(a, b);
+      a = Ta(a);
+      return !a || b.Oa ? 0 : mb(a, b);
     },
-    ja: a => {
-      var _La;
-      La = Ia[a];
-      e.Na = W = (_La = La) === null || _La === void 0 ? void 0 : _La.Ga;
-      return !a || W ? 0 : -5;
+    ma: a => {
+      var _nb;
+      nb = ib[a];
+      g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
+      return !a || Y ? 0 : -5;
     },
-    y: (a, b, c, d) => {
-      for (var f = 0, l = 0; l < c; l++) {
-        var g = z[b >> 2],
-          n = z[b + 4 >> 2];
+    w: (a, b, c, d) => {
+      for (var f = 0, k = 0; k < c; k++) {
+        var e = A[b >> 2],
+          m = A[b + 4 >> 2];
         b += 8;
-        for (var m = 0; m < n; m++) {
-          var p = w[g + m],
-            E = Na[a];
-          if (0 === p || 10 === p) {
-            for (p = 0; E[p] && !(NaN <= p);) ++p;
-            p = ua.decode(E.buffer ? E.subarray(0, p) : new Uint8Array(E.slice(0, p)));
-            (1 === a ? ba : q)(p);
-            E.length = 0;
-          } else E.push(p);
+        for (var h = 0; h < m; h++) {
+          var r = w[e + h],
+            C = pb[a];
+          if (0 === r || 10 === r) {
+            for (r = 0; C[r] && !(NaN <= r);) ++r;
+            r = Ga.decode(C.buffer ? C.subarray(0, r) : new Uint8Array(C.slice(0, r)));
+            (1 === a ? fa : n)(r);
+            C.length = 0;
+          } else C.push(r);
         }
-        f += n;
+        f += m;
       }
-      z[d >> 2] = f;
+      A[d >> 2] = f;
       return 0;
     },
-    ha: a => W.activeTexture(a),
-    C: (a, b) => {
-      W.attachShader(Q[a], T[b]);
+    ka: a => Y.activeTexture(a),
+    z: (a, b) => {
+      Y.attachShader(V[a], X[b]);
     },
     c: (a, b) => {
-      35051 == a ? W.Ba = b : 35052 == a && (W.xa = b);
-      W.bindBuffer(a, P[b]);
+      35051 == a ? Y.Fa = b : 35052 == a && (Y.Ba = b);
+      Y.bindBuffer(a, fb[b]);
     },
-    E: (a, b) => {
-      W.bindFramebuffer(a, R[b]);
+    B: (a, b) => {
+      Y.bindFramebuffer(a, gb[b]);
     },
-    b: (a, b) => {
-      W.bindTexture(a, S[b]);
+    a: (a, b) => {
+      Y.bindTexture(a, W[b]);
     },
     k: a => {
-      W.bindVertexArray(U[a]);
+      Y.bindVertexArray(hb[a]);
     },
-    p: a => W.blendEquation(a),
-    q: (a, b) => W.blendFunc(a, b),
-    e: (a, b, c, d) => {
-      c && b ? W.bufferData(a, w, d, c, b) : W.bufferData(a, b, d);
+    p: a => Y.blendEquation(a),
+    q: (a, b) => Y.blendFunc(a, b),
+    f: (a, b, c, d) => {
+      c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
-    F: a => W.clear(a),
-    G: (a, b, c, d) => W.clearColor(a, b, c, d),
-    W: a => {
-      W.compileShader(T[a]);
+    D: a => Y.clear(a),
+    E: (a, b, c, d) => Y.clearColor(a, b, c, d),
+    Z: a => {
+      Y.compileShader(X[a]);
     },
-    aa: () => {
-      var a = V(Q),
-        b = W.createProgram();
+    da: () => {
+      var a = jb(V),
+        b = Y.createProgram();
       b.name = a;
-      b.wa = b.ua = b.va = 0;
-      b.ya = 1;
-      Q[a] = b;
+      b.Aa = b.ya = b.za = 0;
+      b.Ca = 1;
+      V[a] = b;
       return a;
     },
-    Y: a => {
-      var b = V(T);
-      T[b] = W.createShader(a);
+    $: a => {
+      var b = jb(X);
+      X[b] = Y.createShader(a);
       return b;
     },
-    s: (a, b) => {
+    r: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2],
-          f = P[d];
-        f && (W.deleteBuffer(f), f.name = 0, P[d] = null, d == W.Ba && (W.Ba = 0), d == W.xa && (W.xa = 0));
+          f = fb[d];
+        f && (Y.deleteBuffer(f), f.name = 0, fb[d] = null, d == Y.Fa && (Y.Fa = 0), d == Y.Ba && (Y.Ba = 0));
       }
     },
-    r: (a, b) => {
+    F: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
-          f = R[d];
-        f && (W.deleteFramebuffer(f), f.name = 0, R[d] = null);
+          f = gb[d];
+        f && (Y.deleteFramebuffer(f), f.name = 0, gb[d] = null);
       }
     },
-    m: a => {
+    l: a => {
       if (a) {
-        var b = Q[a];
-        b && (W.deleteProgram(b), b.name = 0, Q[a] = null);
+        var b = V[a];
+        b && (Y.deleteProgram(b), b.name = 0, V[a] = null);
       }
     },
     d: a => {
       if (a) {
-        var b = T[a];
-        b && (W.deleteShader(b), T[a] = null);
+        var b = X[a];
+        b && (Y.deleteShader(b), X[a] = null);
       }
     },
-    da: (a, b) => {
+    ga: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2],
-          f = S[d];
-        f && (W.deleteTexture(f), f.name = 0, S[d] = null);
+          f = W[d];
+        f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    J: (a, b) => {
+    I: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
-        W.deleteVertexArray(U[d]);
-        U[d] = null;
+        Y.deleteVertexArray(hb[d]);
+        hb[d] = null;
       }
     },
-    K: a => W.disable(a),
-    i: (a, b, c, d) => {
-      W.drawArraysInstanced(a, b, c, d);
+    J: a => Y.disable(a),
+    j: (a, b, c, d) => {
+      Y.drawArraysInstanced(a, b, c, d);
     },
-    fa: (a, b, c, d) => {
-      W.drawElements(a, b, c, d);
+    ia: (a, b, c, d) => {
+      Y.drawElements(a, b, c, d);
     },
-    ia: a => W.enable(a),
-    f: a => {
-      W.enableVertexAttribArray(a);
+    la: a => Y.enable(a),
+    g: a => {
+      Y.enableVertexAttribArray(a);
     },
-    ca: (a, b, c, d, f) => {
-      W.framebufferTexture2D(a, b, c, S[d], f);
+    fa: (a, b, c, d, f) => {
+      Y.framebufferTexture2D(a, b, c, W[d], f);
+    },
+    n: (a, b) => {
+      kb(a, b, "createBuffer", fb);
+    },
+    X: (a, b) => {
+      kb(a, b, "createFramebuffer", gb);
     },
     o: (a, b) => {
-      X(a, b, "createBuffer", P);
+      kb(a, b, "createTexture", W);
     },
-    z: (a, b) => {
-      X(a, b, "createFramebuffer", R);
+    A: (a, b) => {
+      kb(a, b, "createVertexArray", hb);
     },
-    l: (a, b) => {
-      X(a, b, "createTexture", S);
-    },
-    D: (a, b) => {
-      X(a, b, "createVertexArray", U);
-    },
-    h: (a, b) => W.getAttribLocation(Q[a], H(b)),
-    Z: (a, b, c, d) => {
-      a = W.getProgramInfoLog(Q[a]);
+    i: (a, b) => Y.getAttribLocation(V[a], G(b)),
+    aa: (a, b, c, d) => {
+      a = Y.getProgramInfoLog(V[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    B: (a, b, c) => {
-      if (c && !(a >= Ha)) if (a = Q[a], 35716 == b) y[c >> 2] = W.getProgramInfoLog(a).length + 1;else if (35719 == b) {
-        if (!a.wa) for (b = 0; b < W.getProgramParameter(a, 35718); ++b) a.wa = Math.max(a.wa, W.getActiveUniform(a, b).name.length + 1);
-        y[c >> 2] = a.wa;
+    y: (a, b, c) => {
+      if (c && !(a >= eb)) if (a = V[a], 35716 == b) y[c >> 2] = Y.getProgramInfoLog(a).length + 1;else if (35719 == b) {
+        if (!a.Aa) for (b = 0; b < Y.getProgramParameter(a, 35718); ++b) a.Aa = Math.max(a.Aa, Y.getActiveUniform(a, b).name.length + 1);
+        y[c >> 2] = a.Aa;
       } else if (35722 == b) {
-        if (!a.ua) for (b = 0; b < W.getProgramParameter(a, 35721); ++b) a.ua = Math.max(a.ua, W.getActiveAttrib(a, b).name.length + 1);
-        y[c >> 2] = a.ua;
+        if (!a.ya) for (b = 0; b < Y.getProgramParameter(a, 35721); ++b) a.ya = Math.max(a.ya, Y.getActiveAttrib(a, b).name.length + 1);
+        y[c >> 2] = a.ya;
       } else if (35381 == b) {
-        if (!a.va) for (b = 0; b < W.getProgramParameter(a, 35382); ++b) a.va = Math.max(a.va, W.getActiveUniformBlockName(a, b).length + 1);
-        y[c >> 2] = a.va;
-      } else y[c >> 2] = W.getProgramParameter(a, b);
+        if (!a.za) for (b = 0; b < Y.getProgramParameter(a, 35382); ++b) a.za = Math.max(a.za, Y.getActiveUniformBlockName(a, b).length + 1);
+        y[c >> 2] = a.za;
+      } else y[c >> 2] = Y.getProgramParameter(a, b);
     },
-    V: (a, b, c, d) => {
-      a = W.getShaderInfoLog(T[a]);
+    Y: (a, b, c, d) => {
+      a = Y.getShaderInfoLog(X[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    A: (a, b, c) => {
-      c && (35716 == b ? (a = W.getShaderInfoLog(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = W.getShaderSource(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = W.getShaderParameter(T[a], b));
+    x: (a, b, c) => {
+      c && (35716 == b ? (a = Y.getShaderInfoLog(X[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = Y.getShaderSource(X[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = Y.getShaderParameter(X[a], b));
     },
-    u: (a, b) => {
-      b = H(b);
-      if (a = Q[a]) {
+    t: (a, b) => {
+      b = G(b);
+      if (a = V[a]) {
         var c = a,
-          d = c.ta,
-          f = c.Fa,
-          l;
-        if (!d) for (c.ta = d = {}, c.Ea = {}, l = 0; l < W.getProgramParameter(c, 35718); ++l) {
-          var g = W.getActiveUniform(c, l);
-          var n = g.name;
-          g = g.size;
-          var m = Oa(n);
-          m = 0 < m ? n.slice(0, m) : n;
-          var p = c.ya;
-          c.ya += g;
-          f[m] = [g, p];
-          for (n = 0; n < g; ++n) d[p] = n, c.Ea[p++] = m;
+          d = c.xa,
+          f = c.Ja,
+          k;
+        if (!d) for (c.xa = d = {}, c.Ia = {}, k = 0; k < Y.getProgramParameter(c, 35718); ++k) {
+          var e = Y.getActiveUniform(c, k);
+          var m = e.name;
+          e = e.size;
+          var h = qb(m);
+          h = 0 < h ? m.slice(0, h) : m;
+          var r = c.Ca;
+          c.Ca += e;
+          f[h] = [e, r];
+          for (m = 0; m < e; ++m) d[r] = m, c.Ia[r++] = h;
         }
-        c = a.ta;
+        c = a.xa;
         d = 0;
         f = b;
-        l = Oa(b);
-        0 < l && (d = parseInt(b.slice(l + 1)) >>> 0, f = b.slice(0, l));
-        if ((f = a.Fa[f]) && d < f[0] && (d += f[1], c[d] = c[d] || W.getUniformLocation(a, b))) return d;
+        k = qb(b);
+        0 < k && (d = parseInt(b.slice(k + 1)) >>> 0, f = b.slice(0, k));
+        if ((f = a.Ja[f]) && d < f[0] && (d += f[1], c[d] = c[d] || Y.getUniformLocation(a, b))) return d;
       }
       return -1;
     },
-    $: a => {
-      a = Q[a];
-      W.linkProgram(a);
-      a.ta = 0;
-      a.Fa = {};
+    ca: a => {
+      a = V[a];
+      Y.linkProgram(a);
+      a.xa = 0;
+      a.Ja = {};
     },
-    X: (a, b, c, d) => {
-      for (var f = "", l = 0; l < b; ++l) f += H(z[c + 4 * l >> 2], d ? z[d + 4 * l >> 2] : void 0);
-      W.shaderSource(T[a], f);
+    _: (a, b, c, d) => {
+      for (var f = "", k = 0; k < b; ++k) f += G(A[c + 4 * k >> 2], d ? A[d + 4 * k >> 2] : void 0);
+      Y.shaderSource(X[a], f);
     },
-    v: (a, b, c, d, f, l, g, n, m) => {
-      if (W.xa) W.texImage2D(a, b, c, d, f, l, g, n, m);else if (m) {
-        var p = n - 5120;
-        p = 0 == p ? ca : 1 == p ? w : 2 == p ? x : 4 == p ? y : 6 == p ? ea : 5 == p || 28922 == p || 28520 == p || 30779 == p || 30782 == p ? z : da;
-        W.texImage2D(a, b, c, d, f, l, g, n, p, m >>> 31 - Math.clz32(p.BYTES_PER_ELEMENT));
-      } else W.texImage2D(a, b, c, d, f, l, g, n, null);
+    C: (a, b, c, d, f, k, e, m, h) => {
+      if (Y.Ba) Y.texImage2D(a, b, c, d, f, k, e, m, h);else if (h) {
+        var r = m - 5120;
+        r = 0 == r ? ka : 1 == r ? w : 2 == r ? x : 4 == r ? y : 6 == r ? ma : 5 == r || 28922 == r || 28520 == r || 30779 == r || 30782 == r ? A : la;
+        Y.texImage2D(a, b, c, d, f, k, e, m, r, h >>> 31 - Math.clz32(r.BYTES_PER_ELEMENT));
+      } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
-    a: (a, b, c) => W.texParameteri(a, b, c),
-    ga: (a, b) => {
-      W.uniform1i(Pa(a), b);
+    b: (a, b, c) => Y.texParameteri(a, b, c),
+    ja: (a, b) => {
+      Y.uniform1i(rb(a), b);
     },
-    H: (a, b, c) => {
-      W.uniform2f(Pa(a), b, c);
+    G: (a, b, c) => {
+      Y.uniform2f(rb(a), b, c);
     },
-    I: a => {
-      a = Q[a];
-      W.useProgram(a);
-      W.Ia = a;
+    H: a => {
+      a = V[a];
+      Y.useProgram(a);
+      Y.Na = a;
     },
-    n: (a, b) => {
-      W.vertexAttribDivisor(a, b);
+    m: (a, b) => {
+      Y.vertexAttribDivisor(a, b);
     },
-    g: (a, b, c, d, f, l) => {
-      W.vertexAttribPointer(a, b, c, !!d, f, l);
+    h: (a, b, c, d, f, k) => {
+      Y.vertexAttribPointer(a, b, c, !!d, f, k);
     },
-    w: (a, b, c, d) => W.viewport(a, b, c, d),
-    U: function (a, b, c, d) {
+    u: (a, b, c, d) => Y.viewport(a, b, c, d),
+    W: function (a, b, c, d) {
       var f = document.createElement("canvas");
       f.width = b;
       f.height = c;
       b = f.getContext("2d");
-      b.font = a + "px " + H(d);
+      b.font = a + "px " + G(d);
       b.textBaseline = "middle";
       b.globalAlpha = 1;
       b.fillStyle = "white";
       window["gCanvas" + a] = f;
       window["gCanvasCtx" + a] = b;
     },
-    T: function (a, b, c, d) {
+    V: function (a, b, c, d) {
       var f = new Image();
       f.onload = () => {
-        z[c >> 2] = f.width;
-        z[d >> 2] = f.height;
-        W.bindTexture(W.TEXTURE_2D, S[a]);
-        W.texImage2D(W.TEXTURE_2D, 0, W.RGBA, W.RGBA, W.UNSIGNED_BYTE, f);
+        A[c >> 2] = f.width;
+        A[d >> 2] = f.height;
+        Y.bindTexture(Y.TEXTURE_2D, W[a]);
+        Y.texImage2D(Y.TEXTURE_2D, 0, Y.RGBA, Y.RGBA, Y.UNSIGNED_BYTE, f);
       };
-      f.src = H(b);
+      f.src = G(b);
     },
-    ea: function (a, b) {
+    ha: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);
-      b = H(b);
+      b = G(b);
       var d = a.measureText(b).width;
       a.fillText(b, 0, c.height / 2);
-      W.texImage2D(W.TEXTURE_2D, 0, W.RGBA, W.RGBA, W.UNSIGNED_BYTE, c);
+      Y.texImage2D(Y.TEXTURE_2D, 0, Y.RGBA, Y.RGBA, Y.UNSIGNED_BYTE, c);
       return d;
     }
   },
-  Y = function (_e$monitorRunDependen2, _e3) {
+  Z = function () {
     function a(c) {
-      var _e$monitorRunDependen, _e2;
-      Y = c.exports;
-      u = Y.ma;
-      fa();
-      I = Y.qa;
-      ia.unshift(Y.na);
-      B--;
-      (_e$monitorRunDependen = (_e2 = e).monitorRunDependencies) === null || _e$monitorRunDependen === void 0 || _e$monitorRunDependen.call(_e2, B);
-      0 == B && (null !== C && (clearInterval(C), C = null), D && (c = D, D = null, c()));
-      return Y;
+      Z = c.exports;
+      ia = Z.pa;
+      oa();
+      M = Z.ua;
+      qa.unshift(Z.qa);
+      wa();
+      return Z;
     }
     var b = {
-      a: Qa
+      a: sb
     };
-    B++;
-    (_e$monitorRunDependen2 = (_e3 = e).monitorRunDependencies) === null || _e$monitorRunDependen2 === void 0 || _e$monitorRunDependen2.call(_e3, B);
-    if (e.instantiateWasm) try {
-      return e.instantiateWasm(b, a);
+    va();
+    if (g.instantiateWasm) try {
+      return g.instantiateWasm(b, a);
     } catch (c) {
-      return q(`Module.instantiateWasm callback failed with error: ${c}`), !1;
+      return n(`Module.instantiateWasm callback failed with error: ${c}`), !1;
     }
-    ra(b, function (c) {
+    Ca(b, function (c) {
       a(c.instance);
     });
     return {};
   }(),
-  Ea = a => (Ea = Y.oa)(a),
-  Ra = e._main = (a, b) => (Ra = e._main = Y.pa)(a, b),
-  Z;
-D = function Sa() {
-  Z || Ta();
-  Z || (D = Sa);
+  Q = a => (Q = Z.ra)(a),
+  Za = a => (Za = Z.sa)(a),
+  tb = g._main = (a, b) => (tb = g._main = Z.ta)(a, b),
+  ub;
+E = function vb() {
+  ub || wb();
+  ub || (E = vb);
 };
-function Ta() {
+function wb() {
   function a() {
-    if (!Z && (Z = !0, e.calledRun = !0, !v)) {
-      G(ia);
-      G(ja);
-      if (e.onRuntimeInitialized) e.onRuntimeInitialized();
-      if (Ua) {
-        var b = Ra;
+    if (!ub && (ub = !0, g.calledRun = !0, !ja)) {
+      Ea(qa);
+      Ea(ra);
+      if (g.onRuntimeInitialized) g.onRuntimeInitialized();
+      if (xb) {
+        var b = tb;
         try {
-          var _e$onExit, _e4;
           var c = b(0, 0);
-          ta || ((_e$onExit = (_e4 = e).onExit) !== null && _e$onExit !== void 0 && _e$onExit.call(_e4, c), v = !0);
-          h(c, new sa(c));
+          u = c;
+          ab(c);
         } catch (d) {
-          d instanceof sa || "unwind" == d || h(1, d);
+          $a(d);
         }
       }
-      if (e.postRun) for ("function" == typeof e.postRun && (e.postRun = [e.postRun]); e.postRun.length;) b = e.postRun.shift(), ka.unshift(b);
-      G(ka);
+      if (g.postRun) for ("function" == typeof g.postRun && (g.postRun = [g.postRun]); g.postRun.length;) b = g.postRun.shift(), sa.unshift(b);
+      Ea(sa);
     }
   }
-  if (!(0 < B)) {
-    if (e.preRun) for ("function" == typeof e.preRun && (e.preRun = [e.preRun]); e.preRun.length;) la();
-    G(ha);
-    0 < B || (e.setStatus ? (e.setStatus("Running..."), setTimeout(function () {
+  if (!(0 < D)) {
+    if (g.preRun) for ("function" == typeof g.preRun && (g.preRun = [g.preRun]); g.preRun.length;) ta();
+    Ea(pa);
+    0 < D || (g.setStatus ? (g.setStatus("Running..."), setTimeout(function () {
       setTimeout(function () {
-        e.setStatus("");
+        g.setStatus("");
       }, 1);
       a();
     }, 1)) : a());
   }
 }
-if (e.preInit) for ("function" == typeof e.preInit && (e.preInit = [e.preInit]); 0 < e.preInit.length;) e.preInit.pop()();
-var Ua = !0;
-e.noInitialRun && (Ua = !1);
-Ta();
+if (g.preInit) for ("function" == typeof g.preInit && (g.preInit = [g.preInit]); 0 < g.preInit.length;) g.preInit.pop()();
+var xb = !0;
+g.noInitialRun && (xb = !1);
+wb();

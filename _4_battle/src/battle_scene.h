@@ -9,6 +9,7 @@ namespace Battle {
 		XY screenAreaMin{}, screenAreaMax{};
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;
+		EffectTextManager effectTextManager;
 		xx::SpaceGrid<Monster> monsters;
 		xx::SpaceRingDiffuseData srdd;
 		xx::Rnd rnd;

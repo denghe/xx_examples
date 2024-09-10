@@ -31,8 +31,8 @@ namespace Battle {
 	inline bool Monster::Hurt(Monster &tar) {
 		// todo
 		tar.health -= 1;
-		// todo: damage number effect
-		// todo: add change color to red action?
+		// todo: calculate damage
+		scene->effectTextManager.Add(tar.pos, { 0, -1 }, {255,0,0,127}, scene->rnd.Next<int32_t>(1, 1000));
 		return tar.health <= 0;;
 	}
 
