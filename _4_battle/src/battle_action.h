@@ -7,6 +7,7 @@ namespace Battle {
 		SearchTarget,
 		MoveToTarget,
 		HitTarget,
+		SetColor,
 		// ...
 		MaxValue
 	};
@@ -64,6 +65,15 @@ namespace Battle {
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_HitTarget>);
+
+
+	struct alignas(8) Action_SetColor {
+		static constexpr ActionTypes cType{ ActionTypes::SetColor };
+		ActionTypes type;
+		xx::RGBA8 color;
+		int32_t timeoutFrameNumber;
+	};
+	static_assert(ActionStructCheck<Action_SetColor>);
 
 	// ...
 }

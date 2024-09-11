@@ -5,7 +5,7 @@ namespace Battle {
 	struct Scene {
 		int32_t frameNumber{};
 		int32_t autoId{};
-		int32_t genSpeed{1};
+		int32_t genSpeed{ 10 };
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;
 		EffectTextManager effectTextManager;

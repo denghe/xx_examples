@@ -15,9 +15,9 @@ namespace Battle {
 			Add_Action_SearchTarget(1300, 0.2);	// todo: get args from cfg?
 		}
 
-		//if (!ActionExists<Action_ChangeColor>()) {
-		//	color = cColor;
-		//}
+		if (!ActionExists<Action_SetColor>()) {
+			color = cColor;
+		}
 	}
 
 	inline void Monster::Stun(float durationSeconds) {
@@ -37,7 +37,13 @@ namespace Battle {
 		tar.health -= 1;
 		// todo: calculate damage
 		scene->effectTextManager.Add(tar.pos, { 0, -1 }, {255,0,0,127}, scene->rnd.Next<int32_t>(1, 1000));
-		return tar.health <= 0;;
+		if (tar.health <= 0) {
+			scene->explosions.Emplace().Init(pos, radius / cRadius);
+			return true;
+		} else {
+			Add_Action_SetColor(xx::RGBA8_Red, 0.1);
+			return false;
+		}
 	}
 
 };

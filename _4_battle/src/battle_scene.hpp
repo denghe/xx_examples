@@ -101,17 +101,19 @@ namespace Battle {
 			q.SetFrame(gRes.cring);
 			monsters.Foreach([&](Monster& o)->void {
 				q.SetPosition(c.ToGLPos(o.pos))
+					.SetColor(o.color)
 					.SetScale(c.scale * (o.radius / 32))
 					.Draw();
 			});
 		}
 
-		// monster body line
+		// monster body( line )
 		if constexpr (false) {
 			xx::LineStrip ls;
 			ls.FillCirclePoints({}, 32, {}, 10);
 			monsters.Foreach([&](Monster& o)->void {
 				ls.SetPosition(c.ToGLPos(o.pos))
+					.SetColor(o.color)
 					.SetScale(c.scale * (o.radius / 32))
 					.Draw();
 			});

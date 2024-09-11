@@ -27,7 +27,8 @@ namespace Battle {
 			case Action_SearchTarget::cType: Case_((Action_SearchTarget&)b); break;
 			case Action_MoveToTarget::cType: Case_((Action_MoveToTarget&)b); break;
 			case Action_HitTarget::cType: Case_((Action_HitTarget&)b); break;
-			// ... more case
+			case Action_SetColor::cType: Case_((Action_SetColor&)b); break;
+			// ...
 			}
 		}
 

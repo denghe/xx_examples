@@ -5,6 +5,7 @@ namespace Battle {
 	struct Scene;
 	struct Monster {
 		static constexpr float cRadius{ 32 };
+		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
 		XY pos{}, movementDirection{};
 		float radius{ 32 };
@@ -34,18 +35,21 @@ namespace Battle {
 		template<typename T> bool ActionTryRemove();
 		template<typename...AS> void ActionTryRemoves();
 		template<typename T> T& ActionAdd();
+		template<typename T> T& ActionAddOrRef();
 		/***************************************************/
 
 		void Add_Action_Stun(float durationSeconds);
 		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
 		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
 		void Add_Action_HitTarget(float distanceLimit, float castDelaySeconds);
+		void Add_Action_SetColor(xx::RGBA8 color, float durationSeconds);
 		// ...
 
 		void Case_(Action_Stun& o);
 		void Case_(Action_SearchTarget& o);
 		void Case_(Action_MoveToTarget& o);
 		void Case_(Action_HitTarget& o);
+		void Case_(Action_SetColor& o);
 		// ...
 
 		/***************************************************/

@@ -11,14 +11,13 @@
 // action == skill == behavior == buff
 
 // todo:
-// hurt: change color
-// block? path?
+// block path
 // projectile?
 // "we are warriors" simulate?
 // knockback
 // drop item
 // pickup
-// bag?
+// bag
 
 #include "battle_scene.hpp"
 #include "battle_bladelight.hpp"

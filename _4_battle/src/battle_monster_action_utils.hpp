@@ -96,4 +96,11 @@ namespace Battle {
 		return o;
 	}
 
+	template<typename T>
+	XX_INLINE T& Monster::ActionAddOrRef() {
+		if (!ActionExists(T::cType)) return ActionAdd<T>();
+		auto index = ActionFind(T::cType);
+		return (T&)actions[index];
+	}
+
 };

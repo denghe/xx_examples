@@ -82,7 +82,6 @@ namespace Battle {
 				// cross
 				if (zmag2 <= zr * zr) {
 					if (Hurt(mm)) {
-						scene->explosions.Emplace().Init(mm.pos, mm.radius / mm.cRadius);
 						return xx::ForeachResult::RemoveAndContinue;
 					}
 				}
@@ -96,5 +95,13 @@ namespace Battle {
 		}
 	}
 
+	XX_INLINE void Monster::Case_(Action_SetColor& o) {
+		if (scene->frameNumber > o.timeoutFrameNumber) {
+			// suicide
+			ActionRemove(o);
+			return;
+		}
+		color = o.color;
+	}
 	// ...
 };

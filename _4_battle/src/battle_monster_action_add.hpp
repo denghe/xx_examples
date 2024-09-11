@@ -52,5 +52,12 @@ namespace Battle {
 		o.timeoutFrameNumber = 0;
 	}
 
+	XX_INLINE void Monster::Add_Action_SetColor(xx::RGBA8 color, float durationSeconds) {
+		// create or ref & init
+		auto& o = ActionAddOrRef<Action_SetColor>();
+		o.color = color;
+		o.timeoutFrameNumber = scene->frameNumber + int32_t(durationSeconds * gLooper.fps);
+	}
+
 	// ...
 };
