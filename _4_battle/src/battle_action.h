@@ -26,7 +26,7 @@ namespace Battle {
 	};
 
 	template<typename A>
-	constexpr bool ActionStructCheck = sizeof(Action) >= sizeof(A) && alignof(Action) == alignof(A);
+	constexpr bool ActionStructCheck = alignof(Action) == alignof(A) && sizeof(A) <= sizeof(Action);
 
 	/*********************************************************************************************/
 	// Actions
@@ -64,4 +64,6 @@ namespace Battle {
 		int32_t timeoutFrameNumber;
 	};
 	static_assert(ActionStructCheck<Action_HitTarget>);
+
+	// ...
 }

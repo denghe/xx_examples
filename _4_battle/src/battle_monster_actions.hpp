@@ -6,7 +6,7 @@ namespace Battle {
 		scene->monsters.Remove(*this);
 	}
 
-	inline void Monster::TryAddBaseActions() {
+	inline void Monster::TryRestoreBornAbility() {
 		if (!ActionExists<Action_Stun>()
 			&& !ActionExists<Action_SearchTarget>()
 			&& !ActionExists<Action_MoveToTarget>()
@@ -14,6 +14,10 @@ namespace Battle {
 			) {
 			Add_Action_SearchTarget(1300, 0.2);	// todo: get args from cfg?
 		}
+
+		//if (!ActionExists<Action_ChangeColor>()) {
+		//	color = cColor;
+		//}
 	}
 
 	inline void Monster::Stun(float durationSeconds) {

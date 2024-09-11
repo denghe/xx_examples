@@ -41,6 +41,7 @@ xx::Task<> Looper::MainTask() {
 	camera.SetScale(1.f);
 
 	scene.Emplace();
+	::scene = scene.pointer;
 	scene->Init();
 
 	clearColor = { 55, 55, 55, 255 };
@@ -53,9 +54,9 @@ void Looper::BeforeUpdate() {
 
 	// scale control
 	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.02f)) {
-		camera.IncreaseScale(0.1f, 5);
+		camera.IncreaseScale(0.05f, 5);
 	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.02f)) {
-		camera.DecreaseScale(0.1f, 0.1f);
+		camera.DecreaseScale(0.05f, 0.5f);
 	}
 
 	camera.Calc();

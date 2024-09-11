@@ -16,13 +16,13 @@ namespace Battle {
 		int32_t len{};						// buf's len
 
 		int32_t lineNumber{};
-		RGBA8 color{};
+		xx::RGBA8 color{};
 		XY pos{}, inc{};
 		int32_t timeoutFrameNumber{};
 		float alpha{};
 
 		// pos: original position,  dist: determine move direction
-		void Init(XY const& pos_, XY const& vec_, RGBA8 color_, int32_t value_);
+		void Init(XY const& pos_, XY const& vec_, xx::RGBA8 color_, int32_t value_);
 
 		int32_t UpdateCore();
 		bool Update();
@@ -41,7 +41,7 @@ namespace Battle {
 		xx::Queue<EffectText> ens;
 
 		void Init(size_t cap);
-		void Add(XY const& pos_, XY const& vec_, RGBA8 color_, int32_t value_);
+		void Add(XY const& pos_, XY const& vec_, xx::RGBA8 color_, int32_t value_);
 		bool Update();
 		void Draw();
 	};

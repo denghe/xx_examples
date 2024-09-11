@@ -4,17 +4,14 @@ namespace Battle {
 
 	struct Scene;
 	struct Monster {
-		// for public use
 		static constexpr float cRadius{ 32 };
-		Scene* scene{};
+
 		XY pos{}, movementDirection{};
 		float radius{ 32 };
 		int32_t health{}, maxHealth{};
+		xx::RGBA8 color;
 		xx::SpaceWeak<Monster> target;
 		// ...
-
-		void Init(Scene* scene_, XY const& pos_ = Cfg::mapSize_2);
-		int32_t Update();
 
 		/***************************************************/
 		int32_t id{};
@@ -53,9 +50,12 @@ namespace Battle {
 
 		/***************************************************/
 
+		void Init(Scene* scene_, XY const& pos_ = Cfg::mapSize_2);
+		int32_t Update();
+
 		// for logic call
 		void Destroy();
-		void TryAddBaseActions();
+		void TryRestoreBornAbility();
 		void Stun(float durationSeconds);
 		bool Hurt(Monster& tar);
 		// ...

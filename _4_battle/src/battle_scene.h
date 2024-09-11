@@ -6,7 +6,6 @@ namespace Battle {
 		int32_t frameNumber{};
 		int32_t autoId{};
 		int32_t genSpeed{1};
-		XY screenAreaMin{}, screenAreaMax{};
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;
 		EffectTextManager effectTextManager;

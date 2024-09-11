@@ -9,13 +9,16 @@
 
 // simulate monsters death match battle
 // action == skill == behavior == buff
+
 // todo:
-// damage effect number
-// knockback
 // hurt: change color
+// block? path?
+// projectile?
+// "we are warriors" simulate?
+// knockback
 // drop item
 // pickup
-// projectile?
+// bag?
 
 #include "battle_scene.hpp"
 #include "battle_bladelight.hpp"

@@ -30,3 +30,4 @@ struct Looper : xx::Engine<Looper>, Cfg {
 
 extern Looper gLooper;
 extern ResTpFrames& gRes;
+inline Battle::Scene* scene{};	// ref to Looper.scene for easy use

@@ -11,7 +11,7 @@ namespace Battle {
 		auto n = ++scene->autoId;
 		id = n;
 		health = maxHealth = scene->rnd.Next<int32_t>(1, 11);	// todo: damage
-		TryAddBaseActions();
+		TryRestoreBornAbility();
 	}
 
 	/*********************************************************************************************/
@@ -32,13 +32,13 @@ namespace Battle {
 		}
 
 		// moved out of the screen? suicide
-		if (pos.x < scene->screenAreaMin.x || pos.x > scene->screenAreaMax.x ||
-			pos.y < scene->screenAreaMin.y || pos.y > scene->screenAreaMax.y) {
+		if (pos.x < Cfg::mapEdgeMin.x || pos.x > Cfg::mapEdgeMax.x ||
+			pos.y < Cfg::mapEdgeMin.y || pos.y > Cfg::mapEdgeMax.y) {
 			return -1;
 		}
 
 		// try restore something
-		TryAddBaseActions();
+		TryRestoreBornAbility();
 
 		// update space grid?
 		if (posBak == pos) return 0;

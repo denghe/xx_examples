@@ -47,8 +47,8 @@ namespace Battle {
 			while (true) {
 				n += scene->genSpeed / gLooper.fps;
 				for (; n >= 1.f; --n) {
-					p.x = Cfg::mapSize_2.x + scene->rnd.Next<float>(Cfg::width) - Cfg::width_2;
-					p.y = Cfg::mapSize_2.y + scene->rnd.Next<float>(Cfg::height) - Cfg::height_2;
+					p.x = scene->rnd.Next<float>(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.x);
+					p.y = scene->rnd.Next<float>(Cfg::mapEdgeMin.y, Cfg::mapEdgeMax.y);
 					scene->monsters.EmplaceInit(scene, p);
 				}
 				co_yield 0;
@@ -58,17 +58,10 @@ namespace Battle {
 	}
 
 	void Scene::BeforeUpdate() {
-		screenAreaMin.x = gLooper.camera.safeMinX;
-		screenAreaMin.y = gLooper.camera.safeMinY;
-		screenAreaMax.x = gLooper.camera.safeMaxX;
-		screenAreaMax.y = gLooper.camera.safeMaxY;
 	}
 
 	int32_t Scene::Update() {
 		++frameNumber;
-
-#if 0
-#endif
 
 		// update monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {
@@ -125,7 +118,7 @@ namespace Battle {
 		}
 
 		// monster id text
-		if constexpr (true) {
+		if constexpr (false) {
 			std::u32string str;
 			monsters.Foreach([&](Monster& o)->void {
 				auto len = xx::IntToStringTo(str, o.id);
