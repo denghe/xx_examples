@@ -57,10 +57,8 @@ namespace Battle {
 		auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 		for (auto b : sg.results) {
 			//xx::TranslateControl::MoveCircleIfIntersectsBox2(b->aabb, pos, radius);
-			auto d = b->aabb.to - b->aabb.from;
-			auto r = d / 2;
-			auto p = b->aabb.from + r;
-			xx::TranslateControl::MoveCircleIfIntersectsBox(p.x, p.y, r.x, r.y, pos.x, pos.y, radius);
+			//xx::TranslateControl::MoveCircleIfIntersectsBox(b->pos.x, b->pos.y, b->halfSize.x, b->halfSize.y, pos.x, pos.y, radius);
+			b->PushOut(*this);
 		}
 		if (pos.IsOutOfEdge(gLooper.mapSize)) {
 			return true;

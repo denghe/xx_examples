@@ -43,6 +43,8 @@ namespace Battle {
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		blocks.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		
+		// todo: fix block & FillWayout & Monster Update call PushOut
+
 		// left
 		blocks.EmplaceInit(0.f,0.f, Cfg::mapEdgeMin.x - 0.01f, Cfg::mapSize.y - 0.01f);
 		// right
@@ -51,11 +53,9 @@ namespace Battle {
 		blocks.EmplaceInit(Cfg::mapEdgeMin.x, 0.f, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapEdgeMin.y - 0.01f);
 		// bottom
 		blocks.EmplaceInit(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.y, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapSize.y - 0.01f);
-
-		// center?
+		// split
 		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, Cfg::mapEdgeMin.y, Cfg::mapSize_2.x + 64 - 0.01f, Cfg::mapEdgeMax.y - 0.01f);
 
-		// todo: mouse right click draw block?
 
 		monsterEmitter = [](Scene* scene)->xx::Task<> {
 			float n{};
