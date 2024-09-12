@@ -32,11 +32,8 @@ namespace Battle {
 			}
 		}
 
-		// moved out of the screen? suicide
-		if (pos.x < Cfg::mapEdgeMin.x || pos.x > Cfg::mapEdgeMax.x ||
-			pos.y < Cfg::mapEdgeMin.y || pos.y > Cfg::mapEdgeMax.y) {
-			return -1;
-		}
+		// handle blocks
+		if (BlocksLimit()) return -1;
 
 		// try restore something
 		TryRestoreBornAbility();

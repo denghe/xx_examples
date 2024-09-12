@@ -46,4 +46,25 @@ namespace Battle {
 		}
 	}
 
+	XX_INLINE bool Monster::BlocksLimit() {
+		// calc aabb
+		auto& sg = scene->blocks;
+		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };
+		if (!sg.TryFixAABB(aabb)) {
+			return true;
+		}
+		sg.ForeachAABB(aabb);
+		auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
+		for (auto b : sg.results) {
+			//xx::TranslateControl::MoveCircleIfIntersectsBox2(b->aabb, pos, radius);
+			auto d = b->aabb.to - b->aabb.from;
+			auto r = d / 2;
+			auto p = b->aabb.from + r;
+			xx::TranslateControl::MoveCircleIfIntersectsBox(p.x, p.y, r.x, r.y, pos.x, pos.y, radius);
+		}
+		if (pos.IsOutOfEdge(gLooper.mapSize)) {
+			return true;
+		}
+		return false;
+	}
 };

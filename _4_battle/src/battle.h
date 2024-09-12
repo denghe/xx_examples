@@ -5,12 +5,14 @@
 #include "battle_bladelight.h"
 #include "battle_explosion.h"
 #include "battle_effect_text.h"
+#include "battle_block.h"
 #include "battle_scene.h"
 
 // simulate monsters death match battle
 // action == skill == behavior == buff
 
 // todo:
+// 
 // block path
 // projectile?
 // "we are warriors" simulate?
@@ -18,8 +20,15 @@
 // drop item
 // pickup
 // bag
+// 
+// Health Damage DamageReduction / Defense / Armor
+// HealthRegeneration HealthOnHit ...
+// Evasion
+// AttackSpeed
+// CriticalHitChance CriticalHitDamage
 
 #include "battle_scene.hpp"
+#include "battle_block.hpp"
 #include "battle_bladelight.hpp"
 #include "battle_effect_text.hpp"
 #include "battle_explosion.hpp"

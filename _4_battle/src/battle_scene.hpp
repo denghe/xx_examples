@@ -5,10 +5,6 @@
 namespace Battle {
 
 	void Scene::Init() {
-		effectTextManager.Init(8192);
-		srdd.Init(100, gLooper.physCellSize);
-		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
-
 		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, 0}, gLooper.xy7a
 			, gLooper.s9cfg_btn, U"stun", [&]() {
 			monsters.Foreach([](Monster& o)->void {
@@ -41,14 +37,34 @@ namespace Battle {
 				genSpeed = 10000;
 		});
 
+		// inits
+		effectTextManager.Init(8192);
+		srdd.Init(100, gLooper.physCellSize);
+		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
+		blocks.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
+		
+		// left
+		blocks.EmplaceInit(0.f,0.f, Cfg::mapEdgeMin.x - 0.01f, Cfg::mapSize.y - 0.01f);
+		// right
+		blocks.EmplaceInit(Cfg::mapEdgeMax.x, 0.f, Cfg::mapSize.x - 0.01f, Cfg::mapSize.y - 0.01f);
+		// top
+		blocks.EmplaceInit(Cfg::mapEdgeMin.x, 0.f, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapEdgeMin.y - 0.01f);
+		// bottom
+		blocks.EmplaceInit(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.y, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapSize.y - 0.01f);
+
+		// center?
+		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, Cfg::mapEdgeMin.y, Cfg::mapSize_2.x + 64 - 0.01f, Cfg::mapEdgeMax.y - 0.01f);
+
+		// todo: mouse right click draw block?
+
 		monsterEmitter = [](Scene* scene)->xx::Task<> {
 			float n{};
 			XY p;
 			while (true) {
 				n += scene->genSpeed / gLooper.fps;
 				for (; n >= 1.f; --n) {
-					p.x = scene->rnd.Next<float>(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.x);
-					p.y = scene->rnd.Next<float>(Cfg::mapEdgeMin.y, Cfg::mapEdgeMax.y);
+					p.x = scene->rnd.Next<float>(Cfg::mapEdgeMin.x + Cfg::maxItemSize_2, Cfg::mapEdgeMax.x - Cfg::maxItemSize_2);
+					p.y = scene->rnd.Next<float>(Cfg::mapEdgeMin.y + Cfg::maxItemSize_2, Cfg::mapEdgeMax.y - Cfg::maxItemSize_2);
 					scene->monsters.EmplaceInit(scene, p);
 				}
 				co_yield 0;
@@ -94,6 +110,17 @@ namespace Battle {
 
 	void Scene::Draw() {
 		auto& c = gLooper.camera;
+
+		// blocks
+		if constexpr (true) {
+			xx::Quad q;
+			q.SetFrame(gRes.quad).SetAnchor({ 0, 1 }).SetColor({55,55,55,255});
+			blocks.Foreach([&](Block& o)->void {
+				q.SetPosition(c.ToGLPos(o.aabb.from))
+					.SetScale((o.aabb.to - o.aabb.from) / 64 * c.scale)
+					.Draw();
+				});
+		}
 
 		// monster body
 		if constexpr (true) {

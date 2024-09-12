@@ -62,6 +62,7 @@ namespace Battle {
 		void TryRestoreBornAbility();
 		void Stun(float durationSeconds);
 		bool Hurt(Monster& tar);
+		bool BlocksLimit();				// return true: limit fail. out of area
 		// ...
 	};
 }
