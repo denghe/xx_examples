@@ -12,6 +12,7 @@ namespace Battle {
 		id = n;
 		health = maxHealth = scene->rnd.Next<int32_t>(1, 11);	// todo: damage
 		TryRestoreBornAbility();
+		BlocksLimit();
 	}
 
 	/*********************************************************************************************/

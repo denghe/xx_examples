@@ -43,19 +43,59 @@ namespace Battle {
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		blocks.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		
-		// todo: fix block & FillWayout & Monster Update call PushOut
+/*
+top1      2           3         4          5
+ ┌────────────────────┬────────────────────┐ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │middle1             │2                   │3
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ │                    │                    │ 
+ └────────────────────┴────────────────────┘
+bottom1    2          3         4          5
+*/
 
-		// left
-		blocks.EmplaceInit(0.f,0.f, Cfg::mapEdgeMin.x - 0.01f, Cfg::mapSize.y - 0.01f);
-		// right
-		blocks.EmplaceInit(Cfg::mapEdgeMax.x, 0.f, Cfg::mapSize.x - 0.01f, Cfg::mapSize.y - 0.01f);
-		// top
-		blocks.EmplaceInit(Cfg::mapEdgeMin.x, 0.f, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapEdgeMin.y - 0.01f);
-		// bottom
-		blocks.EmplaceInit(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.y, Cfg::mapEdgeMax.x - 0.01f, Cfg::mapSize.y - 0.01f);
-		// split
-		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, Cfg::mapEdgeMin.y, Cfg::mapSize_2.x + 64 - 0.01f, Cfg::mapEdgeMax.y - 0.01f);
+		// todo: char map to blocks ?
+		// combine 2 side link blocks?
 
+		// top1
+		blocks.EmplaceInit(0.f, 0.f, Cfg::mapEdgeMin.x - 0.1f, Cfg::mapEdgeMin.y - 0.1f);
+		// top2
+		blocks.EmplaceInit(Cfg::mapEdgeMin.x, 0.f, Cfg::mapSize_2.x - 64 - 0.1f, Cfg::mapEdgeMin.y - 0.1f);
+		// top3
+		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, 0.f, Cfg::mapSize_2.x + 64 - 0.1f, Cfg::mapEdgeMin.y - 0.1f);
+		// top4
+		blocks.EmplaceInit(Cfg::mapSize_2.x + 64, 0.f, Cfg::mapEdgeMax.x - 0.1f, Cfg::mapEdgeMin.y - 0.1f);
+		// top5
+		blocks.EmplaceInit(Cfg::mapEdgeMax.x, 0.f, Cfg::mapSize.x - 0.1f, Cfg::mapEdgeMin.y - 0.1f);
+
+		// middle1
+		blocks.EmplaceInit(0.f, Cfg::mapEdgeMin.y, Cfg::mapEdgeMin.x - 0.1f, Cfg::mapEdgeMax.y - 0.1f);
+		// middle2
+		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, Cfg::mapEdgeMin.y, Cfg::mapSize_2.x + 64 - 0.1f, Cfg::mapEdgeMax.y - 0.1f);
+		// middle3
+		blocks.EmplaceInit(Cfg::mapEdgeMax.x, Cfg::mapEdgeMin.y, Cfg::mapSize.x - 0.1f, Cfg::mapEdgeMax.y - 0.1f);
+
+		// bottom1
+		blocks.EmplaceInit(0.f, Cfg::mapEdgeMax.y, Cfg::mapEdgeMin.x - 0.1f, Cfg::mapSize.y - 0.1f);
+		// bottom2
+		blocks.EmplaceInit(Cfg::mapEdgeMin.x, Cfg::mapEdgeMax.y, Cfg::mapSize_2.x - 64 - 0.1f, Cfg::mapSize.y - 0.1f);
+		// bottom3
+		blocks.EmplaceInit(Cfg::mapSize_2.x - 64, Cfg::mapEdgeMax.y, Cfg::mapSize_2.x + 64 - 0.1f, Cfg::mapSize.y - 0.1f);
+		// bottom4
+		blocks.EmplaceInit(Cfg::mapSize_2.x + 64, Cfg::mapEdgeMax.y, Cfg::mapEdgeMax.x - 0.1f, Cfg::mapSize.y - 0.1f);
+		// bottom5
+		blocks.EmplaceInit(Cfg::mapEdgeMax.x, Cfg::mapEdgeMax.y, Cfg::mapSize.x - 0.1f, Cfg::mapSize.y - 0.1f);
+
+		blocks.Foreach([&](Block& o)->void {
+			o.FillWayout(this);
+		});
 
 		monsterEmitter = [](Scene* scene)->xx::Task<> {
 			float n{};

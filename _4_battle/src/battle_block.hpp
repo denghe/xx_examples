@@ -27,10 +27,21 @@ namespace Battle {
 		// search neighbor & set wayout bit
 		auto& bs = scene->blocks;
 		(uint8_t&)wayout = 0;
-		wayout.left = bs.ExistsPoint(aabb.from + XY{ -1, 0 });
-		wayout.up = bs.ExistsPoint(aabb.from + XY{ 0, -1 });
-		wayout.right = bs.ExistsPoint(aabb.to + XY{ 1, 0 });
-		wayout.down = bs.ExistsPoint(aabb.to + XY{ 0, 1 });
+        auto left = bs.ExistsPoint(aabb.from + XY{ -1, 0 });
+        auto up = bs.ExistsPoint(aabb.from + XY{ 0, -1 });
+        auto right = bs.ExistsPoint(aabb.to + XY{ 1, 0 });
+        auto down = bs.ExistsPoint(aabb.to + XY{ 0, 1 });
+        if (left > 0 && up > 0 && right > 0 && down > 0) {
+            wayout.left = left == 1;
+            wayout.up = up == 1;
+            wayout.right = right == 1;
+            wayout.down = down == 1;
+        } else {
+            wayout.left = left == 0;
+            wayout.up = up == 0;
+            wayout.right = right == 0;
+            wayout.down = down == 0;
+        }
 	}
 
     XX_INLINE bool Block::IntersectCircle(XY const& p, float radius) {
@@ -49,59 +60,83 @@ namespace Battle {
         if (dy > bHalfHeight + cr) return false;
 
         if (dx <= bHalfWidth || dy <= bHalfHeight) {
-            if (bHalfWidth - dx > bHalfHeight - dy) {
-                if constexpr (canUp && canDown) {
+            if constexpr (canUp && canRight && canDown && canLeft) {
+                if (bHalfWidth - dx > bHalfHeight - dy) {
                     if (by > cy) {
                         cy = by - bHalfHeight - cr - 1;	// top
                     } else {
                         cy = by + bHalfHeight + cr + 1;	// bottom
                     }
-                } else if constexpr (canUp) {
-                    cy = by - bHalfHeight - cr - 1;	// top
-                } else if constexpr (canDown) {
-                    cy = by + bHalfHeight + cr + 1;	// bottom
                 } else {
-                    if constexpr (canLeft && canRight) {
-                        if (bx > cx) {
-                            cx = bx - bHalfWidth - cr - 1;	// left
-                        } else {
-                            cx = bx + bHalfWidth + cr + 1;	// right
-                        }
-                    } else if constexpr (canLeft) {
-                        cx = bx - bHalfWidth - cr - 1;	// left
-                    } else {
-                        cx = bx + bHalfWidth + cr + 1;	// right
-                    }
-                }
-            } else {
-                if constexpr (canLeft && canRight) {
                     if (bx > cx) {
                         cx = bx - bHalfWidth - cr - 1;	// left
                     } else {
                         cx = bx + bHalfWidth + cr + 1;	// right
                     }
-                } else if constexpr (canLeft) {
-                    cx = bx - bHalfWidth - cr - 1;	// left
-                } else if constexpr (canRight) {
-                    cx = bx + bHalfWidth + cr + 1;	// right
-                } else {
-                    if constexpr (canUp && canDown) {
-                        if (by > cy) {
-                            cy = by - bHalfHeight - cr - 1;	// top
-                        } else {
-                            cy = by + bHalfHeight + cr + 1;	// bottom
-                        }
-                    } else if constexpr (canUp) {
+                }
+            } else if constexpr (canUp && canRight && canDown) {
+                if (bHalfWidth - dx > bHalfHeight - dy) {
+                    if (by > cy) {
                         cy = by - bHalfHeight - cr - 1;	// top
                     } else {
                         cy = by + bHalfHeight + cr + 1;	// bottom
                     }
+                } else {
+                    cx = bx + bHalfWidth + cr + 1;	// right
                 }
+            } else if constexpr (canRight && canDown && canLeft) {
+                if (bHalfWidth - dx > bHalfHeight - dy) {
+                    cy = by + bHalfHeight + cr + 1;	// bottom
+                } else {
+                    if (bx > cx) {
+                        cx = bx - bHalfWidth - cr - 1;	// left
+                    } else {
+                        cx = bx + bHalfWidth + cr + 1;	// right
+                    }
+                }
+            } else if constexpr (canDown && canLeft && canUp) {
+                if (bHalfWidth - dx > bHalfHeight - dy) {
+                    if (by > cy) {
+                        cy = by - bHalfHeight - cr - 1;	// top
+                    } else {
+                        cy = by + bHalfHeight + cr + 1;	// bottom
+                    }
+                } else {
+                    cx = bx - bHalfWidth - cr - 1;	// left
+                }
+            } else if constexpr (canLeft && canUp && canRight) {
+                if (bHalfWidth - dx > bHalfHeight - dy) {
+                    cy = by - bHalfHeight - cr - 1;	// top
+                } else {
+                    if (bx > cx) {
+                        cx = bx - bHalfWidth - cr - 1;	// left
+                    } else {
+                        cx = bx + bHalfWidth + cr + 1;	// right
+                    }
+                }
+            } else if constexpr (canLeft && canRight) {
+                if (bx > cx) {
+                    cx = bx - bHalfWidth - cr - 1;	// left
+                } else {
+                    cx = bx + bHalfWidth + cr + 1;	// right
+                }
+            } else if constexpr (canUp && canDown) {
+                if (by > cy) {
+                    cy = by - bHalfHeight - cr - 1;	// top
+                } else {
+                    cy = by + bHalfHeight + cr + 1;	// bottom
+                }
+            } else if constexpr (canUp) {
+                cy = by - bHalfHeight - cr - 1;	// top
+            } else if constexpr (canRight) {
+                cx = bx + bHalfWidth + cr + 1;	// right
+            } else if constexpr (canDown) {
+                cy = by + bHalfHeight + cr + 1;	// bottom
+            } else if constexpr (canLeft) {
+                cx = bx - bHalfWidth - cr - 1;	// left
             }
             return true;
         }
-
-        // todo: check canUp down left right
 
         auto dx2 = dx - bHalfWidth;
         auto dy2 = dy - bHalfHeight;
@@ -118,17 +153,76 @@ namespace Battle {
                 incY = bHalfHeight + T(cr * dy2 / d) + 1;
             }
 
-            // todo: check canUp down left right
-
-            if (cx < bx) {
-                incX = -incX;
+            if constexpr (canUp && canRight && canDown && canLeft) {
+                if (cx < bx) {
+                    incX = -incX;
+                }
+                if (cy < by) {
+                    incY = -incY;
+                }
+                cx = bx + incX;
+                cy = by + incY;
+            } else if constexpr (canUp && canRight && canDown) {
+                if (cx < bx) {
+                    incX = 0;
+                }
+                if (cy < by) {
+                    incY = -incY;
+                }
+                cx = bx + incX;
+                cy = by + incY;
+            } else if constexpr (canRight && canDown && canLeft) {
+                if (cx < bx) {
+                    incX = -incX;
+                }
+                if (cy < by) {
+                    incY = 0;
+                }
+                cx = bx + incX;
+                cy = by + incY;
+            } else if constexpr (canDown && canLeft && canUp) {
+                if (cx < bx) {
+                    incX = -incX;
+                } else {
+                    incX = 0;
+                }
+                if (cy < by) {
+                    incY = -incY;
+                }
+                cx = bx + incX;
+                cy = by + incY;
+            } else if constexpr (canLeft && canUp && canRight) {
+                if (cx < bx) {
+                    incX = -incX;
+                }
+                if (cy < by) {
+                    incY = -incY;
+                } else {
+                    incY = 0;
+                }
+                cx = bx + incX;
+                cy = by + incY;
+            } else if constexpr (canLeft && canRight) {
+                if (bx > cx) {
+                    cx = bx - bHalfWidth - cr - 1;	// left
+                } else {
+                    cx = bx + bHalfWidth + cr + 1;	// right
+                }
+            } else if constexpr (canUp && canDown) {
+                if (by > cy) {
+                    cy = by - bHalfHeight - cr - 1;	// top
+                } else {
+                    cy = by + bHalfHeight + cr + 1;	// bottom
+                }
+            } else if constexpr (canUp) {
+                cy = by - bHalfHeight - cr - 1;	// top
+            } else if constexpr (canRight) {
+                cx = bx + bHalfWidth + cr + 1;	// right
+            } else if constexpr (canDown) {
+                cy = by + bHalfHeight + cr + 1;	// bottom
+            } else if constexpr (canLeft) {
+                cx = bx - bHalfWidth - cr - 1;	// left
             }
-            if (cy < by) {
-                incY = -incY;
-            }
-            cx = bx + incX;
-            cy = by + incY;
-
 
             return true;
         }
