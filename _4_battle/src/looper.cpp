@@ -77,8 +77,11 @@ void Looper::Draw() {
 
 	scene->Draw();
 
-	auto str = xx::ToString("monsters count = ", scene->monsters.Count());
+	auto str = xx::ToString("monster count = ", scene->monsters.Count()
+		, "  effect count = ", scene->bladeLights.Count() + scene->explosions.Count() + scene->effectTextManager.ens.Count()
+	);
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw(XY{ 0, gLooper.windowSize_2.y - 5 } + XY{ 2, 2 }, str, xx::RGBA8_White, { 0.5f, 1 });
 
 	// draw ui
 	gLooper.DrawNode(ui);
