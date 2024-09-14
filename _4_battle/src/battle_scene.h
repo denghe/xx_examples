@@ -14,14 +14,14 @@ namespace Battle {
 		xx::SpaceRingDiffuseData srdd;
 		xx::Rnd rnd;
 		xx::Task<> monsterEmitter;
-		// todo: wall ?
 
 		void Init();
-		void BeforeUpdate();
 		int32_t Update();
 		void Draw();
 
-		// todo: make xxx ?
+		void StunAll();
+		bool TryMakeMonster(XY const& pos);
+		// ...
 	};
 
 }

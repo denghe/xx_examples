@@ -4,39 +4,7 @@
 
 namespace Battle {
 
-	void Scene::Init() {
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, 0}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"stun", [&]() {
-			monsters.Foreach([](Monster& o)->void {
-				o.Stun(1);
-			});
-		});
-
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -50}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"genSpeed = 1", [&]() {
-				genSpeed = 1;
-		});
-
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -100}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"genSpeed = 10", [&]() {
-				genSpeed = 10;
-		});
-
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -150}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"genSpeed = 100", [&]() {
-				genSpeed = 100;
-		});
-
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -200}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"genSpeed = 1000", [&]() {
-				genSpeed = 1000;
-		});
-
-		gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{0, -250}, gLooper.xy7a
-			, gLooper.s9cfg_btn, U"genSpeed = 10000", [&]() {
-				genSpeed = 10000;
-		});
-
+	inline void Scene::Init() {
 		// inits
 		effectTextManager.Init(8192);
 		srdd.Init(100, gLooper.physCellSize);
@@ -113,10 +81,7 @@ bottom1    2          3         4          5
 
 	}
 
-	void Scene::BeforeUpdate() {
-	}
-
-	int32_t Scene::Update() {
+	inline int32_t Scene::Update() {
 		++frameNumber;
 
 		// update monsters
@@ -148,7 +113,7 @@ bottom1    2          3         4          5
 		return 0;
 	}
 
-	void Scene::Draw() {
+	inline void Scene::Draw() {
 		auto& c = gLooper.camera;
 
 		// blocks
@@ -245,4 +210,16 @@ bottom1    2          3         4          5
 
 	}
 
+	inline void Scene::StunAll() {
+		monsters.Foreach([](Monster& o)->void {
+			o.Stun(1);
+		});
+	}
+
+	inline bool Scene::TryMakeMonster(XY const& pos) {
+		if (pos.x < 0 || pos.x >= Cfg::mapSize.x
+			|| pos.y < 0 || pos.y >= Cfg::mapSize.y) return false;
+		scene->monsters.EmplaceInit(scene, pos);
+		return true;
+	}
 };

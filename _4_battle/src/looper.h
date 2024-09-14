@@ -19,6 +19,10 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::Camera camera;
 	xx::Shared<Battle::Scene> scene;
 
+	// mouse states
+	bool dragging{}, lastMBState{};
+	XY lastMousePos{}, mouseOffset{};
+
 	// true: loading finished
 	bool ok{};
 

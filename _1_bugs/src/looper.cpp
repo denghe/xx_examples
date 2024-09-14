@@ -89,12 +89,17 @@ void Looper::CreateBug(XY const& headPos, int32_t len) {
 
 void Looper::MouseHit() {
 	auto p = camera.ToLogicPos(mouse.pos);
-	grid.ForeachByRange(gLooper.sgrdd, p.x, p.y, mouseHitRange + maxItemSize_2, [&](BugBody& o) {
-		if (o.prev) {
-			o.prev().isTail = true;
+	grid.ForeachByRange(gLooper.sgrdd, p.x, p.y, mouseHitRange, [&](BugBody& o) {
+		auto d = o.pos - p;
+		auto mag2 = d.x * d.x + d.y * d.y;
+		auto r = mouseHitRange + o.cRadius;
+		if (mag2 < r * r) {
+			if (o.prev) {
+				o.prev().isTail = true;
+			}
+			grid.Remove(o);
 		}
-		grid.Remove(o);
-		});
+	});
 }
 
 

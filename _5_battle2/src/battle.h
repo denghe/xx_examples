@@ -13,9 +13,7 @@
 
 // todo:
 // 
-// move ui: button to looper
-// refine: keep more than 1 scene
-// 
+// remove auto gen monster?
 // click button, begin new match
 // 
 // 1. random drop some weapons on floor ( knife, staff )

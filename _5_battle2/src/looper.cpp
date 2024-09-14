@@ -32,9 +32,10 @@ xx::Task<> Looper::MainTask() {
 
 	ui.Emplace()->Init();
 
-	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, 0}, xy7a, s9cfg_btn, U"run battle test", [&]() {
-	//	Battle::Test();
-	//});
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, 0 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"NewGame", [&]() {
+			scene->NewGame();
+		});
 
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
@@ -59,14 +60,49 @@ void Looper::BeforeUpdate() {
 		camera.DecreaseScale(0.05f, 0.45f);
 	}
 
-	camera.Calc();
+	// move control
+	if (!gLooper.mouseEventHandler) {			// not in ui
+		auto& m = gLooper.mouse;
+		auto mbs = m.PressedMBRight();
 
-	scene->BeforeUpdate();
+		auto mp = m.pos / camera.scale;
+		mp.x = -mp.x;
+
+		if (lastMBState != mbs) {
+			lastMBState = mbs;
+			if (mbs) {							// mouse down
+				mouseOffset = mp - camera.original;
+				lastMousePos = m.pos;
+			} else {							// mouse up
+				if (dragging) {					// dragging end
+					dragging = false;
+				} else {						// click
+					//MouseHit();
+				}
+			}
+		}
+		if (mbs && xx::Calc::DistancePow2(lastMousePos, m.pos) > 16) {		// mouse down + moved == dragging
+			dragging = true;
+		}
+		if (dragging) {
+			camera.original = mp - mouseOffset;
+		}
+
+	}
+
+
+	camera.Calc();
 }
 
 
 void Looper::Update() {
 	if (!ok) return;
+
+	//// drop monster
+	//if (mouse.PressedMBLeft()) {
+	//	auto p = camera.ToLogicPos(mouse.pos);
+	//	scene->TryMakeMonster(p);
+	//}
 
 	scene->Update();
 }
@@ -77,7 +113,8 @@ void Looper::Draw() {
 
 	scene->Draw();
 
-	auto str = xx::ToString("monster count = ", scene->monsters.Count()
+	auto str = xx::ToString("Z, X zoom, mouse RightButton drag map "
+		, "monster count = ", scene->monsters.Count()
 		, "  effect count = ", scene->bladeLights.Count() + scene->explosions.Count() + scene->effectTextManager.ens.Count()
 	);
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });
