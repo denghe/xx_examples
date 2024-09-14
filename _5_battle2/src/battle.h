@@ -6,6 +6,7 @@
 #include "battle_explosion.h"
 #include "battle_effect_text.h"
 #include "battle_block.h"
+#include "battle_item.h"
 #include "battle_scene.h"
 
 // simulate monsters death match battle
@@ -40,6 +41,7 @@
 // CriticalHitChance CriticalHitDamage
 
 #include "battle_scene.hpp"
+#include "battle_item.hpp"
 #include "battle_block.hpp"
 #include "battle_bladelight.hpp"
 #include "battle_effect_text.hpp"
