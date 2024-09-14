@@ -3,6 +3,9 @@
 namespace Battle {
 
 	XX_INLINE void Monster::Case_(Action_Stun& o) {
+		if (!ActionExists<Action_SetColor>()) {
+			frameIndex = 0;
+		}
 		// timeout: suicide
 		if (scene->frameNumber > o.timeoutFrameNumber) {
 			ActionRemove(o);
@@ -10,6 +13,9 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_SearchTarget& o) {
+		if (!ActionExists<Action_SetColor>()) {
+			frameIndex = 1;
+		}
 		// delay
 		if (scene->frameNumber < o.timeoutFrameNumber) return;
 		// search
@@ -24,6 +30,9 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_MoveToTarget& o) {
+		if (!ActionExists<Action_SetColor>()) {
+			frameIndex = 2;
+		}
 		// lost target? timeout?
 		if (!target.Exists() || scene->frameNumber > o.timeoutFrameNumber) {
 			// suicide
@@ -52,6 +61,9 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_HitTarget& o) {
+		if (!ActionExists<Action_SetColor>()) {
+			frameIndex = 2;
+		}
 		// lost target?
 		if (!target.Exists()) {
 			// suicide
@@ -102,6 +114,7 @@ namespace Battle {
 			return;
 		}
 		color = o.color;
+		frameIndex = 3;
 	}
 	// ...
 };

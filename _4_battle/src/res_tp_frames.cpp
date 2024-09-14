@@ -26,6 +26,13 @@ xx::Task<> ResTpFrames::AsyncLoad(std::string picRoot) {
 		this->explosion_13_5 = map["explosion_13_5"sv];
 		this->explosion_13_6 = map["explosion_13_6"sv];
 		this->explosion_13_7 = map["explosion_13_7"sv];
+		this->eye_fire_1 = map["eye_fire_1"sv];
+		this->eye_fire_2 = map["eye_fire_2"sv];
+		this->eye_fire_3 = map["eye_fire_3"sv];
+		this->eye_fire_4 = map["eye_fire_4"sv];
+		this->eye_fire_5 = map["eye_fire_5"sv];
+		this->eye_fire_6 = map["eye_fire_6"sv];
+		this->eye_fire_7 = map["eye_fire_7"sv];
 		this->font_outline_32 = map["font_outline_32"sv];
 		this->font_outline_33 = map["font_outline_33"sv];
 		this->font_outline_34 = map["font_outline_34"sv];
@@ -121,8 +128,14 @@ xx::Task<> ResTpFrames::AsyncLoad(std::string picRoot) {
 		this->font_outline_124 = map["font_outline_124"sv];
 		this->font_outline_125 = map["font_outline_125"sv];
 		this->font_outline_126 = map["font_outline_126"sv];
+		this->monster_1 = map["monster_1"sv];
+		this->monster_2 = map["monster_2"sv];
+		this->monster_3 = map["monster_3"sv];
+		this->monster_4 = map["monster_4"sv];
 		this->quad = map["quad"sv];
 		this->ring = map["ring"sv];
+		this->staff_5 = map["staff_5"sv];
+		this->sword_16 = map["sword_16"sv];
 	}
 
 	// fill groups
@@ -134,6 +147,13 @@ xx::Task<> ResTpFrames::AsyncLoad(std::string picRoot) {
 	explosion_13_.Add(explosion_13_5);
 	explosion_13_.Add(explosion_13_6);
 	explosion_13_.Add(explosion_13_7);
+	eye_fire_.Add(eye_fire_1);
+	eye_fire_.Add(eye_fire_2);
+	eye_fire_.Add(eye_fire_3);
+	eye_fire_.Add(eye_fire_4);
+	eye_fire_.Add(eye_fire_5);
+	eye_fire_.Add(eye_fire_6);
+	eye_fire_.Add(eye_fire_7);
 	font_outline_.Add(font_outline_32);
 	font_outline_.Add(font_outline_33);
 	font_outline_.Add(font_outline_34);
@@ -229,5 +249,11 @@ xx::Task<> ResTpFrames::AsyncLoad(std::string picRoot) {
 	font_outline_.Add(font_outline_124);
 	font_outline_.Add(font_outline_125);
 	font_outline_.Add(font_outline_126);
+	monster_.Add(monster_1);
+	monster_.Add(monster_2);
+	monster_.Add(monster_3);
+	monster_.Add(monster_4);
+	staff_.Add(staff_5);
+	sword_.Add(sword_16);
 	co_return;
 }

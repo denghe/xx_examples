@@ -165,9 +165,9 @@ bottom1    2          3         4          5
 		// monster body
 		if constexpr (true) {
 			xx::Quad q;
-			q.SetFrame(gRes.cring);
 			monsters.Foreach([&](Monster& o)->void {
-				q.SetPosition(c.ToGLPos(o.pos))
+				q.SetFrame(gRes.monster_[o.frameIndex])
+					.SetPosition(c.ToGLPos(o.pos))
 					.SetColor(o.color)
 					.SetScale(c.scale * (o.radius / 32))
 					.Draw();

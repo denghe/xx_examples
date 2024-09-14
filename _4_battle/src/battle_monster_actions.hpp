@@ -36,12 +36,12 @@ namespace Battle {
 		// todo
 		tar.health -= 1;
 		// todo: calculate damage
-		scene->effectTextManager.Add(tar.pos, { 0, -1 }, {255,0,0,127}, scene->rnd.Next<int32_t>(1, 1000));
+		scene->effectTextManager.Add(tar.pos, { 0, -1 }, { 255,222,131,127 }, scene->rnd.Next<int32_t>(1, 1000));
 		if (tar.health <= 0) {
 			scene->explosions.Emplace().Init(pos, radius / cRadius);
 			return true;
 		} else {
-			Add_Action_SetColor(xx::RGBA8_Red, 0.1);
+			Add_Action_SetColor({ 255,88,88,255 }, 0.1);
 			return false;
 		}
 	}

@@ -175,7 +175,7 @@
             <key>defaultPivotPoint</key>
             <point_f>0.5,0.5</point_f>
             <key>writePivotPoints</key>
-            <false/>
+            <true/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
@@ -298,6 +298,10 @@
             <key type="filename">../pics/explosion_13_5.png</key>
             <key type="filename">../pics/explosion_13_6.png</key>
             <key type="filename">../pics/explosion_13_7.png</key>
+            <key type="filename">../pics/monster_1.png</key>
+            <key type="filename">../pics/monster_2.png</key>
+            <key type="filename">../pics/monster_3.png</key>
+            <key type="filename">../pics/monster_4.png</key>
             <key type="filename">../pics/quad.png</key>
             <key type="filename">../pics/ring.png</key>
             <struct type="IndividualSpriteSettings">
@@ -326,6 +330,57 @@
                 <rect>2,2,3,4</rect>
                 <key>scale9Paddings</key>
                 <rect>2,2,3,4</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../pics/eye_fire_1.png</key>
+            <key type="filename">../pics/eye_fire_2.png</key>
+            <key type="filename">../pics/eye_fire_3.png</key>
+            <key type="filename">../pics/eye_fire_4.png</key>
+            <key type="filename">../pics/eye_fire_5.png</key>
+            <key type="filename">../pics/eye_fire_6.png</key>
+            <key type="filename">../pics/eye_fire_7.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.75,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,6,16,12</rect>
+                <key>scale9Paddings</key>
+                <rect>8,6,16,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../pics/staff_5.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,10,32,19</rect>
+                <key>scale9Paddings</key>
+                <rect>16,10,32,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">../pics/sword_16.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,6,32,11</rect>
+                <key>scale9Paddings</key>
+                <rect>16,6,32,11</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -444,6 +499,19 @@
                     <filename>../fonts/font_outline_97.png</filename>
                     <filename>../fonts/font_outline_98.png</filename>
                     <filename>../fonts/font_outline_99.png</filename>
+                    <filename>../pics/staff_5.png</filename>
+                    <filename>../pics/sword_16.png</filename>
+                    <filename>../pics/eye_fire_1.png</filename>
+                    <filename>../pics/eye_fire_2.png</filename>
+                    <filename>../pics/eye_fire_3.png</filename>
+                    <filename>../pics/eye_fire_4.png</filename>
+                    <filename>../pics/eye_fire_5.png</filename>
+                    <filename>../pics/eye_fire_6.png</filename>
+                    <filename>../pics/eye_fire_7.png</filename>
+                    <filename>../pics/monster_1.png</filename>
+                    <filename>../pics/monster_2.png</filename>
+                    <filename>../pics/monster_3.png</filename>
+                    <filename>../pics/monster_4.png</filename>
                 </array>
             </struct>
         </map>

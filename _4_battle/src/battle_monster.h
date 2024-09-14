@@ -10,6 +10,7 @@ namespace Battle {
 		XY pos{}, movementDirection{};
 		float radius{ 32 };
 		int32_t health{}, maxHealth{};
+		int32_t frameIndex;
 		xx::RGBA8 color;
 		xx::SpaceWeak<Monster> target;
 		// ...
