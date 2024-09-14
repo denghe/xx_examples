@@ -4,23 +4,77 @@ namespace Battle {
 
 	// todo
 
-	enum class ItemTypes {
-		Unknown,
-		Sword,
-		Staff
+	enum class ItemEquipmentLocations : uint8_t {
+		Bag,
+        Helm,
+        Amulet,
+        Shoulder,
+        Armor,
+        Belt,
+        Pants,
+        Glove,
+        Boots,
+        Ring,
+        Weapon,
+        Shield,
+        Accessory,
 		// ...
 	};
+
+	enum class ItemQualities : uint8_t {
+		Normal,
+		Excellent,
+		Rare,
+		Epic,
+		Legendary,
+		Ancient,
+		Archaic
+		// ...
+	};
+
+	//enum class ItemDataTypes {
+	// StatPack
+	// QuantityPack
+	//};
+
+	enum class ItemTypes : uint16_t {
+		Potion1,
+		Staff1,
+		Sword1,
+		// ...
+	};
+
+	struct Monster;
+	struct Skill {
+		typedef bool (*FuncType)(Monster* caster, Monster* target, int32_t* args);
+		static bool HealthAdd(Monster* caster, Monster* target, int32_t* args);
+		// ...
+		inline static FuncType funcs[] = {
+			Skill::HealthAdd
+			// ...
+		};
+		enum class Types : uint32_t {
+			HealthAdd,
+			// ...
+		};
+	};
+
 
 	/*********************************************************************************************/
 	// base data struct
 
+
+	struct alignas(8) ItemDataBase {
+		ItemTypes type;
+		ItemQualities qualitity;
+		ItemEquipmentLocations equipmentLocation;
+		int32_t quantityLimit;
+	};
+
 	struct alignas(8) ItemData {
 		union {
+			ItemDataBase base;
 			std::array<uint64_t, 2> _;	// todo: resize?
-			struct {
-				ItemTypes type;
-				int32_t __;
-			};
 		};
 	};
 	template<typename T>
@@ -29,34 +83,53 @@ namespace Battle {
 	/*********************************************************************************************/
 	// datas
 
-	struct alignas(8) ItemData_Sword {
-		static constexpr ItemTypes cType{ ItemTypes::Sword };
-		ItemTypes type;
-		// todo
-	};
-	static_assert(ItemDataCheck<ItemData_Sword>);
+	struct alignas(8) ItemData_Potion1 {
+		static constexpr ItemTypes cType{ ItemTypes::Potion1 };
+		ItemDataBase base;
+		Skill::Types skillType;
+		int32_t health;
 
-	struct alignas(8) ItemData_Staff {
-		static constexpr ItemTypes cType{ ItemTypes::Staff };
-		ItemTypes type;
-		// todo
+		void Init();
+		bool Cast(Monster* caster, Monster* target);
 	};
-	static_assert(ItemDataCheck<ItemData_Staff>);
+	static_assert(ItemDataCheck<ItemData_Potion1>);
+
+
+	//struct alignas(8) ItemData_Sword {
+	//	ItemTypes type;
+	//	ItemEquipmentLocations equipLocation;
+	//	// todo
+	//};
+	//static_assert(ItemDataCheck<ItemData_Sword>);
+
+
+	//struct alignas(8) ItemData_Staff {
+	//	ItemTypes type;
+	//	ItemEquipmentLocations equipLocation;
+	//	// todo
+	//};
+	//static_assert(ItemDataCheck<ItemData_Staff>);
 
 	// ...
 
 	/*********************************************************************************************/
 
 	struct Monster;
-	struct Item : ItemData {
+	struct Item {
+		// public
 		xx::SpaceWeak<Monster> owner;			// == null mean on floor
 		XY pos{};								// floor pos or owner's offset pos
 		float radians{};
-		int32_t lineNumber{};
+		// private
+		ItemData data;
+
+		template<typename T>
+		T& DataInit();
+
+		template<typename T>
+		T& DataRef() const;
 
 		void Init(xx::SpaceWeak<Monster> const& owner_, XY const& pos_, float radians_);
-		int32_t UpdateCore();
-		bool Update();
 	};
 
 }
