@@ -2,44 +2,39 @@
 
 namespace Battle {
 
-	//XX_INLINE void Item::Init(xx::SpaceWeak<Monster> const& owner_, XY const& pos_, float radians_) {
-	//	owner = owner_;
-	//	pos = pos_;
-	//	radians = radians_;
-	//}
+	inline Item Item::Generate(ItemTypes type) {
+		Item r;
+		r.type = type;
+		r.quantity = 1;
 
-	//template<typename T>
-	//XX_INLINE T& Item::DataInit() {
-	//	((T&)data).Init();
-	//	return (T&)data;
-	//}
+		switch (type) {
+		case ItemTypes::Potion1:
+			r.qualitity = ItemQualities::Normal;
+			r.equipmentLocation = ItemEquipmentLocations::Bag;
+			r.quantityLimit = 99;
+			// Skill_HealthAdd(SkillTypes type, float castSpeed, float percentage);
+			r.skill.Emplace<Skill_HealthAdd>(SkillTypes::HealthAdd, 5.f, 0.3f);
+			break;
 
-	//template<typename T>
-	//XX_INLINE T& Item::DataRef() const {
-	//	assert(((T&)data).base.type == T::cType);
-	//	return (T&)data;
-	//}
+		case ItemTypes::Staff1:
+			r.qualitity = ItemQualities::Normal;
+			r.equipmentLocation = ItemEquipmentLocations::Weapon;
+			r.quantityLimit = 0;
+			// Skill_Blade(SkillTypes type, float castSpeed, float distance, float radius, int32_t damage);
+			r.skill.Emplace<Skill_Blade>(SkillTypes::Blade, 1.0f,20.f, 32.f, 5);
+			break;
 
+		case ItemTypes::Sword1:
+			r.qualitity = ItemQualities::Normal;
+			r.equipmentLocation = ItemEquipmentLocations::Weapon;
+			r.quantityLimit = 0;
+			// Skill_FireBall(SkillTypes type, float castSpeed, float distance, float radius, float speed, float durationSeconds, int32_t damage);
+			r.skill.Emplace<Skill_FireBall>(SkillTypes::FireBall, 0.5f, 20.f, 16.f, 300.f, 3.f, 10);
+			break;
 
-
-
-
-	XX_INLINE bool Skill::HealthAdd(Monster* caster, Monster* target, int32_t* args) {
-		// todo
-
-		return false;
+			// ...
+		}
+		return r;
 	}
 
-	//XX_INLINE void ItemData_Potion1::Init() {
-	//	base.type = cType;
-	//	base.qualitity = ItemQualities::Normal;
-	//	base.equipmentLocation = ItemEquipmentLocations::Bag;
-	//	base.quantityLimit = 999;
-	//	skillType = Skill::Types::HealthAdd;
-	//	health = 50;
-	//}
-
-	//XX_INLINE bool ItemData_Potion1::Cast(Monster* caster, Monster* target) {
-	//	return Skill::funcs[(size_t)skillType](caster, target, &health);
-	//}
 };
