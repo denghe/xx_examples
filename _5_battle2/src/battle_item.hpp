@@ -27,9 +27,9 @@ namespace Battle {
 		pos = {};		// fill by user
 		radius = 32;
 		radians = 0;
-		statPack = StatPack::Make(1);
-		statPack[0].type = StatTypes::Mana;
-		statPack[0].value = 123;
+		stats = Stats::Make(1);
+		stats[0].type = StatTypes::Mana;
+		stats[0].value = 123;
 		cType = ItemTypes::Staff1;
 		cQualitity = ItemQualities::Normal;
 		cEquipmentLocation = ItemEquipmentLocations::Weapon;
@@ -51,9 +51,9 @@ namespace Battle {
 		pos = {};		// fill by user
 		radius = 32;
 		radians = 0;
-		statPack = StatPack::Make(1);
-		statPack[0].type = StatTypes::Health;
-		statPack[0].value = 123;
+		stats = Stats::Make(1);
+		stats[0].type = StatTypes::Health;
+		stats[0].value = 123;
 		cType = ItemTypes::Sword1;
 		cQualitity = ItemQualities::Normal;
 		cEquipmentLocation = ItemEquipmentLocations::Weapon;

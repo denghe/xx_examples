@@ -51,7 +51,7 @@ namespace Battle {
 		XY pos;															// floor pos or owner's offset pos
 		float radius;
 		float radians;
-		xx::Ref<StatPack> statPack;										// stats store
+		xx::Ref<Stats> stats;											// stats store
 		ItemTypes cType;
 		ItemQualities cQualitity;
 		ItemEquipmentLocations cEquipmentLocation;
