@@ -56,7 +56,6 @@ bottom1               2                    3
 	}
 
 	inline int32_t Scene::Update() {
-		++frameNumber;
 
 		// update monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {

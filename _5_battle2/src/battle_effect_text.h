@@ -18,7 +18,7 @@ namespace Battle {
 		int32_t lineNumber{};
 		xx::RGBA8 color{};
 		XY pos{}, inc{};
-		int32_t timeoutFrameNumber{};
+		float timeout{};
 		float alpha{};
 
 		// pos: original position,  dist: determine move direction

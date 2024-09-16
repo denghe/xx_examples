@@ -15,8 +15,8 @@ namespace Battle {
 	XX_INLINE int32_t EffectText::UpdateCore() {
 		COR_BEGIN
 			// move away
-			timeoutFrameNumber = gLooper.frameNumber + int32_t(cMoveDurationSeconds * Cfg::fps);
-			while(gLooper.frameNumber <= timeoutFrameNumber) {
+			timeout = gLooper.time + cMoveDurationSeconds;
+			while(gLooper.time <= timeout) {
 				pos += inc;
 				COR_YIELD
 			}

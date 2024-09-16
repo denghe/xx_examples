@@ -7,7 +7,7 @@ namespace Battle {
 			frameIndex = 0;
 		}
 		// timeout: suicide
-		if (scene->frameNumber > o.timeoutFrameNumber) {
+		if (gLooper.time > o.timeout) {
 			ActionRemove(o);
 		}
 	}
@@ -17,7 +17,7 @@ namespace Battle {
 			frameIndex = 1;
 		}
 		// delay
-		if (scene->frameNumber < o.timeoutFrameNumber) return;
+		if (gLooper.time < o.timeout) return;
 		// search
 		if (auto m = scene->monsters.FindNearestByRange<true>(
 			scene->srdd, pos.x, pos.y, o.searchRange, this)) {
@@ -34,7 +34,7 @@ namespace Battle {
 			frameIndex = 2;
 		}
 		// lost target? timeout?
-		if (!target.Exists() || scene->frameNumber > o.timeoutFrameNumber) {
+		if (!target.Exists() || gLooper.time > o.timeout) {
 			// suicide
 			ActionRemove(o);
 			return;
@@ -71,7 +71,7 @@ namespace Battle {
 			return;
 		}
 		// wait cast delay?
-		if (scene->frameNumber < o.timeoutFrameNumber) return;
+		if (gLooper.time < o.timeout) return;
 		// ref to target
 		auto& m = target();
 		// compare distance
@@ -100,7 +100,7 @@ namespace Battle {
 				return xx::ForeachResult::Continue;
 			}, this);
 			// refresh cast delay
-			o.timeoutFrameNumber = scene->frameNumber + int32_t(o.castDelaySeconds * gLooper.fps);
+			o.timeout = gLooper.time + o.castDelaySeconds;
 		} else {
 			// suicide
 			ActionRemove(o);
@@ -108,7 +108,7 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_SetColor& o) {
-		if (scene->frameNumber > o.timeoutFrameNumber) {
+		if (gLooper.time > o.timeout) {
 			// suicide
 			ActionRemove(o);
 			return;

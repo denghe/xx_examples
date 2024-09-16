@@ -3,7 +3,6 @@
 namespace Battle {
 
 	struct Scene {
-		int32_t frameNumber{};
 		int32_t autoId{};
 		xx::SpaceABGrid<Block> blocks;
 		xx::BlockLink<Explosion> explosions;

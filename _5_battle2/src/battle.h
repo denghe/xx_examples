@@ -6,7 +6,6 @@
 #include "battle_explosion.h"
 #include "battle_effect_text.h"
 #include "battle_block.h"
-#include "battle_skill.h"
 #include "battle_stat.h"
 #include "battle_item.h"
 #include "battle_scene.h"
@@ -44,7 +43,6 @@
 
 #include "battle_scene.hpp"
 #include "battle_stat.hpp"
-#include "battle_skill.hpp"
 #include "battle_item.hpp"
 #include "battle_block.hpp"
 #include "battle_bladelight.hpp"

@@ -35,7 +35,7 @@ namespace Battle {
 	struct alignas(8) Action_Stun {
 		static constexpr ActionTypes cType{ ActionTypes::Stun };
 		ActionTypes type;
-		int32_t timeoutFrameNumber;
+		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_Stun>);
 
@@ -44,7 +44,7 @@ namespace Battle {
 		static constexpr ActionTypes cType{ ActionTypes::SearchTarget };
 		ActionTypes type;
 		float searchRange;
-		int32_t timeoutFrameNumber;
+		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_SearchTarget>);
 
@@ -53,7 +53,7 @@ namespace Battle {
 		static constexpr ActionTypes cType{ ActionTypes::MoveToTarget };
 		ActionTypes type;
 		float movementSpeed, distanceLimit;
-		int32_t timeoutFrameNumber;
+		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_MoveToTarget>);
 
@@ -62,7 +62,7 @@ namespace Battle {
 		static constexpr ActionTypes cType{ ActionTypes::HitTarget };
 		ActionTypes type;
 		float distanceLimit, castDelaySeconds;
-		int32_t timeoutFrameNumber;
+		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_HitTarget>);
 
@@ -71,7 +71,7 @@ namespace Battle {
 		static constexpr ActionTypes cType{ ActionTypes::SetColor };
 		ActionTypes type;
 		xx::RGBA8 color;
-		int32_t timeoutFrameNumber;
+		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_SetColor>);
 
