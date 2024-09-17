@@ -47,6 +47,16 @@ xx::Task<> Looper::MainTask() {
 			this->updateSpeed = 10;
 		});
 
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Speed: 100x", [&]() {
+			this->updateSpeed = 100;
+		});
+
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Speed: 1000x", [&]() {
+			this->updateSpeed = 1000;
+		});
+
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
 	camera.SetScale(1.f);

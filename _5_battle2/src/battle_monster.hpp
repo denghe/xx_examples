@@ -9,7 +9,17 @@ namespace Battle {
 		movementDirection.y = std::sin(radians);
 		auto n = ++gScene->autoId;
 		id = n;
-		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, 11);	// todo: damage
+
+		// init stat
+		statInfoMax.health = 20;
+		statInfoMax.mana = 50;
+		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, statInfoMax.health + 1);
+		statInfo.mana = 50;
+		// todo: more init
+
+		// add some skills
+		skills.Emplace().Emplace<Item_Sword1>()->Init(this);
+
 		TryRestoreBornAbility();
 		BlocksLimit();
 	}

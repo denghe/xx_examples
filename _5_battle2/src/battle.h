@@ -15,8 +15,7 @@
 
 // todo:
 // 
-// remove auto gen monster?
-// click button, begin new match
+// struct projectile,  scene projectiles
 // 
 // 1. random drop some weapons on floor ( knife, staff )
 // 2. random generate monsters
@@ -42,6 +41,9 @@
 // CriticalHitChance CriticalHitDamage
 
 #include "battle_scene.hpp"
+#include "battle_scene_init.hpp"
+#include "battle_scene_update.hpp"
+#include "battle_scene_draw.hpp"
 #include "battle_stat.hpp"
 #include "battle_item_init.hpp"
 #include "battle_item_cast.hpp"
