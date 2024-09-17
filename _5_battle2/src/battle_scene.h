@@ -20,6 +20,8 @@ namespace Battle {
 		xx::Task<> MainLogic();
 		void NewGame();
 		// ...
+
+		void MakeBlade(Monster* caster, XY const& shootPos, float radians, float radius, int32_t damage);
 	};
 
 }

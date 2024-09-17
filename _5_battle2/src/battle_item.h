@@ -41,10 +41,11 @@ namespace Battle {
 
 	struct Monster;
 	struct Item {
+		Item() = default;
 		Item(Item const&) = delete;
 		Item& operator=(Item const&) = delete;
 		virtual ~Item() {}
-		virtual bool Cast(Monster* target) {};							// return true: success
+		virtual bool Cast(Monster* target) { return false; };			// return true: success
 		// ... more cast ?
 
 		xx::SpaceWeak<Monster> owner;									// empty mean on floor
@@ -67,6 +68,7 @@ namespace Battle {
 	struct Item_Potion1 : Item {
 		float cPercentage;
 
+		Item_Potion1() = default;
 		void Init(Monster* owner_);
 		bool Cast(Monster* target) override;
 	};
@@ -78,6 +80,7 @@ namespace Battle {
 		float cBulletLifeSeconds;
 		int32_t cBulletDamage;
 
+		Item_Staff1() = default;
 		void Init(Monster* owner_);
 		bool Cast(Monster* target) override;
 	};
@@ -87,6 +90,7 @@ namespace Battle {
 		float cBulletRadius;
 		int32_t cBulletDamage;
 
+		Item_Sword1() = default;
 		void Init(Monster* owner_);
 		bool Cast(Monster* target) override;
 	};

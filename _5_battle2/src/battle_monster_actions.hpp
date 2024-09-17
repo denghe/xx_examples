@@ -34,10 +34,10 @@ namespace Battle {
 
 	inline bool Monster::Hurt(Monster &tar) {
 		// todo
-		tar.health -= 1;
+		tar.statInfo.health -= 1;
 		// todo: calculate damage
 		scene->effectTextManager.Add(tar.pos, { 0, -1 }, { 255,222,131,127 }, scene->rnd.Next<int32_t>(1, 1000));
-		if (tar.health <= 0) {
+		if (tar.statInfo.health <= 0) {
 			scene->explosions.Emplace().Init(tar.pos, radius / cRadius);
 			return true;
 		} else {

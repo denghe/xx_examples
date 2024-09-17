@@ -23,8 +23,7 @@ namespace Battle {
 			scene->srdd, pos.x, pos.y, o.searchRange, this)) {
 			target = m;
 		}
-		// suicide
-		ActionRemove(o);
+		ActionRemove(o);	// suicide
 		// next step
 		Add_Action_MoveToTarget(2, 20, 10);		// todo: get args from cfg?
 	}
@@ -39,16 +38,14 @@ namespace Battle {
 			ActionRemove(o);
 			return;
 		}
-		// ref to target
-		auto& m = target();
 		// compare distance
-		auto d = m.pos - pos;
-		auto r = m.radius + radius + o.distanceLimit;
+		auto& t = target();	// ref
+		auto d = t.pos - pos;
+		auto r = t.radius + radius + o.distanceLimit;
 		auto mag2 = d.x * d.x + d.y * d.y;
 		// reached
 		if (mag2 <= r * r) {
-			// suicide
-			ActionRemove(o);
+			ActionRemove(o);	// suicide
 			// next step
 			Add_Action_HitTarget(20, 0.5);		// todo: get args from cfg?
 		} else {
@@ -66,51 +63,28 @@ namespace Battle {
 		}
 		// lost target?
 		if (!target.Exists()) {
-			// suicide
-			ActionRemove(o);
+			ActionRemove(o);	// suicide
 			return;
 		}
-		// wait cast delay?
-		if (gLooper.time < o.timeout) return;
-		// ref to target
-		auto& m = target();
-		// compare distance
-		auto d = m.pos - pos;
-		auto r = m.radius + radius + o.distanceLimit;
+		
+		// ensure distance
+		auto& t = target();	// ref
+		auto d = t.pos - pos;
+		auto r = t.radius + radius + o.distanceLimit;
 		auto mag2 = d.x * d.x + d.y * d.y;
-		// reached
-		if (mag2 <= r * r) {
-			// calc blade light pos & radians & scale
-			auto r = std::atan2(d.y, d.x);
-			auto sin = std::sin(r);
-			auto cos = std::cos(r);
-			auto p = pos + XY{ cos, sin } *(radius + BladeLight::cRadius * 0.5f);
-			scene->bladeLights.Emplace().Init(p, r, 1);
-			// hit
-			scene->monsters.Foreach9All<true>(p.x, p.y, [&](Monster& mm)->xx::ForeachResult {
-				auto zd = mm.pos - p;
-				auto zr = mm.radius + BladeLight::cRadius;
-				auto zmag2 = zd.x * zd.x + zd.y * zd.y;
-				// cross
-				if (zmag2 <= zr * zr) {
-					if (Hurt(mm)) {
-						return xx::ForeachResult::RemoveAndContinue;
-					}
-				}
-				return xx::ForeachResult::Continue;
-			}, this);
-			// refresh cast delay
-			o.timeout = gLooper.time + o.castDelaySeconds;
-		} else {
-			// suicide
+		if (mag2 <= r * r) {	// reached
+			// cast skills?
+			for (auto& s : skills) {
+				s->Cast(&t);		// todo: if not success( waiting cd ... ), suicide ?
+			}
+		} else {	// not reached: suicide this action, search again
 			ActionRemove(o);
 		}
 	}
 
 	XX_INLINE void Monster::Case_(Action_SetColor& o) {
 		if (gLooper.time > o.timeout) {
-			// suicide
-			ActionRemove(o);
+			ActionRemove(o);	// suicide
 			return;
 		}
 		color = o.color;

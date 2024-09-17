@@ -7,12 +7,15 @@ namespace Battle {
 		static constexpr float cRadius{ 32 };
 		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
+		StatInfo statInfo, statInfoMax;
+		xx::Listi32<xx::Shared<Item>> skills;
+
 		XY pos{}, movementDirection{};
 		float radius{ 32 };
-		int32_t health{}, maxHealth{};
 		int32_t frameIndex;
 		xx::RGBA8 color;
 		xx::SpaceWeak<Monster> target;
+
 		// ...
 
 		/***************************************************/

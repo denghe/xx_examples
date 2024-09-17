@@ -1,13 +1,13 @@
 ﻿#pragma once
 #include "looper.h"
 #include "battle_action.h"
+#include "battle_stat.h"
+#include "battle_item.h"
 #include "battle_monster.h"
 #include "battle_bladelight.h"
 #include "battle_explosion.h"
 #include "battle_effect_text.h"
 #include "battle_block.h"
-#include "battle_stat.h"
-#include "battle_item.h"
 #include "battle_scene.h"
 
 // simulate monsters death match battle
@@ -43,7 +43,8 @@
 
 #include "battle_scene.hpp"
 #include "battle_stat.hpp"
-#include "battle_item.hpp"
+#include "battle_item_init.hpp"
+#include "battle_item_cast.hpp"
 #include "battle_block.hpp"
 #include "battle_bladelight.hpp"
 #include "battle_effect_text.hpp"
