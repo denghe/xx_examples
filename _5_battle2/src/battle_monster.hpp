@@ -2,15 +2,14 @@
 
 namespace Battle {
 
-	inline void Monster::Init(Scene* scene_, XY const& pos_) {
-		scene = scene_;
-		auto radians = scene->rnd.Next<float>(-gPI, gPI);
+	inline void Monster::Init(XY const& pos_) {
+		auto radians = gScene->rnd.Next<float>(-gPI, gPI);
 		pos = pos_;
 		movementDirection.x = std::cos(radians);
 		movementDirection.y = std::sin(radians);
-		auto n = ++scene->autoId;
+		auto n = ++gScene->autoId;
 		id = n;
-		statInfo.health = statInfoMax.health = scene->rnd.Next<int32_t>(1, 11);	// todo: damage
+		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, 11);	// todo: damage
 		TryRestoreBornAbility();
 		BlocksLimit();
 	}

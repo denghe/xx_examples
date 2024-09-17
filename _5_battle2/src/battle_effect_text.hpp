@@ -15,8 +15,8 @@ namespace Battle {
 	XX_INLINE int32_t EffectText::UpdateCore() {
 		COR_BEGIN
 			// move away
-			timeout = gLooper.time + cMoveDurationSeconds;
-			while(gLooper.time <= timeout) {
+			timeout = gScene->time + cMoveDurationSeconds;
+			while(gScene->time <= timeout) {
 				pos += inc;
 				COR_YIELD
 			}

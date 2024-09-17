@@ -18,6 +18,7 @@ struct Looper : xx::Engine<Looper>, Cfg {
 
 	xx::Camera camera;
 	xx::Shared<Battle::Scene> scene;
+	int32_t updateSpeed{ 1 };
 
 	// mouse states
 	bool dragging{}, lastMBState{};
@@ -34,4 +35,4 @@ struct Looper : xx::Engine<Looper>, Cfg {
 
 extern Looper gLooper;
 extern ResTpFrames& gRes;
-inline Battle::Scene* scene{};	// ref to Looper.scene for easy use
+inline Battle::Scene* gScene{};	// ref to Looper.scene for easy use

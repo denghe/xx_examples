@@ -7,7 +7,7 @@ namespace Battle {
 			frameIndex = 0;
 		}
 		// timeout: suicide
-		if (gLooper.time > o.timeout) {
+		if (gScene->time > o.timeout) {
 			ActionRemove(o);
 		}
 	}
@@ -17,10 +17,10 @@ namespace Battle {
 			frameIndex = 1;
 		}
 		// delay
-		if (gLooper.time < o.timeout) return;
+		if (gScene->time < o.timeout) return;
 		// search
-		if (auto m = scene->monsters.FindNearestByRange<true>(
-			scene->srdd, pos.x, pos.y, o.searchRange, this)) {
+		if (auto m = gScene->monsters.FindNearestByRange<true>(
+			gScene->srdd, pos.x, pos.y, o.searchRange, this)) {
 			target = m;
 		}
 		ActionRemove(o);	// suicide
@@ -33,7 +33,7 @@ namespace Battle {
 			frameIndex = 2;
 		}
 		// lost target? timeout?
-		if (!target.Exists() || gLooper.time > o.timeout) {
+		if (!target.Exists() || gScene->time > o.timeout) {
 			// suicide
 			ActionRemove(o);
 			return;
@@ -83,7 +83,7 @@ namespace Battle {
 	}
 
 	XX_INLINE void Monster::Case_(Action_SetColor& o) {
-		if (gLooper.time > o.timeout) {
+		if (gScene->time > o.timeout) {
 			ActionRemove(o);	// suicide
 			return;
 		}

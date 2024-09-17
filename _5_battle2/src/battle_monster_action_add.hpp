@@ -11,7 +11,7 @@ namespace Battle {
 
 		// create & init
 		auto& o = ActionAdd<Action_Stun>();
-		o.timeout = gLooper.time + durationSeconds;
+		o.timeout = gScene->time + durationSeconds;
 	}
 
 	XX_INLINE void Monster::Add_Action_SearchTarget(float searchRange, float castDelaySeconds) {
@@ -23,7 +23,7 @@ namespace Battle {
 		// create & init
 		auto& o = ActionAdd<Action_SearchTarget>();
 		o.searchRange = searchRange;
-		o.timeout = gLooper.time + castDelaySeconds;
+		o.timeout = gScene->time + castDelaySeconds;
 	}
 
 	XX_INLINE void Monster::Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds) {
@@ -36,7 +36,7 @@ namespace Battle {
 		auto& o = ActionAdd<Action_MoveToTarget>();
 		o.movementSpeed = movementSpeed;
 		o.distanceLimit = distanceLimit;
-		o.timeout = gLooper.time + timeoutSeconds;
+		o.timeout = gScene->time + timeoutSeconds;
 	}
 
 	XX_INLINE void Monster::Add_Action_HitTarget(float distanceLimit, float castDelaySeconds) {
@@ -56,7 +56,7 @@ namespace Battle {
 		// create or ref & init
 		auto& o = ActionAddOrRef<Action_SetColor>();
 		o.color = color;
-		o.timeout = gLooper.time + durationSeconds;
+		o.timeout = gScene->time + durationSeconds;
 	}
 
 	// ...

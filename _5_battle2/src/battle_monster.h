@@ -58,7 +58,7 @@ namespace Battle {
 
 		/***************************************************/
 
-		void Init(Scene* scene_, XY const& pos_ = Cfg::mapSize_2);
+		void Init(XY const& pos_ = Cfg::mapSize_2);
 		int32_t Update();
 
 		// for logic call

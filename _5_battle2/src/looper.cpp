@@ -37,12 +37,22 @@ xx::Task<> Looper::MainTask() {
 			scene->NewGame();
 		});
 
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -50 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Speed: 1x", [&]() {
+			this->updateSpeed = 1;
+		});
+
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -100 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Speed: 10x", [&]() {
+			this->updateSpeed = 10;
+		});
+
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
 	camera.SetScale(1.f);
 
 	scene.Emplace();
-	::scene = scene.pointer;
+	gScene = scene.pointer;
 	scene->Init();
 
 	clearColor = { 33, 33, 33, 255 };
@@ -104,7 +114,9 @@ void Looper::Update() {
 	//	scene->TryMakeMonster(p);
 	//}
 
-	scene->Update();
+	for (int32_t i = 0; i < updateSpeed; ++i) {
+		scene->Update();
+	}
 }
 
 

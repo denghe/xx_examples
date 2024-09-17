@@ -7,7 +7,7 @@ namespace Battle {
 		assert(owner);
 		auto caster = owner.pointer;
 
-		auto elapsedSeconds = gLooper.time - lastCastTime;
+		auto elapsedSeconds = gScene->time - lastCastTime;
 		if (elapsedSeconds < cCastDelay) return false;
 		if (elapsedSeconds > gLooper.frameDelay * 1.1f && elapsedSeconds > cCastDelay) {
 			elapsedSeconds = cCastDelay;		// first call: limit
@@ -30,7 +30,7 @@ namespace Battle {
 			}
 		}
 
-		lastCastTime = gLooper.time - (elapsedSeconds - cCastDelay);
+		lastCastTime = gScene->time - (elapsedSeconds - cCastDelay);
 
 		return true;
 	}
@@ -39,7 +39,7 @@ namespace Battle {
 		assert(owner);
 		auto caster = owner.pointer;
 
-		auto elapsedSeconds = gLooper.time - lastCastTime;
+		auto elapsedSeconds = gScene->time - lastCastTime;
 		if (elapsedSeconds < cCastDelay) return false;
 		if (elapsedSeconds > gLooper.frameDelay * 1.1f && elapsedSeconds > cCastDelay) {
 			elapsedSeconds = cCastDelay;		// first call: limit
@@ -58,7 +58,7 @@ namespace Battle {
 		auto cos = std::cos(radians);
 		auto count = int(elapsedSeconds / cCastDelay);
 		elapsedSeconds -= count * cCastDelay;
-		lastCastTime = gLooper.time - elapsedSeconds;
+		lastCastTime = gScene->time - elapsedSeconds;
 		auto sdStep = cBulletSpeed / count;
 		for (int i = 0; i < count; ++i) {
 			auto distance = cShootDistance - sdStep * i;
@@ -73,7 +73,7 @@ namespace Battle {
 		assert(owner);
 		auto caster = owner.pointer;
 
-		auto elapsedSeconds = gLooper.time - lastCastTime;
+		auto elapsedSeconds = gScene->time - lastCastTime;
 		if (elapsedSeconds < cCastDelay) return false;
 		if (elapsedSeconds > gLooper.frameDelay * 1.1f && elapsedSeconds > cCastDelay) {
 			elapsedSeconds = cCastDelay;		// first call: limit
@@ -92,10 +92,10 @@ namespace Battle {
 		auto cos = std::cos(radians);
 		auto count = int(elapsedSeconds / cCastDelay);
 		elapsedSeconds -= count * cCastDelay;
-		lastCastTime = gLooper.time - elapsedSeconds;
+		lastCastTime = gScene->time - elapsedSeconds;
 		shootPos = caster->pos + XY{ cos * cShootDistance, sin * cShootDistance };
 		for (int i = 0; i < count; ++i) {
-			scene->MakeBlade(caster, shootPos, radians, cBulletRadius, cBulletDamage);
+			gScene->MakeBlade(caster, shootPos, radians, cBulletRadius, cBulletDamage);
 		}
 
 		return false;

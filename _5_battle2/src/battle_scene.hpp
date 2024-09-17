@@ -56,6 +56,7 @@ bottom1               2                    3
 	}
 
 	inline int32_t Scene::Update() {
+		time += gLooper.frameDelay;
 
 		// update monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {
@@ -199,9 +200,9 @@ bottom1               2                    3
 		// generate some monsters
 		XY p;
 		for (int i = 0; i < 100; ++i) {
-			p.x = scene->rnd.Next<float>(Cfg::mapEdgeMin.x + Cfg::maxItemSize_2, Cfg::mapEdgeMax.x - Cfg::maxItemSize_2);
-			p.y = scene->rnd.Next<float>(Cfg::mapEdgeMin.y + Cfg::maxItemSize_2, Cfg::mapEdgeMax.y - Cfg::maxItemSize_2);
-			auto& m = scene->monsters.EmplaceInit(scene, p);
+			p.x = rnd.Next<float>(Cfg::mapEdgeMin.x + Cfg::maxItemSize_2, Cfg::mapEdgeMax.x - Cfg::maxItemSize_2);
+			p.y = rnd.Next<float>(Cfg::mapEdgeMin.y + Cfg::maxItemSize_2, Cfg::mapEdgeMax.y - Cfg::maxItemSize_2);
+			auto& m = monsters.EmplaceInit(p);
 			m.skills.Emplace().Emplace<Item_Sword1>()->Init(&m);
 		}
 
@@ -215,10 +216,10 @@ bottom1               2                    3
 		assert(caster);
 
 		// make effect
-		scene->bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
+		bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
 		
 		// hit
-		scene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
+		monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
 			auto d = m.pos - shootPos;
 			auto r = m.radius + BladeLight::cRadius;
 			auto mag2 = d.x * d.x + d.y * d.y;

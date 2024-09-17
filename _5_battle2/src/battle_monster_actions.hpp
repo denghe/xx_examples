@@ -3,7 +3,7 @@
 namespace Battle {
 
 	XX_INLINE void Monster::Destroy() {
-		scene->monsters.Remove(*this);
+		gScene->monsters.Remove(*this);
 	}
 
 	inline void Monster::TryRestoreBornAbility() {
@@ -12,7 +12,7 @@ namespace Battle {
 			&& !ActionExists<Action_MoveToTarget>()
 			&& !ActionExists<Action_HitTarget>()
 			) {
-			Add_Action_SearchTarget(1300, 0.2);	// todo: get args from cfg?
+			Add_Action_SearchTarget(2000, 0.2);	// todo: get args from cfg?
 		}
 
 		if (!ActionExists<Action_SetColor>()) {
@@ -33,12 +33,11 @@ namespace Battle {
 	}
 
 	inline bool Monster::Hurt(Monster &tar) {
-		// todo
-		tar.statInfo.health -= 1;
 		// todo: calculate damage
-		scene->effectTextManager.Add(tar.pos, { 0, -1 }, { 255,222,131,127 }, scene->rnd.Next<int32_t>(1, 1000));
+		tar.statInfo.health -= 1;
+		gScene->effectTextManager.Add(tar.pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
 		if (tar.statInfo.health <= 0) {
-			scene->explosions.Emplace().Init(tar.pos, radius / cRadius);
+			gScene->explosions.Emplace().Init(tar.pos, radius / cRadius);
 			return true;
 		} else {
 			Add_Action_SetColor({ 255,88,88,255 }, 0.1);
@@ -47,19 +46,18 @@ namespace Battle {
 	}
 
 	XX_INLINE bool Monster::BlocksLimit() {
-		// calc aabb
-		auto& sg = scene->blocks;
-		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };
-		if (!sg.TryFixAABB(aabb)) {
-			return true;
+		auto& sg = gScene->blocks;
+		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };	// pos to aabb
+		if (!sg.TryLimitAABB(aabb)) {
+			return true;	// bug?
 		}
-		sg.ForeachAABB(aabb);
-		auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
+		sg.ClearResults();
+		sg.ForeachAABB(aabb);	// search
 		for (auto b : sg.results) {
 			b->PushOut(*this);
 		}
-		if (pos.IsOutOfEdge(gLooper.mapSize)) {
-			return true;
+		if (pos.IsOutOfEdge(gLooper.mapSize)) {	
+			return true;	// bug?
 		}
 		return false;
 	}
