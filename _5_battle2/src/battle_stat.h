@@ -10,7 +10,10 @@ namespace Battle {
 		// ...
 	};
 
-	struct Stats;
+	struct alignas(8) Stat {
+		StatTypes type;
+		int32_t value;
+	};
 
 	// int array
 	struct alignas(8) StatInfo {
@@ -19,20 +22,7 @@ namespace Battle {
 		int32_t damage{};
 		// ...
 
-		void Append(Stats& sp);
-	};
-
-	struct alignas(8) Stat {
-		StatTypes type;
-		int32_t value;
-	};
-
-	struct alignas(8) Stats {
-		int32_t statsLen{};
-		Stat stats[0];
-		Stat& operator[](int32_t index);
-
-		static xx::Ref<Stats> Make(int32_t statsLen);
+		void Append(Stat const& sp);
 	};
 
 }

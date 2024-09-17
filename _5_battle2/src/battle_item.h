@@ -47,25 +47,19 @@ namespace Battle {
 		virtual bool Cast(Monster* target) {};							// return true: success
 		// ... more cast ?
 
-		xx::SpaceWeak<Monster> owner;									// == null mean on floor
+		xx::SpaceWeak<Monster> owner;									// empty mean on floor
 		XY pos;															// floor pos or owner's offset pos
 		float radius;
 		float radians;
-		xx::Ref<Stats> stats;											// stats store
+		xx::TinyList<Stat> stats;
 		ItemTypes cType;
 		ItemQualities cQualitity;
 		ItemEquipmentLocations cEquipmentLocation;
 		int32_t cQuantityLimit;
 		int32_t quantity;
 
-		float cChargeSpeed;												// = cast speed( count per seconds ) / FPS
-		/*
-			chargePool += cChargeSpeed;
-			int count = (int)chargePool;
-			chargePool -= count;
-			for i to count  cast
-		*/
-		float chargePool;
+		float cCastDelay;
+		float lastCastTime;
 
 		// ...
 	};
