@@ -40,7 +40,7 @@ namespace Battle {
 	// cXxxxx prefix c: const, config
 
 	struct Monster;
-	struct Item {
+	struct Item : Drawable {
 		Item() = default;
 		Item(Item const&) = delete;
 		Item& operator=(Item const&) = delete;
@@ -49,9 +49,6 @@ namespace Battle {
 		// ... more cast ?
 
 		xx::SpaceWeak<Monster> owner;									// empty mean on floor
-		XY pos;															// floor pos or owner's offset pos
-		float radius;
-		float radians;
 		xx::TinyList<Stat> stats;
 		ItemTypes cType;
 		ItemQualities cQualitity;

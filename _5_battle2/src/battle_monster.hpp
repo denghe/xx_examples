@@ -5,10 +5,11 @@ namespace Battle {
 	inline void Monster::Init(XY const& pos_) {
 		auto radians = gScene->rnd.Next<float>(-gPI, gPI);
 		pos = pos_;
+		radius = cRadius;
+		radians = 0;
+		frame = gRes.monster_1;
 		movementDirection.x = std::cos(radians);
 		movementDirection.y = std::sin(radians);
-		auto n = ++gScene->autoId;
-		id = n;
 
 		// init stat
 		statInfoMax.health = 20;
@@ -42,8 +43,8 @@ namespace Battle {
 			}
 		}
 
-		// handle blocks
-		if (BlocksLimit()) return -1;
+		// suicide check
+		if (isDead) return -1;
 
 		// try restore something
 		TryRestoreBornAbility();
@@ -51,6 +52,60 @@ namespace Battle {
 		// update space grid?
 		if (posBak == pos) return 0;
 		else return 1;
+	}
+
+	inline void Monster::DrawBars() {
+		// health( bg + fg ), mana( bg + fg )
+		auto& f = *gRes.quad;
+		auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 4);
+		auto hpBgPos = gLooper.camera.ToGLPos( pos + XY{ -32, -39 } );
+		auto hpFgPos = hpBgPos + XY{ 1, 0 };
+		auto bgScale = gLooper.camera.scale * XY{ 1, 0.1 };
+		auto hpFgScale = gLooper.camera.scale * XY{ (float)statInfo.health / statInfoMax.health * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
+		auto manaBgPos = hpBgPos + XY{ 0, -7 };
+		auto manaFgPos = manaBgPos + XY{ 1, 0 };
+		auto manaFgScale = gLooper.camera.scale * XY{ (float)statInfo.mana / statInfoMax.mana * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
+		{
+			auto& q = qs[0];
+			q.pos = hpBgPos;
+			q.anchor = { 0, 0.5f };
+			q.scale = bgScale;
+			q.radians = 0;
+			q.colorplus = colorplus;
+			q.color = xx::RGBA8_Black;
+			q.texRect.data = f.textureRect.data;
+		}
+		{
+			auto& q = qs[1];
+			q.pos = hpFgPos;
+			q.anchor = { 0, 0.5f };
+			q.scale = hpFgScale;
+			q.radians = 0;
+			q.colorplus = colorplus;
+			q.color = xx::RGBA8_Red;
+			q.texRect.data = f.textureRect.data;
+		}
+		{
+			auto& q = qs[2];
+			q.pos = manaBgPos;
+			q.anchor = { 0, 0.5f };
+			q.scale = bgScale;
+			q.radians = 0;
+			q.colorplus = colorplus;
+			q.color = xx::RGBA8_Black;
+			q.texRect.data = f.textureRect.data;
+		}
+		{
+			auto& q = qs[3];
+			q.pos = manaFgPos;
+			q.anchor = { 0, 0.5f };
+			q.scale = manaFgScale;
+			q.radians = 0;
+			q.colorplus = colorplus;
+			q.color = xx::RGBA8_Blue;
+			q.texRect.data = f.textureRect.data;
+		}
+
 	}
 
 };

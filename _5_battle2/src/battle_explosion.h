@@ -2,12 +2,11 @@
 
 namespace Battle {
 
-	struct Explosion {
-		constexpr static float cScale{ 2.2 };
-		constexpr static float cFrameInc{ 0.3f };
+	struct Explosion : Drawable {
+		constexpr static float cRadius{ 70 };
+		constexpr static float cFrameInc{ 18 / Cfg::fps };
 
-		XY pos{};
-		float radians{}, scale{}, frameIndex{};
+		float frameIndex{};
 
 		void Init(XY const& pos_, float scale_);
 		bool Update();

@@ -9,6 +9,7 @@ namespace Battle {
 			owner = owner_;
 		}
 		//pos
+		//frame
 		radius = 16;
 		radians = 0;
 		//stats
@@ -27,6 +28,7 @@ namespace Battle {
 			owner = owner_;
 		}
 		//pos
+		frame = gRes.staff_5;
 		radius = 32;
 		radians = 0;
 		stats.Reserve(1);
@@ -50,6 +52,7 @@ namespace Battle {
 			owner = owner_;
 		}
 		//pos
+		frame = gRes.sword_16;
 		radius = 32;
 		radians = 0;
 		stats.Reserve(1);
@@ -61,7 +64,7 @@ namespace Battle {
 		quantity = 0;
 		cCastDelay = 1.f;
 		lastCastTime = 0;
-		cShootDistance = 20;
+		cShootDistance = 30;
 		cBulletRadius = 32;
 		cBulletDamage = 5;
 	}

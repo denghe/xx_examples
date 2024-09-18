@@ -4,7 +4,6 @@ namespace Battle {
 
 	struct Scene {
 		float time{};		// do not use gScene->time for speedup
-		int32_t autoId{};
 		xx::SpaceABGrid<Block> blocks;
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;

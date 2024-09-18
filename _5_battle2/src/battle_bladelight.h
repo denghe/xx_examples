@@ -2,12 +2,11 @@
 
 namespace Battle {
 
-	struct BladeLight {
+	struct BladeLight : Drawable {
 		constexpr static float cRadius{ 32 };
 		constexpr static float cFadeOutStep{ 1.f / 0.2f / Cfg::fps };
 
-		XY pos{};
-		float radians{}, scale{}, alpha{};
+		float alpha{};
 		int32_t lineNumber{};
 
 		void Init(XY const& pos_, float radians_, float scale_);

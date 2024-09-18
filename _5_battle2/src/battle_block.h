@@ -25,6 +25,8 @@ namespace Battle {
 
 		bool IntersectCircle(XY const& p, float radius);
 		void PushOut(Monster& m);
+
+		void Draw();
 	};
 
 }

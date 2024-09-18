@@ -3,23 +3,20 @@
 namespace Battle {
 
 	struct Scene;
-	struct Monster {
+	struct Monster : Drawable {
 		static constexpr float cRadius{ 32 };
 		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
 		StatInfo statInfo, statInfoMax;
 		xx::Listi32<xx::Shared<Item>> skills;
 
-		XY pos{}, movementDirection{};
-		float radius{ 32 };
-		int32_t frameIndex;
-		xx::RGBA8 color;
 		xx::SpaceWeak<Monster> target;
+		XY movementDirection{};
+		bool isDead{};
 
 		// ...
 
 		/***************************************************/
-		int32_t id{};
 		int32_t actionsLen{};
 		uint64_t actionFlags{};
 		Action actions[2];				// todo: set more cap
@@ -60,6 +57,7 @@ namespace Battle {
 
 		void Init(XY const& pos_ = Cfg::mapSize_2);
 		int32_t Update();
+		void DrawBars();	// health, mana, exp... bars
 
 		// for logic call
 		void Destroy();

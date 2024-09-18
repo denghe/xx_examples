@@ -5,8 +5,9 @@ namespace Battle {
 	inline void BladeLight::Init(XY const& pos_, float radians_, float scale_) {
 		pos = pos_;
 		radians = radians_;
-		scale = scale_;
+		radius = cRadius * scale_;
 		alpha = 1;
+		frame = gRes.blade_light;
 	}
 
 	XX_INLINE int32_t BladeLight::UpdateCore() {
@@ -25,6 +26,7 @@ namespace Battle {
 
 	inline bool BladeLight::Update() {
 		lineNumber = UpdateCore();
+		color.a = int8_t(255 * alpha);
 		return lineNumber < 0;
 	}
 

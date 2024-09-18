@@ -319,4 +319,16 @@ namespace Battle {
         pushOutFuncs[idx](pos.x, pos.y, halfSize.x, halfSize.y, p.x, p.y, r);
     }
 
+    XX_INLINE void Block::Draw() {
+        auto& f = *gRes.quad;
+        auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 1);
+        q.pos = gLooper.camera.ToGLPos(aabb.from);
+        q.anchor = { 0, 1 };
+        q.scale = (aabb.to - aabb.from) / 64 * gLooper.camera.scale;
+        q.radians = 0;
+        q.colorplus = 1;
+        q.color = { 55,55,55,255 };
+        q.texRect.data = f.textureRect.data;
+    }
+
 };

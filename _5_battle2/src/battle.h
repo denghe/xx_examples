@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "looper.h"
+#include "battle_drawable.h"
 #include "battle_action.h"
 #include "battle_stat.h"
 #include "battle_item.h"
+#include "battle_projectile.h"
 #include "battle_monster.h"
 #include "battle_bladelight.h"
 #include "battle_explosion.h"
@@ -40,11 +42,13 @@
 // AttackSpeed
 // CriticalHitChance CriticalHitDamage
 
+#include "battle_drawable.hpp"
 #include "battle_scene.hpp"
 #include "battle_scene_init.hpp"
 #include "battle_scene_update.hpp"
 #include "battle_scene_draw.hpp"
 #include "battle_stat.hpp"
+#include "battle_projectile.hpp"
 #include "battle_item_init.hpp"
 #include "battle_item_cast.hpp"
 #include "battle_block.hpp"

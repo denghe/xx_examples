@@ -4,17 +4,17 @@ namespace Battle {
 
 	XX_INLINE void Monster::Case_(Action_Stun& o) {
 		if (!ActionExists<Action_SetColor>()) {
-			frameIndex = 0;
+			frame = gRes.monster_1;
 		}
-		// timeout: suicide
+		// timeout
 		if (gScene->time > o.timeout) {
-			ActionRemove(o);
+			ActionRemove(o);	// suicide
 		}
 	}
 
 	XX_INLINE void Monster::Case_(Action_SearchTarget& o) {
 		if (!ActionExists<Action_SetColor>()) {
-			frameIndex = 1;
+			frame = gRes.monster_2;
 		}
 		// delay
 		if (gScene->time < o.timeout) return;
@@ -30,7 +30,7 @@ namespace Battle {
 
 	XX_INLINE void Monster::Case_(Action_MoveToTarget& o) {
 		if (!ActionExists<Action_SetColor>()) {
-			frameIndex = 2;
+			frame = gRes.monster_3;
 		}
 		// lost target? timeout?
 		if (!target.Exists() || gScene->time > o.timeout) {
@@ -53,13 +53,17 @@ namespace Battle {
 			if (mag > 0) {
 				// move to
 				pos += (d / mag) * o.movementSpeed;
+				// block
+				if (BlocksLimit()) {
+					isDead = true;	// kill owner
+				}
 			}
 		}
 	}
 
 	XX_INLINE void Monster::Case_(Action_HitTarget& o) {
 		if (!ActionExists<Action_SetColor>()) {
-			frameIndex = 2;
+			frame = gRes.monster_3;
 		}
 		// lost target?
 		if (!target.Exists()) {
@@ -88,7 +92,7 @@ namespace Battle {
 			return;
 		}
 		color = o.color;
-		frameIndex = 3;
+		frame = gRes.monster_4;
 	}
 	// ...
 };
