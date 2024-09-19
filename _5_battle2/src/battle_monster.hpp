@@ -6,6 +6,7 @@ namespace Battle {
 		auto radians = gScene->rnd.Next<float>(-gPI, gPI);
 		pos = pos_;
 		radius = cRadius;
+		scale = radius / cRadius;
 		radians = 0;
 		frame = gRes.monster_1;
 		movementDirection.x = std::cos(radians);

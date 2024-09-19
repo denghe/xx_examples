@@ -114,21 +114,13 @@ void Looper::BeforeUpdate() {
 	camera.Calc();
 }
 
-
 void Looper::Update() {
 	if (!ok) return;
-
-	//// drop monster
-	//if (mouse.PressedMBLeft()) {
-	//	auto p = camera.ToLogicPos(mouse.pos);
-	//	scene->TryMakeMonster(p);
-	//}
 
 	for (int32_t i = 0; i < updateSpeed; ++i) {
 		scene->Update();
 	}
 }
-
 
 void Looper::Draw() {
 	if (!ok) return;

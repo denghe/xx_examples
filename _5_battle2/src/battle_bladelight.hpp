@@ -2,10 +2,11 @@
 
 namespace Battle {
 
-	inline void BladeLight::Init(XY const& pos_, float radians_, float scale_) {
+	inline void BladeLight::Init(XY const& pos_, float radians_, float radius_) {
 		pos = pos_;
 		radians = radians_;
-		radius = cRadius * scale_;
+		//radius = radius_;	// unused
+		scale = radius_ / cRadius;
 		alpha = 1;
 		frame = gRes.blade_light;
 	}

@@ -3,14 +3,15 @@
 namespace Battle {
 
 	struct Scene {
-		float time{};		// do not use gScene->time for speedup
+		float time{};		// replace gScene->time for speedup
+		xx::Rnd rnd;
+		xx::SpaceRingDiffuseData srdd;
 		xx::SpaceABGrid<Block> blocks;
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;
 		EffectTextManager effectTextManager;
 		xx::SpaceGrid<Monster> monsters;
-		xx::SpaceRingDiffuseData srdd;
-		xx::Rnd rnd;
+		xx::Listi32<xx::Shared<Projectile>> projectiles;
 
 		void Init();
 		int32_t Update();

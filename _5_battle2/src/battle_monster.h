@@ -55,16 +55,16 @@ namespace Battle {
 
 		/***************************************************/
 
-		void Init(XY const& pos_ = Cfg::mapSize_2);
+		void Init(XY const& pos_ = gLooper.mapSize_2);
 		int32_t Update();
 		void DrawBars();	// health, mana, exp... bars
 
 		// for logic call
 		void Destroy();
 		void TryRestoreBornAbility();
-		void Stun(float durationSeconds);
-		bool Hurt(Monster& tar);
 		bool BlocksLimit();				// return true: limit fail. out of area
+		void Stun(float durationSeconds);
+		void MakeBlade(XY const& shootPos, float radians, float radius, int32_t damage);
 		// ...
 	};
 }

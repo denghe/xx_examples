@@ -17,14 +17,4 @@ namespace Battle {
 		// ...
 	};
 
-	struct Projectile_Fireball : Projectile {
-		Projectile_Fireball() = default;
-		void Init(xx::SpaceWeak<Monster> const& owner_, XY const& pos_, float radians_
-			, float radius_, float moveSpeed_, float lifeSeconds_, int32_t damage_);
-		bool Update() override;
-
-		int32_t damage{};
-		// todo
-	};
-
 }

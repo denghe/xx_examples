@@ -32,19 +32,6 @@ namespace Battle {
 		}
 	}
 
-	inline bool Monster::Hurt(Monster &tar) {
-		// todo: calculate damage
-		tar.statInfo.health -= 1;
-		gScene->effectTextManager.Add(tar.pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
-		if (tar.statInfo.health <= 0) {
-			gScene->explosions.Emplace().Init(tar.pos, radius / cRadius);
-			return true;
-		} else {
-			Add_Action_SetColor({ 255,88,88,255 }, 0.1);
-			return false;
-		}
-	}
-
 	XX_INLINE bool Monster::BlocksLimit() {
 		auto& sg = gScene->blocks;
 		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };	// pos to aabb
@@ -60,5 +47,28 @@ namespace Battle {
 			return true;	// bug?
 		}
 		return false;
+	}
+
+	inline void Monster::MakeBlade(XY const& shootPos, float radians, float radius, int32_t damage) {
+		assert(caster);
+		gScene->bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
+		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
+			auto d = m.pos - shootPos;
+			auto r = m.radius + BladeLight::cRadius;
+			auto mag2 = d.x * d.x + d.y * d.y;
+			if (mag2 <= r * r) {	// cross
+				
+				m.statInfo.health -= 1;		// todo: calculate damage
+
+				gScene->effectTextManager.Add(m.pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
+				if (m.statInfo.health <= 0) {
+					gScene->explosions.Emplace().Init(m.pos, radius / cRadius);
+					return xx::ForeachResult::RemoveAndContinue;
+				} else {
+					Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+				}
+			}
+			return xx::ForeachResult::Continue;
+		}, this);
 	}
 };

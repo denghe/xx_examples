@@ -2,9 +2,10 @@
 
 namespace Battle {
 
-	inline void Explosion::Init(XY const& pos_, float scale_) {
+	inline void Explosion::Init(XY const& pos_, float radius_) {
 		pos = pos_;
-		radius = cRadius * scale_;
+		//radius = radius_;	// unused
+		scale = radius_ / cRadius * cScaleFix;
 		radians = gLooper.rnd.Next<float>(xx::gNPI, xx::gPI);
 		frame = gRes.explosion_13_[(int32_t)frameIndex];
 		color = { 255,255,255,123 };

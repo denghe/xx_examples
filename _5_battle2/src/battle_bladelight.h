@@ -4,7 +4,7 @@ namespace Battle {
 
 	struct BladeLight : Drawable {
 		constexpr static float cRadius{ 32 };
-		constexpr static float cFadeOutStep{ 1.f / 0.2f / Cfg::fps };
+		constexpr static float cFadeOutStep{ 1.f / 0.2f / gLooper.fps };
 
 		float alpha{};
 		int32_t lineNumber{};

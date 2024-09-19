@@ -6,11 +6,11 @@ namespace Battle {
 		constexpr static float cScale{ 2.f };
 
 		constexpr static float cMoveDurationSeconds{ 0.5f };
-		constexpr static float cMoveSpeedMin{ 20 / Cfg::fps };
-		constexpr static float cMoveSpeedMax{ 50 / Cfg::fps };
+		constexpr static float cMoveSpeedMin{ 20 / gLooper.fps };
+		constexpr static float cMoveSpeedMax{ 50 / gLooper.fps };
 
 		constexpr static float cFadeOutDurationSeconds{ 0.2f };
-		constexpr static float cFadeOutStep = 1.f / (cFadeOutDurationSeconds / Cfg::frameDelay);
+		constexpr static float cFadeOutStep = 1.f / (cFadeOutDurationSeconds / gLooper.frameDelay);
 
 		std::array<char, 12> buf{};		// value to string cache
 		int32_t len{};						// buf's len
