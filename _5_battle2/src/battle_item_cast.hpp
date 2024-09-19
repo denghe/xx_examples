@@ -95,7 +95,7 @@ namespace Battle {
 		lastCastTime = gScene->time - elapsedSeconds;
 		shootPos = caster->pos + XY{ cos * cShootDistance, sin * cShootDistance };
 		for (int i = 0; i < count; ++i) {
-			caster->MakeBlade(shootPos, radians, cBulletRadius, cBulletDamage);
+			caster->Chop(shootPos, radians, cBulletRadius, cBulletDamage);
 		}
 
 		return false;

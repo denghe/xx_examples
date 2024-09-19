@@ -64,7 +64,7 @@ namespace Battle {
 		void TryRestoreBornAbility();
 		bool BlocksLimit();				// return true: limit fail. out of area
 		void Stun(float durationSeconds);
-		void MakeBlade(XY const& shootPos, float radians, float radius, int32_t damage);
+		void Chop(XY const& shootPos, float radians, float radius, int32_t damage);
 		// ...
 	};
 }

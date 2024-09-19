@@ -49,7 +49,7 @@ namespace Battle {
 		return false;
 	}
 
-	inline void Monster::MakeBlade(XY const& shootPos, float radians, float radius, int32_t damage) {
+	inline void Monster::Chop(XY const& shootPos, float radians, float radius, int32_t damage) {
 		assert(caster);
 		gScene->bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
 		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
@@ -58,7 +58,8 @@ namespace Battle {
 			auto mag2 = d.x * d.x + d.y * d.y;
 			if (mag2 <= r * r) {	// cross
 				
-				m.statInfo.health -= 1;		// todo: calculate damage
+				// todo: calculate damage
+				m.statInfo.health -= 1;
 
 				gScene->effectTextManager.Add(m.pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
 				if (m.statInfo.health <= 0) {

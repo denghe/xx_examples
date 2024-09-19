@@ -22,7 +22,23 @@ namespace Battle {
 		// timeout?
 		if (timeout < gScene->time) return true;
 
-		// todo: hit check
+		// hit check
+		if (auto m = gScene->monsters.FindFirstCrossBy9(pos.x, pos.y, radius)) {
+
+			// todo: calculate damage
+			m->statInfo.health -= damage;
+
+			gScene->effectTextManager.Add(m->pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
+			if (m->statInfo.health <= 0) {
+				// todo: add exp to owner?
+				gScene->explosions.Emplace().Init(m->pos, radius / cRadius);
+				m->Destroy();
+			} else {
+				m->Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+			}
+
+			return true;
+		}
 
 		// handle frame animation
 		frameIndex += 30 / gLooper.fps;	// todo: get from config? or res?
