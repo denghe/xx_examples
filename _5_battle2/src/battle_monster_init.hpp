@@ -17,13 +17,14 @@ namespace Battle {
 			skill->Init(this);
 			attackMinDistance = 20;
 			statInfoMax.health = 80;
+			statInfoMax.mana = 0;
 		} else {
 			auto& skill = skills.Emplace().Emplace<Item_Staff1>();
 			skill->Init(this);
 			attackMinDistance = skill->cBulletSpeed * skill->cBulletLifeSeconds * 0.75f;
 			statInfoMax.health = 20;
+			statInfoMax.mana = 50;
 		}
-		statInfoMax.mana = 50;
 		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, statInfoMax.health + 1);
 		statInfo.mana = 50;
 		// todo: more init
