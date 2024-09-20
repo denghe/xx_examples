@@ -61,5 +61,7 @@
 #include "battle_monster_action_add.hpp"
 #include "battle_monster_action_case.hpp"
 #include "battle_monster_action_utils.hpp"
-#include "battle_monster_actions.hpp"
+#include "battle_monster_init.hpp"
+#include "battle_monster_update.hpp"
+#include "battle_monster_draw.hpp"
 // ...

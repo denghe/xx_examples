@@ -63,7 +63,7 @@ namespace Battle {
 		for (int i = 0; i < count; ++i) {
 			auto distance = cShootDistance - sdStep * i;
 			shootPos = caster->pos + XY{ cos * distance, sin * distance };
-			// scene->MakeFireball( caster, shootPos, radians, cBulletRadius, cBulletSpeed, cBulletLifeSeconds, cBulletDamage );
+			caster->MakeFireball( shootPos, radians, cBulletRadius, cBulletSpeed, cBulletLifeSeconds, cBulletDamage );
 		}
 
 		return false;
@@ -95,7 +95,7 @@ namespace Battle {
 		lastCastTime = gScene->time - elapsedSeconds;
 		shootPos = caster->pos + XY{ cos * cShootDistance, sin * cShootDistance };
 		for (int i = 0; i < count; ++i) {
-			caster->Chop(shootPos, radians, cBulletRadius, cBulletDamage);
+			caster->MakeBladeLight(shootPos, radians, cBulletRadius, cBulletDamage);
 		}
 
 		return false;

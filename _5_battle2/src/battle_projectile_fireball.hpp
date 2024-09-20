@@ -28,7 +28,7 @@ namespace Battle {
 			// todo: calculate damage
 			m->statInfo.health -= damage;
 
-			gScene->effectTextManager.Add(m->pos, { 0, -1 }, { 255,222,131,127 }, gScene->rnd.Next<int32_t>(1, 1000));
+			gScene->effectTextManager.Add(m->pos, { 0, -1 }, { 255,222,131,127 }, damage);
 			if (m->statInfo.health <= 0) {
 				// todo: add exp to owner?
 				gScene->explosions.Emplace().Init(m->pos, radius / cRadius);

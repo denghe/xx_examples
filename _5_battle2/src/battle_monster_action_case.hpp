@@ -25,7 +25,7 @@ namespace Battle {
 		}
 		ActionRemove(o);	// suicide
 		// next step
-		Add_Action_MoveToTarget(2, 20, 10);		// todo: get args from cfg?
+		Add_Action_MoveToTarget(2, attackMinDistance, 10);		// todo: get args from cfg?
 	}
 
 	XX_INLINE void Monster::Case_(Action_MoveToTarget& o) {
@@ -47,7 +47,7 @@ namespace Battle {
 		if (mag2 <= r * r) {
 			ActionRemove(o);	// suicide
 			// next step
-			Add_Action_HitTarget(20, 0.5);		// todo: get args from cfg?
+			Add_Action_HitTarget(attackMinDistance, 0.5);		// todo: get args from cfg?
 		} else {
 			auto mag = std::sqrt(mag2);
 			if (mag > 0) {

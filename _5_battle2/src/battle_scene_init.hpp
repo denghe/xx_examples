@@ -4,6 +4,7 @@ namespace Battle {
 
 	inline void Scene::Init() {
 		// inits
+		time = 1000;	// fix some skill cast delay timeout check
 		effectTextManager.Init(8192);
 		srdd.Init(100, gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);

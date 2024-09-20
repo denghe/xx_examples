@@ -2,111 +2,77 @@
 
 namespace Battle {
 
-	inline void Monster::Init(XY const& pos_) {
-		auto radians = gScene->rnd.Next<float>(-gPI, gPI);
-		pos = pos_;
-		radius = cRadius;
-		scale = radius / cRadius;
-		radians = 0;
-		frame = gRes.monster_1;
-		movementDirection.x = std::cos(radians);
-		movementDirection.y = std::sin(radians);
-
-		// init stat
-		statInfoMax.health = 20;
-		statInfoMax.mana = 50;
-		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, statInfoMax.health + 1);
-		statInfo.mana = 50;
-		// todo: more init
-
-		// add some skills
-		skills.Emplace().Emplace<Item_Sword1>()->Init(this);
-
-		TryRestoreBornAbility();
-		BlocksLimit();
+	XX_INLINE void Monster::Destroy() {
+		gScene->monsters.Remove(*this);
 	}
 
-	/*********************************************************************************************/
+	inline void Monster::TryRestoreBornAbility() {
+		if (!ActionExists<Action_Stun>()
+			&& !ActionExists<Action_SearchTarget>()
+			&& !ActionExists<Action_MoveToTarget>()
+			&& !ActionExists<Action_HitTarget>()
+			) {
+			Add_Action_SearchTarget(2000, 0.2);	// todo: get args from cfg?
+		}
 
-	inline int32_t Monster::Update() {
-		auto posBak = pos;
+		if (!ActionExists<Action_SetColor>()) {
+			color = cColor;
+		}
+	}
 
-		// execute all actions
-		for (int32_t i = actionsLen - 1; i >= 0; --i) {
-			auto& b = actions[i];
-			switch (b.type) {
-			case Action_Stun::cType: Case_((Action_Stun&)b); break;
-			case Action_SearchTarget::cType: Case_((Action_SearchTarget&)b); break;
-			case Action_MoveToTarget::cType: Case_((Action_MoveToTarget&)b); break;
-			case Action_HitTarget::cType: Case_((Action_HitTarget&)b); break;
-			case Action_SetColor::cType: Case_((Action_SetColor&)b); break;
-			// ...
+	inline void Monster::Stun(float durationSeconds) {
+		if (!ActionExists<Action_Stun>()) {
+			ActionTryRemoves<
+				Action_SearchTarget,
+				Action_MoveToTarget,
+				Action_HitTarget
+				// ...
+			>();
+			Add_Action_Stun(durationSeconds);
+		}
+	}
+
+	XX_INLINE bool Monster::BlocksLimit() {
+		auto& sg = gScene->blocks;
+		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };	// pos to aabb
+		if (!sg.TryLimitAABB(aabb)) {
+			return true;	// bug?
+		}
+		sg.ClearResults();
+		sg.ForeachAABB(aabb);	// search
+		for (auto b : sg.results) {
+			b->PushOut(*this);
+		}
+		if (pos.IsOutOfEdge(gLooper.mapSize)) {	
+			return true;	// bug?
+		}
+		return false;
+	}
+
+	inline void Monster::MakeBladeLight(XY const& shootPos, float radians, float radius, int32_t damage) {
+		gScene->bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
+		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
+			auto d = m.pos - shootPos;
+			auto r = m.radius + BladeLight::cRadius;
+			auto mag2 = d.x * d.x + d.y * d.y;
+			if (mag2 <= r * r) {	// cross
+				
+				// todo: calculate damage
+				m.statInfo.health -= damage;
+
+				gScene->effectTextManager.Add(m.pos, { 0, -1 }, { 255,222,131,127 }, damage);
+				if (m.statInfo.health <= 0) {
+					gScene->explosions.Emplace().Init(m.pos, radius / cRadius);
+					return xx::ForeachResult::RemoveAndContinue;
+				} else {
+					Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+				}
 			}
-		}
-
-		// suicide check
-		if (isDead) return -1;
-
-		// try restore something
-		TryRestoreBornAbility();
-
-		// update space grid?
-		if (posBak == pos) return 0;
-		else return 1;
+			return xx::ForeachResult::Continue;
+		}, this);
 	}
 
-	inline void Monster::DrawBars() {
-		// health( bg + fg ), mana( bg + fg )
-		auto& f = *gRes.quad;
-		auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 4);
-		auto hpBgPos = gLooper.camera.ToGLPos( pos + XY{ -32, -39 } );
-		auto hpFgPos = hpBgPos + XY{ 1, 0 };
-		auto bgScale = gLooper.camera.scale * XY{ 1, 0.1 };
-		auto hpFgScale = gLooper.camera.scale * XY{ (float)statInfo.health / statInfoMax.health * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
-		auto manaBgPos = hpBgPos + XY{ 0, -7 };
-		auto manaFgPos = manaBgPos + XY{ 1, 0 };
-		auto manaFgScale = gLooper.camera.scale * XY{ (float)statInfo.mana / statInfoMax.mana * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
-		{
-			auto& q = qs[0];
-			q.pos = hpBgPos;
-			q.anchor = { 0, 0.5f };
-			q.scale = bgScale;
-			q.radians = 0;
-			q.colorplus = colorplus;
-			q.color = xx::RGBA8_Black;
-			q.texRect.data = f.textureRect.data;
-		}
-		{
-			auto& q = qs[1];
-			q.pos = hpFgPos;
-			q.anchor = { 0, 0.5f };
-			q.scale = hpFgScale;
-			q.radians = 0;
-			q.colorplus = colorplus;
-			q.color = xx::RGBA8_Red;
-			q.texRect.data = f.textureRect.data;
-		}
-		{
-			auto& q = qs[2];
-			q.pos = manaBgPos;
-			q.anchor = { 0, 0.5f };
-			q.scale = bgScale;
-			q.radians = 0;
-			q.colorplus = colorplus;
-			q.color = xx::RGBA8_Black;
-			q.texRect.data = f.textureRect.data;
-		}
-		{
-			auto& q = qs[3];
-			q.pos = manaFgPos;
-			q.anchor = { 0, 0.5f };
-			q.scale = manaFgScale;
-			q.radians = 0;
-			q.colorplus = colorplus;
-			q.color = xx::RGBA8_Blue;
-			q.texRect.data = f.textureRect.data;
-		}
-
+	inline void Monster::MakeFireball(XY const& shootPos, float radians, float radius, float speed, float lifeSeconds, int32_t damage) {
+		gScene->projectiles.Emplace().Emplace<Projectile_Fireball>()->Init(this, shootPos, radians, radius, speed, lifeSeconds, damage);
 	}
-
 };

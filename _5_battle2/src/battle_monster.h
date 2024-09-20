@@ -8,10 +8,11 @@ namespace Battle {
 		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
 		StatInfo statInfo, statInfoMax;
-		xx::Listi32<xx::Shared<Item>> skills;
+		xx::Listi32<xx::Shared<Item>> skills;					// todo: ItemEquipmentLocations map? event map?
 
 		xx::SpaceWeak<Monster> target;
 		XY movementDirection{};
+		float attackMinDistance{};								// set it by skill type
 		bool isDead{};
 
 		// ...
@@ -64,7 +65,8 @@ namespace Battle {
 		void TryRestoreBornAbility();
 		bool BlocksLimit();				// return true: limit fail. out of area
 		void Stun(float durationSeconds);
-		void Chop(XY const& shootPos, float radians, float radius, int32_t damage);
+		void MakeBladeLight(XY const& shootPos, float radians, float radius, int32_t damage);
+		void MakeFireball(XY const& shootPos, float radians, float radius, float speed, float lifeSeconds, int32_t damage);
 		// ...
 	};
 }
