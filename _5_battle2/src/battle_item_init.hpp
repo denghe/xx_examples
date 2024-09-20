@@ -38,13 +38,13 @@ namespace Battle {
 		cEquipmentLocation = ItemEquipmentLocations::Weapon;
 		cQuantityLimit = 0;
 		quantity = 0;
-		cCastDelay = 2.f;
+		cCastDelay = 0.5f;
 		lastCastTime = 0;
 		cShootDistance = 20;
 		cBulletRadius = 16;
 		cBulletSpeed = 300;
 		cBulletLifeSeconds = 5;
-		cBulletDamage = 10;
+		cBulletDamage = 2;
 	}
 
 	inline void Item_Sword1::Init(Monster* owner_) {
@@ -62,11 +62,11 @@ namespace Battle {
 		cEquipmentLocation = ItemEquipmentLocations::Weapon;
 		cQuantityLimit = 0;
 		quantity = 0;
-		cCastDelay = 1.f;
+		cCastDelay = 0.5f;
 		lastCastTime = 0;
 		cShootDistance = 30;
 		cBulletRadius = 32;
-		cBulletDamage = 5;
+		cBulletDamage = 3;
 	}
 
 };

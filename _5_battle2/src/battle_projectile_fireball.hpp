@@ -23,7 +23,8 @@ namespace Battle {
 		if (timeout < gScene->time) return true;
 
 		// hit check
-		if (auto m = gScene->monsters.FindFirstCrossBy9(pos.x, pos.y, radius)) {
+		auto o = owner.GetPointer();
+		if (auto m = gScene->monsters.FindFirstCrossBy9<true>(pos.x, pos.y, radius, o)) {
 
 			// todo: calculate damage
 			m->statInfo.health -= damage;
