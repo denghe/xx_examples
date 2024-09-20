@@ -40,10 +40,10 @@ namespace Battle {
 		quantity = 0;
 		cCastDelay = 0.5f;
 		lastCastTime = 0;
-		cShootDistance = 20;
+		cShootDistance = 30;
 		cBulletRadius = 16;
 		cBulletSpeed = 300;
-		cBulletLifeSeconds = 5;
+		cBulletLifeSeconds = 2;
 		cBulletDamage = 2;
 	}
 

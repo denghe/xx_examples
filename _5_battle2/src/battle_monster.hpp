@@ -12,7 +12,7 @@ namespace Battle {
 			&& !ActionExists<Action_MoveToTarget>()
 			&& !ActionExists<Action_HitTarget>()
 			) {
-			Add_Action_SearchTarget(2000, 0.2);	// todo: get args from cfg?
+			Add_Action_SearchTarget(gLooper.mapSize.x, 0.2);	// todo: get args from cfg?
 		}
 
 		if (!ActionExists<Action_SetColor>()) {
@@ -50,7 +50,7 @@ namespace Battle {
 	}
 
 	inline void Monster::MakeBladeLight(XY const& shootPos, float radians, float radius, int32_t damage) {
-		gScene->bladeLights.Emplace().Init(shootPos, radians, radius / BladeLight::cRadius);
+		gScene->bladeLights.Emplace().Init(shootPos, radians, radius);
 		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
 			auto d = m.pos - shootPos;
 			auto r = m.radius + BladeLight::cRadius;

@@ -12,20 +12,21 @@ namespace Battle {
 		movementDirection.x = std::cos(radians);
 		movementDirection.y = std::sin(radians);
 
-		// init stat
-		statInfoMax.health = 20;
+		if (gScene->rnd.Next<bool>()) {
+			auto& skill = skills.Emplace().Emplace<Item_Sword1>();
+			skill->Init(this);
+			attackMinDistance = 20;
+			statInfoMax.health = 80;
+		} else {
+			auto& skill = skills.Emplace().Emplace<Item_Staff1>();
+			skill->Init(this);
+			attackMinDistance = skill->cBulletSpeed * skill->cBulletLifeSeconds * 0.75f;
+			statInfoMax.health = 20;
+		}
 		statInfoMax.mana = 50;
 		statInfo.health = statInfoMax.health = gScene->rnd.Next<int32_t>(1, statInfoMax.health + 1);
 		statInfo.mana = 50;
 		// todo: more init
-
-		// add some skills
-
-		//skills.Emplace().Emplace<Item_Sword1>()->Init(this);
-		//attackMinDistance = 20;
-
-		skills.Emplace().Emplace<Item_Staff1>()->Init(this);
-		attackMinDistance = 1000;
 
 		TryRestoreBornAbility();
 		BlocksLimit();
