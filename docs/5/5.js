@@ -554,7 +554,7 @@ va();
 });
 var Y,
   sb = {
-    g: (a, b, c, d) => {
+    e: (a, b, c, d) => {
       ha(`Assertion failed: ${G(a)}, at: ` + [b ? G(b) : "unknown filename", c, d ? G(d) : "unknown function"]);
     },
     u: (a, b, c) => {
@@ -740,14 +740,14 @@ var Y,
     B: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
-    b: (a, b) => {
+    c: (a, b) => {
       35051 == a ? Y.Fa = b : 35052 == a && (Y.Ba = b);
       Y.bindBuffer(a, fb[b]);
     },
     x: (a, b) => {
       Y.bindFramebuffer(a, gb[b]);
     },
-    a: (a, b) => {
+    b: (a, b) => {
       Y.bindTexture(a, W[b]);
     },
     k: a => {
@@ -755,7 +755,7 @@ var Y,
     },
     p: a => Y.blendEquation(a),
     q: (a, b) => Y.blendFunc(a, b),
-    d: (a, b, c, d) => {
+    f: (a, b, c, d) => {
       c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
     D: a => Y.clear(a),
@@ -797,7 +797,7 @@ var Y,
         b && (Y.deleteProgram(b), b.name = 0, V[a] = null);
       }
     },
-    f: a => {
+    d: a => {
       if (a) {
         var b = X[a];
         b && (Y.deleteShader(b), X[a] = null);
@@ -818,14 +818,14 @@ var Y,
       }
     },
     J: a => Y.disable(a),
-    e: (a, b, c, d) => {
+    j: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
     ia: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
     la: a => Y.enable(a),
-    h: a => {
+    g: a => {
       Y.enableVertexAttribArray(a);
     },
     W: (a, b, c, d, f) => {
@@ -843,7 +843,7 @@ var Y,
     C: (a, b) => {
       kb(a, b, "createVertexArray", hb);
     },
-    j: (a, b) => Y.getAttribLocation(V[a], G(b)),
+    i: (a, b) => Y.getAttribLocation(V[a], G(b)),
     ea: (a, b, c, d) => {
       a = Y.getProgramInfoLog(V[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
@@ -913,7 +913,7 @@ var Y,
         Y.texImage2D(a, b, c, d, f, k, e, m, r, h >>> 31 - Math.clz32(r.BYTES_PER_ELEMENT));
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
-    c: (a, b, c) => Y.texParameteri(a, b, c),
+    a: (a, b, c) => Y.texParameteri(a, b, c),
     ja: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
@@ -928,7 +928,7 @@ var Y,
     n: (a, b) => {
       Y.vertexAttribDivisor(a, b);
     },
-    i: (a, b, c, d, f, k) => {
+    h: (a, b, c, d, f, k) => {
       Y.vertexAttribPointer(a, b, c, !!d, f, k);
     },
     v: (a, b, c, d) => Y.viewport(a, b, c, d),
