@@ -12,8 +12,10 @@ namespace Battle {
 		EffectTextManager effectTextManager;
 		xx::SpaceGrid<Monster> monsters;
 		xx::Listi32<xx::Shared<Projectile>> projectiles;
+
 		xx::Listi32<xx::Shared<Item>> items;	// on the ground
 		xx::SpaceGrid2<Item> itemsSG;
+		Item* SearchItem(XY const& pos, float maxDistance);
 
 		void Init();
 		int32_t Update();

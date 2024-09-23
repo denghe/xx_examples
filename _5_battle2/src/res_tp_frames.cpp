@@ -1,4 +1,3 @@
-#pragma once
 #include "pch.h"
 #include "res_tp_frames.h"
 

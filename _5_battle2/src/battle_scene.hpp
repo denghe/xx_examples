@@ -2,6 +2,26 @@
 
 namespace Battle {
 
+	inline Item* Scene::SearchItem(XY const& pos, float maxDistance) {
+		if (auto e = items.len; e < 20) {
+			Item* rtv{};
+			float maxV{};
+			for (int32_t i = 0; i < e; ++i) {
+				auto item = items[i].pointer;
+				auto vx = item->pos.x - pos.x;
+				auto vy = item->pos.y - pos.y;
+				auto dd = vx * vx + vy * vy;
+				auto r = maxDistance + item->radius;
+				auto v = r * r - dd;
+				if (v > maxV) {
+					rtv = item;
+					maxV = v;
+				}
+			}
+			return rtv;
+		} else return itemsSG.FindNearestByRange(gScene->srdd, pos.x, pos.y, maxDistance);
+	}
+
 	inline void Scene::NewGame() {
 		// cleanup
 		// blocks.Clear();	// no change
@@ -10,6 +30,8 @@ namespace Battle {
 		effectTextManager.ens.Clear();
 		monsters.Clear();
 		projectiles.Clear();
+		itemsSG.Clear();
+		items.Clear();
 
 		mainLogic = MainLogic();
 	}
@@ -20,13 +42,13 @@ namespace Battle {
 
 		{
 			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { 1920 - 100, 1080 };
+			item.pos = { 1920 - 300, 1080 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
 		{
 			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { 1920 + 100, 1080 };
+			item.pos = { 1920 + 300, 1080 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}

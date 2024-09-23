@@ -20,7 +20,7 @@ namespace Battle {
 		if (gScene->time < o.timeout) return;
 		// search. if no skill, search item on the ground
 		if (skills.Empty()) {
-			if (auto item = gScene->itemsSG.FindNearestByRange(gScene->srdd, pos.x, pos.y, o.searchRange)) {
+			if (auto item = gScene->SearchItem(pos, o.searchRange)) {
 				targetItem = xx::WeakFromThis(item);
 				ActionRemove(o);	// suicide
 				// next step
@@ -37,6 +37,7 @@ namespace Battle {
 			}
 		}
 		// todo: random move ?
+		ActionRemove(o);	// suicide
 	}
 
 	XX_INLINE void Monster::Case_(Action_MoveToItem& o) {
