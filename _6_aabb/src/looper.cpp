@@ -33,39 +33,39 @@ xx::Task<> Looper::MainTask() {
 	ui.Emplace()->Init();
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, 0 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"NewGame", [&]() {
-			scene->NewGame();
-		});
+		, gLooper.s9cfg_btn, U"+1000", [&]() {
+			scene->GenMonsters();
+	});
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -50 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 1x", [&]() {
-			this->updateSpeed = 1;
-		});
+		, gLooper.s9cfg_btn, U"Zoom: 1x", [&]() {
+			camera.SetScale(1);
+	});
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -100 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 5x", [&]() {
-			this->updateSpeed = 5;
-		});
+		, gLooper.s9cfg_btn, U"Zoom: Fill", [&]() {
+			camera.SetScale(0.05);
+	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 10x", [&]() {
-			this->updateSpeed = 10;
-		});
+	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
+	//	, gLooper.s9cfg_btn, U"Speed: 10x", [&]() {
+	//		this->updateSpeed = 10;
+	//	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 20x", [&]() {
-			this->updateSpeed = 20;
-		});
+	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
+	//	, gLooper.s9cfg_btn, U"Speed: 20x", [&]() {
+	//		this->updateSpeed = 20;
+	//	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -250 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 100x", [&]() {
-			this->updateSpeed = 100;
-		});
+	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -250 }, gLooper.xy7a
+	//	, gLooper.s9cfg_btn, U"Speed: 100x", [&]() {
+	//		this->updateSpeed = 100;
+	//	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -300 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"Speed: 1000x", [&]() {
-			this->updateSpeed = 1000;
-		});
+	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -300 }, gLooper.xy7a
+	//	, gLooper.s9cfg_btn, U"Speed: 1000x", [&]() {
+	//		this->updateSpeed = 1000;
+	//	});
 
 	camera.SetMaxFrameSize(maxItemSize);
 	camera.SetOriginal(mapSize_2);
@@ -84,10 +84,10 @@ void Looper::BeforeUpdate() {
 	if (!ok) return;
 
 	// scale control
-	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.02f)) {
-		camera.IncreaseScale(0.05f, 5);
-	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.02f)) {
-		camera.DecreaseScale(0.05f, 0.45f);
+	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.01f)) {
+		camera.IncreaseScale(0.01f, 5);
+	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.01f)) {
+		camera.DecreaseScale(0.01f, 0.05f);
 	}
 
 	// move control
