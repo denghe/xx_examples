@@ -67,7 +67,7 @@ namespace Battle {
 					gScene->explosions.Emplace().Init(m.pos, radius / cRadius);
 					return xx::ForeachResult::RemoveAndContinue;
 				} else {
-					Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+					m.Add_Action_SetColor({ 255,88,88,255 }, 0.1);
 				}
 			}
 			return xx::ForeachResult::Continue;
