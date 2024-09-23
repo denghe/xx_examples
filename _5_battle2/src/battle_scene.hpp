@@ -42,13 +42,25 @@ namespace Battle {
 
 		{
 			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { 1920 - 300, 1080 };
+			item.pos = { 1920 - 300, 1080 - 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
 		{
 			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { 1920 + 300, 1080 };
+			item.pos = { 1920 + 300, 1080 - 300 };
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+		}
+		{
+			auto& item = *items.Emplace().Emplace<Item_Staff1>();
+			item.pos = { 1920 + 300, 1080 + 300 };
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+		}
+		{
+			auto& item = *items.Emplace().Emplace<Item_Sword1>();
+			item.pos = { 1920 - 300, 1080 + 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}

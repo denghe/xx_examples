@@ -15,7 +15,7 @@ namespace Battle {
 		o.timeout = gScene->time + durationSeconds;
 	}
 
-	XX_INLINE void Monster::Add_Action_SearchTarget(float searchRange, float castDelaySeconds) {
+	XX_INLINE void Monster::Add_Action_SearchTarget(float searchRange) {
 		// conflict checks
 		assert(!ActionExists<Action_Search>());
 		assert(!ActionExists<Action_MoveToItem>());
@@ -25,7 +25,7 @@ namespace Battle {
 		// create & init
 		auto& o = ActionAdd<Action_Search>();
 		o.searchRange = searchRange;
-		o.timeout = gScene->time + castDelaySeconds;
+		o.timeout = gScene->time + gScene->rnd.Next<float>(0.1, 0.5);
 	}
 
 	XX_INLINE void Monster::Add_Action_MoveToItem(float movementSpeed) {

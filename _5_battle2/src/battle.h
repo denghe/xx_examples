@@ -16,11 +16,6 @@
 // simulate monsters death match battle
 // action == skill == behavior == buff
 
-// todo:
-// 
-// test weapon item draw & pickit up
-// scene: items field
-// 
 // 1. random drop some weapons on floor ( knife, staff )
 // 2. random generate monsters
 // 3. monsters init AI is search & pickup weapon & equip
@@ -31,9 +26,7 @@
 // group team?
 // 
 // drop item
-// pickup
 // projectile?
-// block path enhance
 // "we are warriors" simulate?
 // knockback
 // bag

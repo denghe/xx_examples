@@ -13,7 +13,7 @@ namespace Battle {
 			&& !ActionExists<Action_MoveToTarget>()
 			&& !ActionExists<Action_HitTarget>()
 			) {
-			Add_Action_SearchTarget(gLooper.mapSize.x, 0.2);	// todo: get args from cfg?
+			Add_Action_SearchTarget(gLooper.mapSize.x);
 		}
 
 		if (!ActionExists<Action_SetColor>()) {

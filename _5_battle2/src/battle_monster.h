@@ -41,7 +41,7 @@ namespace Battle {
 		/***************************************************/
 
 		void Add_Action_Stun(float durationSeconds);
-		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
+		void Add_Action_SearchTarget(float searchRange);
 		void Add_Action_MoveToItem(float movementSpeed);
 		void Add_Action_MoveToTarget(float movementSpeed, float timeoutSeconds);
 		void Add_Action_HitTarget(float castDelaySeconds);

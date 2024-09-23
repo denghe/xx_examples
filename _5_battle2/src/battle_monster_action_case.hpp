@@ -36,8 +36,8 @@ namespace Battle {
 				return;
 			}
 		}
-		// todo: random move ?
-		ActionRemove(o);	// suicide
+		// reset search delay
+		o.timeout = gScene->time + gScene->rnd.Next<float>(0.1, 0.5);
 	}
 
 	XX_INLINE void Monster::Case_(Action_MoveToItem& o) {
