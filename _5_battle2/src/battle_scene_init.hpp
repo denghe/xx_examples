@@ -9,6 +9,7 @@ namespace Battle {
 		srdd.Init(100, gLooper.physCellSize);
 		monsters.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		blocks.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
+		itemsSG.Init(gLooper.physNumRows, gLooper.physNumCols, gLooper.physCellSize);
 		
 /*
 top1                  2                    3

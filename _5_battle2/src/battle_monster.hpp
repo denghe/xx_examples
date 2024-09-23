@@ -8,7 +8,8 @@ namespace Battle {
 
 	inline void Monster::TryRestoreBornAbility() {
 		if (!ActionExists<Action_Stun>()
-			&& !ActionExists<Action_SearchTarget>()
+			&& !ActionExists<Action_Search>()
+			&& !ActionExists<Action_MoveToItem>()
 			&& !ActionExists<Action_MoveToTarget>()
 			&& !ActionExists<Action_HitTarget>()
 			) {
@@ -23,7 +24,8 @@ namespace Battle {
 	inline void Monster::Stun(float durationSeconds) {
 		if (!ActionExists<Action_Stun>()) {
 			ActionTryRemoves<
-				Action_SearchTarget,
+				Action_Search,
+				Action_MoveToItem,
 				Action_MoveToTarget,
 				Action_HitTarget
 				// ...

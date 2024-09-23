@@ -10,7 +10,7 @@ namespace Battle {
 		virtual bool Update() { return false; }
 		bool IsBlockIntersect();
 
-		xx::SpaceWeak<Monster> owner;
+		xx::SpaceGridWeak<Monster> owner;
 		XY moveStep{};
 		float moveSpeed{}, timeout{};
 		float frameIndex{};

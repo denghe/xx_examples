@@ -16,6 +16,22 @@ namespace Battle {
 
 	inline xx::Task<> Scene::MainLogic() {
 
+		// generate some items on the ground
+
+		{
+			auto& item = *items.Emplace().Emplace<Item_Staff1>();
+			item.pos = { 1920 - 100, 1080 };
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+		}
+		{
+			auto& item = *items.Emplace().Emplace<Item_Sword1>();
+			item.pos = { 1920 + 100, 1080 };
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+		}
+
+
 		// generate some monsters
 		XY p;
 		for (int i = 0; i < 1000; ++i) {

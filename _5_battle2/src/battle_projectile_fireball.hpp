@@ -2,7 +2,7 @@
 
 namespace Battle {
 
-	inline void Projectile_Fireball::Init(xx::SpaceWeak<Monster> const& owner_, XY const& pos_, float radians_
+	inline void Projectile_Fireball::Init(xx::SpaceGridWeak<Monster> const& owner_, XY const& pos_, float radians_
 		, float radius_, float moveSpeed_, float lifeSeconds_, int32_t damage_) {
 		owner = owner_;
 		pos = pos_;

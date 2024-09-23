@@ -10,9 +10,9 @@ namespace Battle {
 		StatInfo statInfo, statInfoMax;
 		xx::Listi32<xx::Shared<Item>> skills;					// todo: ItemEquipmentLocations map? event map?
 
-		xx::SpaceWeak<Monster> target;
+		xx::SpaceGridWeak<Monster> targetMonster;
+		xx::Weak<Item> targetItem;
 		XY movementDirection{};
-		float attackMinDistance{};								// set it by skill type
 		bool isDead{};
 
 		// ...
@@ -42,13 +42,15 @@ namespace Battle {
 
 		void Add_Action_Stun(float durationSeconds);
 		void Add_Action_SearchTarget(float searchRange, float castDelaySeconds);
-		void Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds);
-		void Add_Action_HitTarget(float distanceLimit, float castDelaySeconds);
+		void Add_Action_MoveToItem(float movementSpeed);
+		void Add_Action_MoveToTarget(float movementSpeed, float timeoutSeconds);
+		void Add_Action_HitTarget(float castDelaySeconds);
 		void Add_Action_SetColor(xx::RGBA8 color, float durationSeconds);
 		// ...
 
 		void Case_(Action_Stun& o);
-		void Case_(Action_SearchTarget& o);
+		void Case_(Action_Search& o);
+		void Case_(Action_MoveToItem& o);
 		void Case_(Action_MoveToTarget& o);
 		void Case_(Action_HitTarget& o);
 		void Case_(Action_SetColor& o);

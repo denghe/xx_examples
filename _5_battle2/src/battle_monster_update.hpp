@@ -10,7 +10,8 @@ namespace Battle {
 			auto& b = actions[i];
 			switch (b.type) {
 			case Action_Stun::cType: Case_((Action_Stun&)b); break;
-			case Action_SearchTarget::cType: Case_((Action_SearchTarget&)b); break;
+			case Action_Search::cType: Case_((Action_Search&)b); break;
+			case Action_MoveToItem::cType: Case_((Action_MoveToItem&)b); break;
 			case Action_MoveToTarget::cType: Case_((Action_MoveToTarget&)b); break;
 			case Action_HitTarget::cType: Case_((Action_HitTarget&)b); break;
 			case Action_SetColor::cType: Case_((Action_SetColor&)b); break;

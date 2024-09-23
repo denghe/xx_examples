@@ -20,6 +20,7 @@ namespace Battle {
 		quantity = 1;
 		cCastDelay = 10.f;
 		lastCastTime = 0;
+		cCastMinDistance = 0;
 		cPercentage = 0.3f;
 	}
 
@@ -40,6 +41,7 @@ namespace Battle {
 		quantity = 0;
 		cCastDelay = 0.5f;
 		lastCastTime = 0;
+		cCastMinDistance = 450;
 		cShootDistance = 30;
 		cBulletRadius = 16;
 		cBulletSpeed = 300;
@@ -64,6 +66,7 @@ namespace Battle {
 		quantity = 0;
 		cCastDelay = 0.5f;
 		lastCastTime = 0;
+		cCastMinDistance = 30;
 		cShootDistance = 30;
 		cBulletRadius = 32;
 		cBulletDamage = 3;

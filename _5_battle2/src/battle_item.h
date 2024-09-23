@@ -40,7 +40,7 @@ namespace Battle {
 	// cXxxxx prefix c: const, config
 
 	struct Monster;
-	struct Item : Drawable {
+	struct Item : Drawable, xx::SpaceGrid2Item<Item> {
 		Item() = default;
 		Item(Item const&) = delete;
 		Item& operator=(Item const&) = delete;
@@ -48,7 +48,7 @@ namespace Battle {
 		virtual bool Cast(Monster* target) { return false; };			// return true: success
 		// ... more cast ?
 
-		xx::SpaceWeak<Monster> owner;									// empty mean on floor
+		xx::SpaceGridWeak<Monster> owner;								// empty mean on floor
 		xx::TinyList<Stat> stats;
 		ItemTypes cType;
 		ItemQualities cQualitity;
@@ -58,7 +58,7 @@ namespace Battle {
 
 		float cCastDelay;
 		float lastCastTime;
-
+		float cCastMinDistance;
 		// ...
 	};
 

@@ -4,7 +4,8 @@ namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_Stun(float durationSeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_SearchTarget>());
+		assert(!ActionExists<Action_Search>());
+		assert(!ActionExists<Action_MoveToItem>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
 		// ...
@@ -16,38 +17,51 @@ namespace Battle {
 
 	XX_INLINE void Monster::Add_Action_SearchTarget(float searchRange, float castDelaySeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_SearchTarget>());
+		assert(!ActionExists<Action_Search>());
+		assert(!ActionExists<Action_MoveToItem>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
 
 		// create & init
-		auto& o = ActionAdd<Action_SearchTarget>();
+		auto& o = ActionAdd<Action_Search>();
 		o.searchRange = searchRange;
 		o.timeout = gScene->time + castDelaySeconds;
 	}
 
-	XX_INLINE void Monster::Add_Action_MoveToTarget(float movementSpeed, float distanceLimit, float timeoutSeconds) {
+	XX_INLINE void Monster::Add_Action_MoveToItem(float movementSpeed) {
 		// conflict checks
-		assert(!ActionExists<Action_SearchTarget>());
+		assert(!ActionExists<Action_Search>());
+		assert(!ActionExists<Action_MoveToItem>());
+		assert(!ActionExists<Action_MoveToTarget>());
+		assert(!ActionExists<Action_HitTarget>());
+
+		// create & init
+		auto& o = ActionAdd<Action_MoveToItem>();
+		o.movementSpeed = movementSpeed;
+	}
+
+	XX_INLINE void Monster::Add_Action_MoveToTarget(float movementSpeed, float timeoutSeconds) {
+		// conflict checks
+		assert(!ActionExists<Action_Search>());
+		assert(!ActionExists<Action_MoveToItem>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
 
 		// create & init
 		auto& o = ActionAdd<Action_MoveToTarget>();
 		o.movementSpeed = movementSpeed;
-		o.distanceLimit = distanceLimit;
 		o.timeout = gScene->time + timeoutSeconds;
 	}
 
-	XX_INLINE void Monster::Add_Action_HitTarget(float distanceLimit, float castDelaySeconds) {
+	XX_INLINE void Monster::Add_Action_HitTarget(float castDelaySeconds) {
 		// conflict checks
-		assert(!ActionExists<Action_SearchTarget>());
+		assert(!ActionExists<Action_Search>());
+		assert(!ActionExists<Action_MoveToItem>());
 		assert(!ActionExists<Action_MoveToTarget>());
 		assert(!ActionExists<Action_HitTarget>());
 
 		// create & init
 		auto& o = ActionAdd<Action_HitTarget>();
-		o.distanceLimit = distanceLimit;
 		o.castDelaySeconds = castDelaySeconds;
 		o.timeout = 0;
 	}

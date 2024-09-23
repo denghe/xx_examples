@@ -2,8 +2,8 @@
 
 namespace Battle {
 	struct EffectText {
-		constexpr static float cCharPixelWidth{ 7.f };
-		constexpr static float cScale{ 2.f };
+		constexpr static float cCharPixelWidth{ 9.f };
+		constexpr static float cScale{ 3.f };
 
 		constexpr static float cMoveDurationSeconds{ 0.5f };
 		constexpr static float cMoveSpeedMin{ 20 / gLooper.fps };

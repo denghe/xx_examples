@@ -18,7 +18,8 @@
 
 // todo:
 // 
-// struct projectile,  scene projectiles
+// test weapon item draw & pickit up
+// scene: items field
 // 
 // 1. random drop some weapons on floor ( knife, staff )
 // 2. random generate monsters

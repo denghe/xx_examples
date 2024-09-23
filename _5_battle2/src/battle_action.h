@@ -4,7 +4,8 @@ namespace Battle {
 
 	enum class ActionTypes : int32_t {
 		Stun,
-		SearchTarget,
+		Search,
+		MoveToItem,
 		MoveToTarget,
 		HitTarget,
 		SetColor,
@@ -40,19 +41,27 @@ namespace Battle {
 	static_assert(ActionStructCheck<Action_Stun>);
 
 
-	struct alignas(8) Action_SearchTarget {
-		static constexpr ActionTypes cType{ ActionTypes::SearchTarget };
+	struct alignas(8) Action_Search {
+		static constexpr ActionTypes cType{ ActionTypes::Search };
 		ActionTypes type;
 		float searchRange;
 		float timeout;
 	};
-	static_assert(ActionStructCheck<Action_SearchTarget>);
+	static_assert(ActionStructCheck<Action_Search>);
+
+
+	struct alignas(8) Action_MoveToItem {
+		static constexpr ActionTypes cType{ ActionTypes::MoveToItem };
+		ActionTypes type;
+		float movementSpeed;
+	};
+	static_assert(ActionStructCheck<Action_MoveToItem>);
 
 
 	struct alignas(8) Action_MoveToTarget {
 		static constexpr ActionTypes cType{ ActionTypes::MoveToTarget };
 		ActionTypes type;
-		float movementSpeed, distanceLimit;
+		float movementSpeed;
 		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_MoveToTarget>);
@@ -61,7 +70,7 @@ namespace Battle {
 	struct alignas(8) Action_HitTarget {
 		static constexpr ActionTypes cType{ ActionTypes::HitTarget };
 		ActionTypes type;
-		float distanceLimit, castDelaySeconds;
+		float castDelaySeconds;
 		float timeout;
 	};
 	static_assert(ActionStructCheck<Action_HitTarget>);

@@ -15,6 +15,10 @@ namespace Battle {
 			o.DrawBars();
 		});
 
+		for (int32_t i = 0, e = items.len; i < e; ++i) {
+			items[i]->Draw();
+		}
+
 		for (int32_t i = 0, e = projectiles.len; i < e; ++i) {
 			projectiles[i]->Draw();
 		}
