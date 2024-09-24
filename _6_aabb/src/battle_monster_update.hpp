@@ -12,37 +12,54 @@ namespace Battle {
 		if (count > cNeighbourMaxCount) {
 			if (!runawayMode) {
 				runawayMode = true;
+				timeout = gLooper.time + cTimeout;
 				auto r = gLooper.rnd.Next<float>(float(M_PI * 2));
-				inc = xx::XY{ std::cos(r), std::sin(r) } * cSpeed * 10;
+				inc = xx::XY{ std::cos(r), std::sin(r) } * cSpeed;
 			}
-			pos += inc;
-			// todo: check runawayMode timeout ?
+			if (timeout > gLooper.time) {
+				pos += inc;
+				color = xx::RGBA8_Red;
+			} else {
+				runawayMode = false;
+				timeout = gLooper.time + cTimeout;
+			}
 		} else {
-			if (moving) {
-				pos += crossInc;
+			if (runawayMode) {
+				runawayMode = false;
+				timeout = gLooper.time + cTimeout;
 			}
-			if (--leftMoveStep <= 0) {
+			if (timeout > gLooper.time) {
 				if (FillCrossInc()) {
-					moving = true;
-					leftMoveStep = 5;
+					pos += inc;
+					color = xx::RGBA8_Blue;
 				} else {
-					moving = false;
+					color = xx::RGBA8_Yellow;
 				}
+			} else {
+				color = xx::RGBA8_White;
 			}
 		}
 
-		if (BlocksLimit())
-			return -1;
-		if (posBak == pos) return 0;
-		return 1;
+		if (color == xx::RGBA8_White) {
+			if (blocksLimitCount < 5) {
+				if (BlocksLimit()) return -1;
+				else ++blocksLimitCount;
+			}
+		} else {
+			if (BlocksLimit()) return -1;
+		}
+		if (posBak == pos) {
+			return 0;
+		} else {
+			return 1;
+		}
 	}
 
 	XX_INLINE bool Monster::FillCrossInc() {
-		int limit = cNeighbourMaxCount;
-		crossInc = {};
+		//int limit = cNeighbourMaxCount;
+		inc = {};
 		gScene->monsters.Foreach9All(pos.x, pos.y, [&](Monster& m)->bool {
 			if (&m == this) return false;
-
 			auto d = pos - m.pos;
 			auto mag2 = d.x * d.x + d.y * d.y;
 			auto r = m.radius + radius;
@@ -51,19 +68,25 @@ namespace Battle {
 				if (mag2 > 0) {
 					auto mag = std::sqrt(mag2);
 					auto v = d / mag;
-					crossInc += v * cSpeed;
+					auto s = (r - mag) / r * cSpeed;
+					inc += v * s;
+					//m.timeout = gLooper.time + cTimeout;
 				} else {
 					auto r = gLooper.rnd.Next<float>(float(M_PI * 2));
-					crossInc += xx::XY{ std::cos(r), std::sin(r) } *cSpeed;
+					inc += xx::XY{ std::cos(r), std::sin(r) } *cSpeed;
 				}
 			}
-			return --limit < 0;
+			//return --limit < 0;
+			return false;
 		});
-		if (std::abs(crossInc.x) < 0.00001 && std::abs(crossInc.y) < 0.00001) {
-			crossInc = {};
+		if (std::abs(inc.x) < 0.1 && std::abs(inc.y) < 0.1) {
+			inc = {};
 			return false;
 		} else {
-			crossInc = crossInc.Normalize() * cSpeed;
+			// speed limit
+			if (inc.x * inc.x + inc.y * inc.y > cSpeed * cSpeed) {
+				inc = inc.Normalize() * cSpeed;
+			}
 			return true;
 		}
 	}

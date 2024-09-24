@@ -7,7 +7,7 @@ namespace Battle {
 }
 
 struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
-	static constexpr float maxItemSize{ 64 };
+	static constexpr float maxItemSize{ 128 };
 	static constexpr float maxItemSize_2{ maxItemSize / 2 };
 
 	static constexpr int32_t physCellSize{ (int32_t)maxItemSize };

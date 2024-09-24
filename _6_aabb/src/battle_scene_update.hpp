@@ -6,7 +6,7 @@ namespace Battle {
 
 		if (!gLooper.mouseEventHandler && gLooper.mouse.PressedMBLeft()) {
 			auto p = gLooper.camera.ToLogicPos(gLooper.mouse.pos);
-			GenMonsters(p);
+			GenMonsters(p, 100);
 		}
 
 		// update monsters

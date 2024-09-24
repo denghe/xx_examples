@@ -47,15 +47,15 @@ xx::Task<> Looper::MainTask() {
 			camera.SetScale(0.05);
 	});
 
-	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
-	//	, gLooper.s9cfg_btn, U"Speed: 10x", [&]() {
-	//		this->updateSpeed = 10;
-	//	});
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Clear", [&]() {
+			scene->monsters.Clear();
+	});
 
-	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
-	//	, gLooper.s9cfg_btn, U"Speed: 20x", [&]() {
-	//		this->updateSpeed = 20;
-	//	});
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Zoom: Fill( 4k )", [&]() {
+			camera.SetScale(0.097);
+	});
 
 	//gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -250 }, gLooper.xy7a
 	//	, gLooper.s9cfg_btn, U"Speed: 100x", [&]() {

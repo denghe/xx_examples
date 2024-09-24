@@ -8,7 +8,7 @@ namespace Battle {
 			o.Draw();
 		});
 
-#if 0
+#if 1
 		monsters.Foreach([&](Monster& o)->void {
 			o.Draw();
 		});

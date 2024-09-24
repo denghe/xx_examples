@@ -11,7 +11,7 @@ namespace Battle {
 		int32_t Update();
 		void Draw();
 
-		void GenMonsters(XY const& pos = gLooper.mapSize_2);
+		void GenMonsters(XY const& pos = gLooper.mapSize_2, int32_t count = 1000);
 	};
 
 }

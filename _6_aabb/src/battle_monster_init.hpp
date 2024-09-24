@@ -12,7 +12,10 @@ namespace Battle {
 		scale = radius / cRadius;
 		radians = 0;
 		frame = gRes.monster_1;
-		runawayMode = false;
+		inc = {};
+		timeout = cTimeout;
+		runawayMode = {};
+		color = xx::RGBA8_White;
 		BlocksLimit();
 	}
 

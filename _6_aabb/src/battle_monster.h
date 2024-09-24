@@ -4,15 +4,17 @@ namespace Battle {
 
 	struct Scene;
 	struct Monster : Drawable {
-		static constexpr int32_t cNeighbourMaxCount { 9 };
-		static constexpr float cSpeed{ 200.f / gLooper.fps };
+		static constexpr int32_t cNeighbourMaxCount { 7 };
+		static constexpr float cTimeout{ 2 };
+		static constexpr float cSpeed{ 3000.f / gLooper.fps };
 		static constexpr float cRadius{ 32 };
 		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
-		XY inc{}, crossInc{};
+		XY inc{};
+		float timeout{};
+		int32_t blocksLimitCount{};
 		bool runawayMode{};
-		bool moving{};
-		int32_t leftMoveStep{};
+
 
 		void Init(XY const& pos_ = gLooper.mapSize_2);
 		int32_t Update();
