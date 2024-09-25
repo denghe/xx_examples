@@ -3,7 +3,39 @@
 namespace Battle {
 
 	XX_INLINE void Monster::Destroy() {
-		gScene->monsters.Remove(*this);
+		gScene->monsters.Remove(*this);	// unsafe
+	}
+
+	XX_INLINE void Monster::Kill(Monster* killer) {
+		if (killer) {
+			// todo: +EXP?
+		}
+		if (skills.len) {
+			// drop item on the ground		// todo: crash. bug fix
+			assert(skills.len == 1);
+			auto s = std::move(skills[0]);
+			skills.RemoveAt(0);
+			gScene->items.Add(s);
+			gScene->itemsSG.Add(s);
+			s->owner = {};
+			s->pos = pos;
+		}
+		gScene->explosions.Emplace().Init(pos, radius);
+		Destroy();	// unsafe
+	}
+
+	XX_INLINE bool Monster::Hurt(Monster* killer, int32_t damage_) {
+		// todo: calculate damage
+		statInfo.health -= damage_;
+
+		gScene->effectTextManager.Add(pos, { 0, -1 }, { 255,222,131,127 }, damage_);
+		if (statInfo.health <= 0) {
+			Kill(killer);	// unsafe
+			return true;
+		} else {
+			Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+			return false;
+		}
 	}
 
 	inline void Monster::TryRestoreBornAbility() {
@@ -53,24 +85,13 @@ namespace Battle {
 
 	inline void Monster::MakeBladeLight(XY const& shootPos, float radians, float radius, int32_t damage) {
 		gScene->bladeLights.Emplace().Init(shootPos, radians, radius);
-		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->xx::ForeachResult {
+		gScene->monsters.Foreach9All<true>(shootPos.x, shootPos.y, [&](Monster& m)->void {
 			auto d = m.pos - shootPos;
 			auto r = m.radius + BladeLight::cRadius;
 			auto mag2 = d.x * d.x + d.y * d.y;
 			if (mag2 <= r * r) {	// cross
-				
-				// todo: calculate damage
-				m.statInfo.health -= damage;
-
-				gScene->effectTextManager.Add(m.pos, { 0, -1 }, { 255,222,131,127 }, damage);
-				if (m.statInfo.health <= 0) {
-					gScene->explosions.Emplace().Init(m.pos, radius / cRadius);
-					return xx::ForeachResult::RemoveAndContinue;
-				} else {
-					m.Add_Action_SetColor({ 255,88,88,255 }, 0.1);
-				}
+				m.Hurt(this, damage);
 			}
-			return xx::ForeachResult::Continue;
 		}, this);
 	}
 

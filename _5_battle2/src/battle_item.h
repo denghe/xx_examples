@@ -37,8 +37,6 @@ namespace Battle {
 		// ...
 	};
 
-	// cXxxxx prefix c: const, config
-
 	struct Monster;
 	struct Item : Drawable, xx::SpaceGrid2Item<Item> {
 		Item() = default;

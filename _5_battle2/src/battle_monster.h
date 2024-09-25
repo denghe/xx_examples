@@ -63,7 +63,10 @@ namespace Battle {
 		void DrawBars();	// health, mana, exp... bars
 
 		// for logic call
-		void Destroy();
+		void Destroy();							// remove this from scene.monsters & destruct & free memory
+		void Kill(Monster* killer);					// drop item + play death effect + Destroy(), killer + exp
+		bool Hurt(Monster* killer, int32_t damage_);	// health -= killer.damage, health <= 0: Kill()
+		// todo: more hurt type here ?
 		void TryRestoreBornAbility();
 		bool BlocksLimit();				// return true: limit fail. out of area
 		void Stun(float durationSeconds);

@@ -25,20 +25,8 @@ namespace Battle {
 		// hit check
 		auto o = owner.GetPointer();
 		if (auto m = gScene->monsters.FindFirstCrossBy9<true>(pos.x, pos.y, radius, o)) {
-
-			// todo: calculate damage
-			m->statInfo.health -= damage;
-
-			gScene->effectTextManager.Add(m->pos, { 0, -1 }, { 255,222,131,127 }, damage);
-			if (m->statInfo.health <= 0) {
-				// todo: add exp to owner?
-				gScene->explosions.Emplace().Init(m->pos, radius / cRadius);
-				m->Destroy();
-			} else {
-				m->Add_Action_SetColor({ 255,88,88,255 }, 0.1);
-			}
-
-			return true;
+			m->Hurt(o, damage);
+			return true;	// suicide
 		}
 
 		// handle frame animation

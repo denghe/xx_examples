@@ -14,28 +14,32 @@
 #include "battle_scene.h"
 
 // simulate monsters death match battle
-// action == skill == behavior == buff
 
-// 1. random drop some weapons on floor ( knife, staff )
+// todo
+// 1. random drop some weapons on the ground ( sword, staff )
 // 2. random generate monsters
 // 3. monsters init AI is search & pickup weapon & equip
-// 4. switch special AI for weapon
-// 5. monsters use weapon to hit each others
+// 4. monsters use weapon to hit each others
+// 5. when monster dead( has weapon ), drop weapon
 // 
-// can equip more than 1 weapons?
-// group team?
-// 
-// drop item
-// projectile?
-// "we are warriors" simulate?
-// knockback
-// bag
-// 
+// support following stats:
 // Health Damage DamageReduction / Defense / Armor
 // HealthRegeneration HealthOnHit ...
 // Evasion
 // AttackSpeed
 // CriticalHitChance CriticalHitDamage
+// Knockback, -Speed
+// 
+// 6. kill others, +EXP? or drop EXP stone? level up
+// 
+// monster group
+// physics simulate
+// simple path find
+// "we are warriors" simulate?
+// bag
+// 
+// can equip more than 1 weapons?
+// AI blueprint?
 
 #include "battle_drawable.hpp"
 #include "battle_scene.hpp"
