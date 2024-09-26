@@ -22,7 +22,7 @@ namespace Battle {
 		} else return itemsSG.FindNearestByRange(gScene->srdd, pos.x, pos.y, maxDistance);
 	}
 
-	inline void Scene::NewGame() {
+	inline void Scene::NewGame(int32_t count) {
 		// cleanup
 		// blocks.Clear();	// no change
 		explosions.Clear();
@@ -33,34 +33,34 @@ namespace Battle {
 		itemsSG.Clear();
 		items.Clear();
 
-		mainLogic = MainLogic();
+		mainLogic = MainLogic(count);
 	}
 
-	inline xx::Task<> Scene::MainLogic() {
+	inline xx::Task<> Scene::MainLogic(int32_t count) {
 
 		// generate some items on the ground
 
 		{
 			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { 1920 - 300, 1080 - 300 };
+			item.pos = { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y - 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
 		{
 			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { 1920 + 300, 1080 - 300 };
+			item.pos = { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y - 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
 		{
 			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { 1920 + 300, 1080 + 300 };
+			item.pos = { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y + 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
 		{
 			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { 1920 - 300, 1080 + 300 };
+			item.pos = { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y + 300 };
 			item.Init(nullptr);
 			itemsSG.Add(&item);
 		}
@@ -68,7 +68,7 @@ namespace Battle {
 
 		// generate some monsters
 		XY p;
-		for (int i = 0; i < 1000; ++i) {
+		for (int i = 0; i < count; ++i) {
 			p.x = rnd.Next<float>(gLooper.mapEdgeMin.x + gLooper.maxItemSize_2, gLooper.mapEdgeMax.x - gLooper.maxItemSize_2);
 			p.y = rnd.Next<float>(gLooper.mapEdgeMin.y + gLooper.maxItemSize_2, gLooper.mapEdgeMax.y - gLooper.maxItemSize_2);
 			monsters.EmplaceInit(p);

@@ -52,7 +52,7 @@ bottom1               2                    3
 			o.FillWayout(this);
 		});
 
-		mainLogic = MainLogic();
+		mainLogic = MainLogic(10000);
 	}
 
 };

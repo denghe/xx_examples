@@ -11,11 +11,12 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 	static constexpr float maxItemSize_2{ maxItemSize / 2 };
 
 	static constexpr int32_t physCellSize{ (int32_t)maxItemSize };
-	static constexpr int32_t physNumRows{ int32_t(height * 2 / physCellSize) };
-	static constexpr int32_t physNumCols{ int32_t(width * 2 / physCellSize) };
+	static constexpr int32_t physNumRows{ int32_t(height * 10 / physCellSize) };
+	static constexpr int32_t physNumCols{ int32_t(width * 10 / physCellSize) };
 
 	static constexpr XY mapSize{ float(physNumCols * physCellSize), float(physNumRows * physCellSize) };
 	static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+	static constexpr float cameraMinScale{ width / mapSize.x };
 
 	static constexpr XY mapEdgeMin{ maxItemSize * 2, maxItemSize * 2 };
 	static constexpr XY mapEdgeMax{ mapSize - mapEdgeMin };

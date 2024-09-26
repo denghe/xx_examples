@@ -22,8 +22,8 @@ namespace Battle {
 		void Draw();
 
 		xx::Task<> mainLogic;
-		xx::Task<> MainLogic();
-		void NewGame();
+		xx::Task<> MainLogic(int32_t count);
+		void NewGame(int32_t count);
 		// ...
 	};
 

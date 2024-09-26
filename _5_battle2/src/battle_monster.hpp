@@ -17,7 +17,7 @@ namespace Battle {
 			skills.RemoveAt(0);
 			gScene->items.Add(s);
 			gScene->itemsSG.Add(s);
-			s->owner = {};
+			s->owner.Reset();
 			s->pos = pos;
 		}
 		gScene->explosions.Emplace().Init(pos, radius);

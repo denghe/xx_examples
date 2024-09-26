@@ -5,11 +5,12 @@ namespace Battle {
 	inline int32_t Scene::Update() {
 		time += gLooper.frameDelay;
 
-		//if (!gLooper.mouseEventHandler && gLooper.mouse.PressedMBLeft()) {
-		//	auto p = gLooper.camera.ToLogicPos(gLooper.mouse.pos);
-		//	// todo: search nearest and fire ?
-		//	projectiles.Emplace().Emplace<Projectile_Fireball>()->Init({}, p, 0, 32, 300, 2, 1);
-		//}
+		if (!gLooper.mouseEventHandler && gLooper.mouse.PressedMBLeft()) {
+			auto p = gLooper.camera.ToLogicPos(gLooper.mouse.pos);
+			// todo: search nearest and fire ?
+			//projectiles.Emplace().Emplace<Projectile_Fireball>()->Init({}, p, 0, 32, 300, 2, 1);
+			explosions.Emplace().Init(p, 32);
+		}
 
 		// update monsters
 		monsters.Foreach([&](Monster& o)->xx::ForeachResult {
