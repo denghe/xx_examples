@@ -32,62 +32,83 @@ xx::Task<> Looper::MainTask() {
 
 	ui.Emplace()->Init();
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, 0 }, gLooper.xy7a
+	float offsetY = 0;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"NewGame 10k", [&]() {
 			scene->NewGame(10000);
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 200, 0 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"NewGame 20k", [&]() {
 			scene->NewGame(20000);
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 400, 0 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"NewGame 50k", [&]() {
 			scene->NewGame(50000);
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 600, 0 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"NewGame 100k", [&]() {
 			scene->NewGame(100000);
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -50 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
+		, gLooper.s9cfg_btn, U"Drop 1k Weapons", [&]() {
+			for (int32_t i = 0; i < 1000; ++i) {
+				auto t = gLooper.rnd.Next<bool>() ? Battle::ItemTypes::Staff1 : Battle::ItemTypes::Sword1;
+				scene->DropItem(t);
+			}
+		});
+
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 1x", [&]() {
 			this->updateSpeed = 1;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -100 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 5x", [&]() {
 			this->updateSpeed = 5;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 10x", [&]() {
 			this->updateSpeed = 10;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 20x", [&]() {
 			this->updateSpeed = 20;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -250 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 50x", [&]() {
 			this->updateSpeed = 50;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -300 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Speed: 100x", [&]() {
 			this->updateSpeed = 100;
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -400 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Zoom: show all", [&]() {
 			camera.SetScale(cameraMinScale);
 		});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -500 }, gLooper.xy7a
+	offsetY -= 50;
+	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, offsetY }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"Zoom: 1x", [&]() {
 			camera.SetScale(1.f);
 		});

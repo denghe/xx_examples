@@ -36,35 +36,38 @@ namespace Battle {
 		mainLogic = MainLogic(count);
 	}
 
+	inline void Scene::DropItem(ItemTypes t, XY pos) {
+		if (pos.IsZeroSimple()) {
+			pos.x = gLooper.rnd.Next<float>(gLooper.mapEdgeMin.x + 32, gLooper.mapEdgeMax.x - 32);
+			pos.y = gLooper.rnd.Next<float>(gLooper.mapEdgeMin.y + 32, gLooper.mapEdgeMax.y - 32);
+		}
+
+		switch (t) {
+		case ItemTypes::Staff1: {
+			auto& item = *items.Emplace().Emplace<Item_Staff1>();
+			item.pos = pos;
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+			break;
+		}
+		case ItemTypes::Sword1: {
+			auto& item = *items.Emplace().Emplace<Item_Sword1>();
+			item.pos = pos;
+			item.Init(nullptr);
+			itemsSG.Add(&item);
+			break;
+		}
+		}
+		// ...
+	}
+
 	inline xx::Task<> Scene::MainLogic(int32_t count) {
 
 		// generate some items on the ground
-
-		{
-			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y - 300 };
-			item.Init(nullptr);
-			itemsSG.Add(&item);
-		}
-		{
-			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y - 300 };
-			item.Init(nullptr);
-			itemsSG.Add(&item);
-		}
-		{
-			auto& item = *items.Emplace().Emplace<Item_Staff1>();
-			item.pos = { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y + 300 };
-			item.Init(nullptr);
-			itemsSG.Add(&item);
-		}
-		{
-			auto& item = *items.Emplace().Emplace<Item_Sword1>();
-			item.pos = { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y + 300 };
-			item.Init(nullptr);
-			itemsSG.Add(&item);
-		}
-
+		DropItem(ItemTypes::Staff1, { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y - 300 });
+		DropItem(ItemTypes::Sword1, { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y - 300 });
+		DropItem(ItemTypes::Staff1, { gLooper.mapSize_2.x + 300, gLooper.mapSize_2.y + 300 });
+		DropItem(ItemTypes::Sword1, { gLooper.mapSize_2.x - 300, gLooper.mapSize_2.y + 300 });
 
 		// generate some monsters
 		XY p;

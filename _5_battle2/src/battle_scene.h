@@ -24,6 +24,7 @@ namespace Battle {
 		xx::Task<> mainLogic;
 		xx::Task<> MainLogic(int32_t count);
 		void NewGame(int32_t count);
+		void DropItem(ItemTypes t, XY pos = {});
 		// ...
 	};
 

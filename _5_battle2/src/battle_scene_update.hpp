@@ -8,8 +8,10 @@ namespace Battle {
 		if (!gLooper.mouseEventHandler && gLooper.mouse.PressedMBLeft()) {
 			auto p = gLooper.camera.ToLogicPos(gLooper.mouse.pos);
 			// todo: search nearest and fire ?
-			//projectiles.Emplace().Emplace<Projectile_Fireball>()->Init({}, p, 0, 32, 300, 2, 1);
-			explosions.Emplace().Init(p, 32);
+			// projectiles.Emplace().Emplace<Projectile_Fireball>()->Init({}, p, 0, 32, 300, 2, 1);
+			// explosions.Emplace().Init(p, 32);
+			auto t = gLooper.rnd.Next<bool>() ? ItemTypes::Staff1 : ItemTypes::Sword1;
+			DropItem(t, p);
 		}
 
 		// update monsters
