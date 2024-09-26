@@ -22,7 +22,7 @@
 // 4. monsters use weapon to hit each others
 // 5. when monster dead( has weapon ), drop weapon
 // 
-// support following stats:
+// support following stats: ( all double ? )
 // Health Damage DamageReduction / Defense / Armor
 // HealthRegeneration HealthOnHit ...
 // Evasion
