@@ -5,6 +5,7 @@ namespace Battle {
 	struct Scene;
 	struct Monster : Drawable {
 		static constexpr float cRadius{ 32 };
+		static constexpr float cSearchDistance{ 1000 };
 		static constexpr xx::RGBA8 cColor{ xx::RGBA8_White };
 
 		StatInfo statInfo, statInfoMax;

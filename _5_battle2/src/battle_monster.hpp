@@ -45,7 +45,7 @@ namespace Battle {
 			&& !ActionExists<Action_MoveToTarget>()
 			&& !ActionExists<Action_HitTarget>()
 			) {
-			Add_Action_SearchTarget(gLooper.mapSize.x);
+			Add_Action_SearchTarget(cSearchDistance);
 		}
 
 		if (!ActionExists<Action_SetColor>()) {
