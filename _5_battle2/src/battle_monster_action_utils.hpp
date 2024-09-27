@@ -36,7 +36,7 @@ namespace Battle {
 		actions[index] = actions[--actionsLen];
 	}
 
-	// return -1 mean not found
+	// return false mean not found
 	XX_INLINE bool Monster::ActionTryRemove(ActionTypes bt) {
 		if (!ActionExists(bt)) return false;
 		for (int32_t index = actionsLen - 1; index >= 0; --index) {
