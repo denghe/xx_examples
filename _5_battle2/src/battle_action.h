@@ -2,18 +2,6 @@
 
 namespace Battle {
 
-	enum class ActionTypes : int32_t {
-		Stun,
-		Search,
-		MoveToItem,
-		MoveToTarget,
-		HitTarget,
-		SetColor,
-		// ...
-		MaxValue
-	};
-	static_assert((int32_t)ActionTypes::MaxValue <= 64);	// uint64_t actionFlags limit 
-
 	/*********************************************************************************************/
 	// base data struct
 

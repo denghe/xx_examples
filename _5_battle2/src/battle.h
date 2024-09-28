@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "looper.h"
+#include "battle_enums.h"
 #include "battle_drawable.h"
 #include "battle_action.h"
 #include "battle_stat.h"

@@ -2,41 +2,6 @@
 
 namespace Battle {
 
-	enum class ItemEquipmentLocations : uint8_t {
-		Bag,
-        Helm,
-        Amulet,
-        Shoulder,
-        Armor,
-        Belt,
-        Pants,
-        Glove,
-        Boots,
-        Ring,
-        Weapon,
-        Shield,
-        Accessory,
-		// ...
-	};
-
-	enum class ItemQualities : uint8_t {
-		Normal,
-		Excellent,
-		Rare,
-		Epic,
-		Legendary,
-		Ancient,
-		Archaic
-		// ...
-	};
-
-	enum class ItemTypes : uint16_t {
-		Potion1,
-		Staff1,
-		Sword1,
-		// ...
-	};
-
 	struct Monster;
 	struct Item : Drawable, xx::SpaceGrid2Item<Item> {
 		Item() = default;
