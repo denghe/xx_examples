@@ -1,5 +1,10 @@
 ﻿#include "pch.h"
 #include "looper.h"
+#include "code.h"
+#include "code2.h"
+#include "code3.h"
+#include "code4.h"
+#include "drop.h"
 
 Looper gLooper;
 ResFrames& gRes(gLooper.res);
@@ -83,6 +88,10 @@ xx::Task<> Looper::MainTask() {
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -100}, xy7a, s9cfg_btn, U"run buff test", [&]() {
 		Code3::Test();
+	});
+
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -150}, xy7a, s9cfg_btn, U"run code4 test", [&]() {
+		Code4::Test();
 	});
 
 	camera.SetMaxFrameSize(maxItemSize);
