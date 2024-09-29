@@ -73,7 +73,9 @@ namespace Code4 {
 		}
 	};
 
-	enum class StatIndexs : uint32_t {
+	// todo: more StatTypes for  ??? = level * n.  map to calculate function
+
+	enum class StatTypes : uint32_t {
 		health = 0,
 		vitality,
 		strength,
@@ -97,7 +99,7 @@ namespace Code4 {
 	};
 
 	struct StatItem {
-		StatIndexs index;
+		StatTypes type;
 		double value;
 	};
 
@@ -168,8 +170,8 @@ namespace Code4 {
 					if (auto statsCount = e.stats1.Count()) {
 						for (int32_t si = 0; si < statsCount; ++si) {
 							auto& s = e.stats1[si];
-							assert((uint32_t)s.index < (uint32_t)StatIndexs::MIDDLE_VALUE);
-							((double*)&base)[(uint32_t)s.index] += s.value;
+							assert((uint32_t)s.type < (uint32_t)StatTypes::MIDDLE_VALUE);
+							((double*)&base)[(uint32_t)s.type] += s.value;
 						}
 					}
 				}
@@ -195,9 +197,9 @@ namespace Code4 {
 					if (auto statsCount = e.stats2.Count()) {
 						for (int32_t si = 0; si < statsCount; ++si) {
 							auto& s = e.stats2[si];
-							assert((uint32_t)s.index >= (uint32_t)StatIndexs::MIDDLE_VALUE);
-							assert((uint32_t)s.index < (uint32_t)StatIndexs::MAX_VALUE);
-							((double*)&base)[(uint32_t)s.index] += s.value;
+							assert((uint32_t)s.type >= (uint32_t)StatTypes::MIDDLE_VALUE);
+							assert((uint32_t)s.type < (uint32_t)StatTypes::MAX_VALUE);
+							((double*)&base)[(uint32_t)s.type] += s.value;
 						}
 					}
 				}
@@ -212,17 +214,24 @@ namespace Code4 {
 			curr.energy = bak_energy;
 		}
 
+		void Regeneration() {
+			// todo
+		}
+
 		void Update() {
 			BaseCalc1();
 			BaseCalc2();
 			BaseToCurr();
+			Regeneration();
+			// todo: call Equipment
 		}
 
 		void Dump() {
-			xx::Cout("base = ");
-			base.Dump();
-			//xx::Cout("\ncurr = ");
-			//curr.Dump();
+			//xx::Cout("base = ");
+			//base.Dump();
+			//xx::CoutN();
+			xx::Cout("curr = ");
+			curr.Dump();
 			xx::CoutN();
 		}
 	};
@@ -235,18 +244,26 @@ namespace Code4 {
 		// add some item for test
 		{
 			auto& e = c.equipments.Emplace();
-			e.stats1.Emplace(StatIndexs::health, 5);
-			e.stats1.Emplace(StatIndexs::vitality, 6);
+			e.stats1.Emplace(StatTypes::health, 5);
+			e.stats1.Emplace(StatTypes::vitality, 6);
 		}
 		{
 			auto& e = c.equipments.Emplace();
-			e.stats2.Emplace(StatIndexs::movementSpeed, 100);
+			e.stats2.Emplace(StatTypes::movementSpeed, 100);
 		}
 		c.Init();
 		xx::CoutN("after Init()");
 		c.Dump();
 		xx::CoutN("after Update()");
 		c.Update();
+		c.Dump();
+		xx::CoutN("simulate hurt");
+		c.curr.life -= 10;
+		xx::CoutN("life = ", c.curr.life);
+		c.Update();
+		xx::CoutN("life = ", c.curr.life);
+		c.Update();
+		xx::CoutN("life = ", c.curr.life);
 		c.Dump();
 	}
 
