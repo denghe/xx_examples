@@ -90,7 +90,7 @@ xx::Task<> Looper::MainTask() {
 		Code3::Test();
 	});
 
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -150}, xy7a, s9cfg_btn, U"run code4 test", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{0, -150}, xy7a, s9cfg_btn, U"run stat test", [&]() {
 		Code4::Test();
 	});
 

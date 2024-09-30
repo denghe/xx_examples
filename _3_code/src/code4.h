@@ -11,50 +11,36 @@ namespace Code4 {
 	/**********************************************************************************************/
 
 	struct alignas(8) StatPanelPoints {
-		double health;					// + life max, energy max
-		double vitality;				// + life regeneration, energy regeneration
-		double strength;				// + damage scale
-		double dexterity;				// + evasion, movement speed
-		double defense;					// + damage reduce scale
-		double wisdom;					// + experience scale
-		double lucky;					// + critical chance, critical bonus, improve drop rate
+		double health{};					// + life max, energy max
+		double vitality{};					// + life regeneration, energy regeneration
+		double strength{};					// + damage scale
+		double dexterity{};					// + evasion, movement speed
+		double defense{};					// + damage reduce scale
+		double wisdom{};					// + experience scale
+		double lucky{};						// + critical chance, critical bonus, improve drop rate
 		// ...
 
 		void Dump() {
 #ifdef STAT_ENABLE_CONSOLE_DUMP
-			xx::CoutFormat(R"(StatPanelPoints {{
-    health = {0},
-    vitality = {1},
-    strength = {2},
-    dexterity = {3},
-    defense = {4},
-    wisdom = {5},
-    lucky = {6},
-})",
-				health,
-				vitality,
-				strength,
-				dexterity,
-				defense,
-				wisdom,
-				lucky
+			xx::CoutNFormat(R"(StatPanelPoints: health = {0}, vitality = {1}, strength = {2}, dexterity = {3}, defense = {4}, wisdom = {5}, lucky = {6})",
+				health, vitality, strength, dexterity, defense, wisdom, lucky
 			);
 #endif;
 		}
 	};
 
 	struct alignas(8) StatPanelResults {
-		double life;
-		double lifeRegeneration;
-		double energy;
-		double energyRegeneration;
-		double damageScale;
-		double defenseScale;
-		double evasion;
-		double movementSpeed;
-		double experienceScale;
-		double criticalChance;
-		double criticalBonus;
+		double life{};
+		double lifeRegeneration{};
+		double energy{};
+		double energyRegeneration{};
+		double damageScale{};
+		double defenseScale{};
+		double evasion{};
+		double movementSpeed{};
+		double experienceScale{};
+		double criticalChance{};
+		double criticalBonus{};
 		// ...
 
 		void ClearResults() {
@@ -63,7 +49,7 @@ namespace Code4 {
 
 		void Dump() {
 #ifdef STAT_ENABLE_CONSOLE_DUMP
-			xx::CoutFormat(R"(StatPanelResults {{
+			xx::CoutNFormat(R"(StatPanelResults: {{
     life = {0},
     lifeRegeneration = {1},
     energy = {2},
@@ -94,8 +80,10 @@ namespace Code4 {
 
 	struct alignas(8) StatPanel : StatPanelPoints, StatPanelResults {
 		void Dump() {
+#ifdef STAT_ENABLE_CONSOLE_DUMP
 			StatPanelPoints::Dump();
 			StatPanelResults::Dump();
+#endif
 		}
 	};
 
@@ -124,12 +112,13 @@ namespace Code4 {
 	};
 
 	struct StatItem {
-		StatTypes type;
-		double value;
+		StatTypes type{};
+		double value{};
 	};
 
+	struct Char;
 	struct Equipment {
-		// ...
+		xx::Weak<Char> owner;
 		xx::TinyList<StatItem> stats;
 		// ...
 	};
@@ -168,22 +157,21 @@ namespace Code4 {
 	struct Char {
 		// ...
 
-		double level;
-		double experience;
-		xx::TinyList<Equipment> equipments;
 		CharConfigs cfg;
-		StatPanel sp;			// max value
-		double life, energy;	// current
+		xx::TinyList<xx::Shared<Equipment>> equipments;
+		double level{}, experience{};
+		double life{}, energy{};	// current
+		StatPanel sp;				// max value
 
 		void Init() {
 			level = 1;
 			experience = 0;
-			CalculateSP();
+			UpdateSP();
 			life = sp.life;
 			energy = sp.energy;
 		}
 
-		XX_INLINE void CalculateSP() {
+		void UpdateSP() {
 			// calculate points by level
 			sp.health = cfg.initHealth + (this->level - 1) * cfg.levelToHealthRatio;
 			sp.vitality = cfg.initVitality + (this->level - 1) * cfg.levelToVitalityRatio;
@@ -197,9 +185,9 @@ namespace Code4 {
 			if (auto equipmentsCount = equipments.Count(); equipmentsCount > 0) {
 				for (int32_t ei = 0; ei < equipmentsCount; ++ei) {
 					auto& e = equipments[ei];
-					if (auto statsCount = e.stats.Count(); statsCount > 0) {
+					if (auto statsCount = e->stats.Count(); statsCount > 0) {
 						for (int32_t si = 0; si < statsCount; ++si) {
-							auto& s = e.stats[si];
+							auto& s = e->stats[si];
 							if ((uint32_t)s.type <= (uint32_t)StatTypes::__RESULTS_END__) {
 								((double*)&sp)[(uint32_t)s.type] += s.value;
 							} else {
@@ -234,40 +222,93 @@ namespace Code4 {
 		}
 
 		void Update() {
-			CalculateSP();
+			UpdateSP();	// need update all monster sp first
 			// ...
 		}
 	};
+
+	struct Equipment1 : Equipment {
+		double damage{};
+		Equipment1(xx::Shared<Char> const& owner_) {
+			owner = owner_;
+			damage = 1;
+			stats.Emplace(StatTypes::health, 5);
+			stats.Emplace(StatTypes::vitality, 6);
+		}
+	};
+
+	struct Equipment2 : Equipment {
+		Equipment2(xx::Shared<Char> const& owner_) {
+			owner = owner_;
+			stats.Emplace(StatTypes::movementSpeed, 100);
+		}
+	};
+
+	struct Projectile {
+		xx::Weak<Char> owner;
+		xx::Weak<Equipment> emitter;
+		virtual ~Projectile() {};
+		virtual bool Hurt(Char* tar) { return false; }
+	};
+
+	struct Bullet1 : Projectile {
+		double damage{};											// emitter's props copy here
+		double damageScale{}, criticalChance{}, criticalBonus{};	// owner's props copy here
+
+		void Init(Equipment1* emitter_) {
+			assert(emitter_);
+			owner = emitter_->owner;
+			auto& sp = emitter_->owner->sp;
+			emitter = xx::WeakFromThis(emitter_);
+
+			damage = emitter_->damage;
+			damageScale = sp.damageScale;
+			criticalChance = sp.criticalChance;
+			criticalBonus = sp.criticalBonus;
+		}
+
+		// return is crit ( tar->life == 0  mean  is dead )
+		bool Hurt(Char* tar) override {
+			auto d = damage * damageScale;
+			auto crit = gLooper.rnd.Next<float>() < criticalChance;
+			if (crit) {
+				d += d * criticalBonus;
+			}
+			tar->life -= d;
+			if (tar->life < 0) {
+				tar->life = 0;
+			}
+			return false;
+		}
+	};
+
 
 	/*********************************************************************************************/
 	/*********************************************************************************************/
 
 	inline void Test() {
-		Char c;
+		auto c = xx::MakeShared<Char>();
 		// add some item for test
-		{
-			auto& e = c.equipments.Emplace();
-			e.stats.Emplace(StatTypes::health, 5);
-			e.stats.Emplace(StatTypes::vitality, 6);
-		}
-		{
-			auto& e = c.equipments.Emplace();
-			e.stats.Emplace(StatTypes::movementSpeed, 100);
-		}
-		c.Init();
+		c->equipments.Emplace( xx::MakeShared<Equipment1>(c) );
+		c->equipments.Emplace( xx::MakeShared<Equipment2>(c) );
+		c->Init();
 		xx::CoutN("after Init()");
-		c.sp.Dump();
+		c->sp.Dump();
 		xx::CoutN("after Update()");
-		c.Update();
-		c.sp.Dump();
+		c->Update();
+		c->sp.Dump();
 		xx::CoutN("simulate hurt");
-		c.life -= 10;
-		xx::CoutN("life = ", c.life);
-		c.Update();
-		xx::CoutN("life = ", c.life);
-		c.Update();
-		xx::CoutN("life = ", c.life);
-		c.sp.Dump();
+		c->life -= 10;
+		xx::CoutN("life = ", c->life);
+		c->Update();
+		xx::CoutN("life = ", c->life);
+		c->Update();
+		xx::CoutN("life = ", c->life);
+		c->level++;
+		c->Update();
+		xx::CoutN("level = ", c->level);
+		c->sp.Dump();
+		// todo: bullet hurt test
 	}
 
 };
