@@ -5,10 +5,12 @@ namespace Code4 {
 
 	// simulate Char + Item + Stat
 
+#define STAT_ENABLE_CONSOLE_DUMP
+
 	/**********************************************************************************************/
 	/**********************************************************************************************/
 
-	struct StatPanel {
+	struct alignas(8) StatPanelPoints {
 		double health;					// + life max, energy max
 		double vitality;				// + life regeneration, energy regeneration
 		double strength;				// + damage scale
@@ -17,6 +19,31 @@ namespace Code4 {
 		double wisdom;					// + experience scale
 		double lucky;					// + critical chance, critical bonus, improve drop rate
 		// ...
+
+		void Dump() {
+#ifdef STAT_ENABLE_CONSOLE_DUMP
+			xx::CoutFormat(R"(StatPanelPoints {{
+    health = {0},
+    vitality = {1},
+    strength = {2},
+    dexterity = {3},
+    defense = {4},
+    wisdom = {5},
+    lucky = {6},
+})",
+				health,
+				vitality,
+				strength,
+				dexterity,
+				defense,
+				wisdom,
+				lucky
+			);
+#endif;
+		}
+	};
+
+	struct alignas(8) StatPanelResults {
 		double life;
 		double lifeRegeneration;
 		double energy;
@@ -30,34 +57,25 @@ namespace Code4 {
 		double criticalBonus;
 		// ...
 
+		void ClearResults() {
+			memset(this, 0, sizeof(StatPanelResults));
+		}
+
 		void Dump() {
-			xx::CoutFormat(R"(StatPanel {{
-    health = {0},
-    vitality = {1},
-    strength = {2},
-    dexterity = {3},
-    defense = {4},
-    wisdom = {5},
-    lucky = {6},
-    life = {7},
-    lifeRegeneration = {8},
-    energy = {9},
-    energyRegeneration = {10},
-    damageScale = {11},
-    defenseScale = {12},
-    evasion = {13},
-    movementSpeed = {14},
-    experienceScale = {15},
-    criticalChance = {16},
-    criticalBonus = {17}
+#ifdef STAT_ENABLE_CONSOLE_DUMP
+			xx::CoutFormat(R"(StatPanelResults {{
+    life = {0},
+    lifeRegeneration = {1},
+    energy = {2},
+    energyRegeneration = {3},
+    damageScale = {4},
+    defenseScale = {5},
+    evasion = {6},
+    movementSpeed = {7},
+    experienceScale = {8},
+    criticalChance = {9},
+    criticalBonus = {10}
 })",
-				health,
-				vitality,
-				strength,
-				dexterity,
-				defense,
-				wisdom,
-				lucky,
 				life,
 				lifeRegeneration,
 				energy,
@@ -70,21 +88,28 @@ namespace Code4 {
 				criticalChance,
 				criticalBonus
 			);
+#endif
+		}
+	};
+
+	struct alignas(8) StatPanel : StatPanelPoints, StatPanelResults {
+		void Dump() {
+			StatPanelPoints::Dump();
+			StatPanelResults::Dump();
 		}
 	};
 
 	// todo: more StatTypes for  ??? = level * n.  map to calculate function
 
 	enum class StatTypes : uint32_t {
-		health = 0,
+		health,					__POINTS_BEGIN__ = health,
 		vitality,
 		strength,
 		dexterity,
 		defense,
 		wisdom,
-		lucky,
-		MIDDLE_VALUE = 7,		// == next one value
-		life = 7,
+		lucky,					__POINTS_END__ = lucky,
+		life,					__RESULTS_BEGIN__ = life,
 		lifeRegeneration,
 		energy,
 		energyRegeneration,
@@ -94,8 +119,8 @@ namespace Code4 {
 		movementSpeed,
 		experienceScale,
 		criticalChance,
-		criticalBonus,
-		MAX_VALUE
+		criticalBonus,			__RESULTS_END__ = criticalBonus
+		// ... exts
 	};
 
 	struct StatItem {
@@ -104,8 +129,9 @@ namespace Code4 {
 	};
 
 	struct Equipment {
-		xx::TinyList<StatItem> stats1;		// 0 ~ 6
-		xx::TinyList<StatItem> stats2;		// 7 ~ 17
+		// ...
+		xx::TinyList<StatItem> stats;
+		// ...
 	};
 
 	struct CharConfigs {
@@ -140,99 +166,76 @@ namespace Code4 {
 	};
 
 	struct Char {
+		// ...
+
 		double level;
 		double experience;
-		CharConfigs cfg;
-		StatPanel base;
-		StatPanel curr;
 		xx::TinyList<Equipment> equipments;
+		CharConfigs cfg;
+		StatPanel sp;			// max value
+		double life, energy;	// current
 
 		void Init() {
 			level = 1;
 			experience = 0;
-			BaseCalc1();
-			BaseCalc2();
-			curr = base;
+			CalculateSP();
+			life = sp.life;
+			energy = sp.energy;
 		}
 
-		void BaseCalc1() {
-			base.health = cfg.initHealth + (this->level - 1) * cfg.levelToHealthRatio;
-			base.vitality = cfg.initVitality + (this->level - 1) * cfg.levelToVitalityRatio;
-			base.strength = cfg.initStrength + (this->level - 1) * cfg.levelToStrengthRatio;
-			base.dexterity = cfg.initDexterity + (this->level - 1) * cfg.levelToDexterityRatio;
-			base.defense = cfg.initDefense + (this->level - 1) * cfg.levelToDefenseRatio;
-			base.wisdom = cfg.initWisdom + (this->level - 1) * cfg.levelToWisdomRatio;
-			base.lucky = cfg.initLucky + (this->level - 1) * cfg.levelToLuckyRatio;
-
-			if (auto equipmentsCount = equipments.Count()) {
+		XX_INLINE void CalculateSP() {
+			// calculate points by level
+			sp.health = cfg.initHealth + (this->level - 1) * cfg.levelToHealthRatio;
+			sp.vitality = cfg.initVitality + (this->level - 1) * cfg.levelToVitalityRatio;
+			sp.strength = cfg.initStrength + (this->level - 1) * cfg.levelToStrengthRatio;
+			sp.dexterity = cfg.initDexterity + (this->level - 1) * cfg.levelToDexterityRatio;
+			sp.defense = cfg.initDefense + (this->level - 1) * cfg.levelToDefenseRatio;
+			sp.wisdom = cfg.initWisdom + (this->level - 1) * cfg.levelToWisdomRatio;
+			sp.lucky = cfg.initLucky + (this->level - 1) * cfg.levelToLuckyRatio;
+			// gather points & results from items
+			sp.ClearResults();
+			if (auto equipmentsCount = equipments.Count(); equipmentsCount > 0) {
 				for (int32_t ei = 0; ei < equipmentsCount; ++ei) {
 					auto& e = equipments[ei];
-					if (auto statsCount = e.stats1.Count()) {
+					if (auto statsCount = e.stats.Count(); statsCount > 0) {
 						for (int32_t si = 0; si < statsCount; ++si) {
-							auto& s = e.stats1[si];
-							assert((uint32_t)s.type < (uint32_t)StatTypes::MIDDLE_VALUE);
-							((double*)&base)[(uint32_t)s.type] += s.value;
+							auto& s = e.stats[si];
+							if ((uint32_t)s.type <= (uint32_t)StatTypes::__RESULTS_END__) {
+								((double*)&sp)[(uint32_t)s.type] += s.value;
+							} else {
+								// todo: call mapped handle func
+							}
 						}
 					}
 				}
 			}
-		}
-
-		void BaseCalc2() {
-			base.life = base.health * cfg.healthToLifeRatio;
-			base.energy = base.health * cfg.healthToEnergyRatio;
-			base.lifeRegeneration = base.vitality * cfg.vitalityToLifeRegenerationRatio;
-			base.energyRegeneration = base.vitality * cfg.vitalityToEnergyRegenerationRatio;
-			base.damageScale = base.strength * cfg.strengthToDamageScaleRatio;
-			base.defenseScale = cfg.defenseFactor / (cfg.defenseFactor + base.defense);
-			base.evasion = cfg.evasionFactor / (cfg.evasionFactor + base.dexterity);
-			base.movementSpeed = cfg.baseMovementSpeed + base.dexterity * cfg.dexterityToMovementSpeedRatio;
-			base.experienceScale = base.wisdom * cfg.wisdomToExperienceScaleRatio;
-			base.criticalChance = base.lucky * cfg.luckyToCritialChanceScaleRatio;
-			base.criticalBonus = base.lucky * cfg.luckyToCritialBonusScaleRatio;
-
-			if (auto equipmentsCount = equipments.Count()) {
-				for (int32_t ei = 0; ei < equipmentsCount; ++ei) {
-					auto& e = equipments[ei];
-					if (auto statsCount = e.stats2.Count()) {
-						for (int32_t si = 0; si < statsCount; ++si) {
-							auto& s = e.stats2[si];
-							assert((uint32_t)s.type >= (uint32_t)StatTypes::MIDDLE_VALUE);
-							assert((uint32_t)s.type < (uint32_t)StatTypes::MAX_VALUE);
-							((double*)&base)[(uint32_t)s.type] += s.value;
-						}
-					}
-				}
-			}
-		}
-
-		void BaseToCurr() {
-			auto bak_life = curr.life;
-			auto bak_energy = curr.energy;
-			curr = base;
-			curr.life = bak_life;
-			curr.energy = bak_energy;
-		}
-
-		void Regeneration() {
-			// todo
+			// calculate final results
+			sp.life += sp.health * cfg.healthToLifeRatio;
+			sp.energy += sp.health * cfg.healthToEnergyRatio;
+			sp.lifeRegeneration += sp.vitality * cfg.vitalityToLifeRegenerationRatio;
+			sp.energyRegeneration += sp.vitality * cfg.vitalityToEnergyRegenerationRatio;
+			sp.damageScale += sp.strength * cfg.strengthToDamageScaleRatio;
+			sp.defenseScale += cfg.defenseFactor / (cfg.defenseFactor + sp.defense);
+			sp.evasion += cfg.evasionFactor / (cfg.evasionFactor + sp.dexterity);
+			sp.movementSpeed += cfg.baseMovementSpeed + sp.dexterity * cfg.dexterityToMovementSpeedRatio;
+			sp.experienceScale += sp.wisdom * cfg.wisdomToExperienceScaleRatio;
+			sp.criticalChance += sp.lucky * cfg.luckyToCritialChanceScaleRatio;
+			sp.criticalBonus += sp.lucky * cfg.luckyToCritialBonusScaleRatio;
+			// handle regenerations
+			if (life < sp.life) life += sp.lifeRegeneration;
+			if (energy < sp.energy) energy += sp.energyRegeneration;
+			// handle value range
+			if (life > sp.life) life = sp.life;
+			if (energy > sp.energy) energy = sp.energy;
+			if (sp.criticalChance > 1) sp.criticalBonus += sp.criticalChance - 1;
+			if (sp.movementSpeed >= 1000) sp.movementSpeed = 1000;
+			if (sp.defenseScale >= 1) sp.defenseScale = 0.99999;
+			if (sp.evasion >= 1) sp.evasion = 0.99999;
 		}
 
 		void Update() {
-			BaseCalc1();
-			BaseCalc2();
-			BaseToCurr();
-			Regeneration();
-			// todo: call Equipment
-		}
-
-		void Dump() {
-			//xx::Cout("base = ");
-			//base.Dump();
-			//xx::CoutN();
-			xx::Cout("curr = ");
-			curr.Dump();
-			xx::CoutN();
+			CalculateSP();
+			// ...
 		}
 	};
 
@@ -244,30 +247,37 @@ namespace Code4 {
 		// add some item for test
 		{
 			auto& e = c.equipments.Emplace();
-			e.stats1.Emplace(StatTypes::health, 5);
-			e.stats1.Emplace(StatTypes::vitality, 6);
+			e.stats.Emplace(StatTypes::health, 5);
+			e.stats.Emplace(StatTypes::vitality, 6);
 		}
 		{
 			auto& e = c.equipments.Emplace();
-			e.stats2.Emplace(StatTypes::movementSpeed, 100);
+			e.stats.Emplace(StatTypes::movementSpeed, 100);
 		}
 		c.Init();
 		xx::CoutN("after Init()");
-		c.Dump();
+		c.sp.Dump();
 		xx::CoutN("after Update()");
 		c.Update();
-		c.Dump();
+		c.sp.Dump();
 		xx::CoutN("simulate hurt");
-		c.curr.life -= 10;
-		xx::CoutN("life = ", c.curr.life);
+		c.life -= 10;
+		xx::CoutN("life = ", c.life);
 		c.Update();
-		xx::CoutN("life = ", c.curr.life);
+		xx::CoutN("life = ", c.life);
 		c.Update();
-		xx::CoutN("life = ", c.curr.life);
-		c.Dump();
+		xx::CoutN("life = ", c.life);
+		c.sp.Dump();
 	}
 
 };
+
+
+
+
+
+
+
 
 //enum class StatTypes_Body : uint32_t {
 //	Life,
