@@ -163,6 +163,7 @@ namespace Code4 {
 		double level{}, experience{};
 		double life{}, energy{};	// current
 		StatPanel sp;				// max value
+		// todo: StatItem array store ext sp
 
 		void Init() {
 			level = 1;
