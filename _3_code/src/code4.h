@@ -118,6 +118,7 @@ namespace Code4 {
 
 	struct Char;
 	struct Equipment {
+		virtual ~Equipment() {}
 		xx::Weak<Char> owner;
 		xx::TinyList<StatItem> stats;
 		// ...
@@ -229,9 +230,11 @@ namespace Code4 {
 
 	struct Equipment1 : Equipment {
 		double damage{};
+		double attackSpeed{};
 		Equipment1(xx::Shared<Char> const& owner_) {
 			owner = owner_;
 			damage = 1;
+			attackSpeed = 2;
 			stats.Emplace(StatTypes::health, 5);
 			stats.Emplace(StatTypes::vitality, 6);
 		}
@@ -267,7 +270,7 @@ namespace Code4 {
 			criticalBonus = sp.criticalBonus;
 		}
 
-		// return is crit ( tar->life == 0  mean  is dead )
+		// tar->life -= d ( tar->life == 0  mean  is dead )
 		bool Hurt(Char* tar) override {
 			auto d = damage * damageScale;
 			auto crit = gLooper.rnd.Next<float>() < criticalChance;
@@ -278,7 +281,7 @@ namespace Code4 {
 			if (tar->life < 0) {
 				tar->life = 0;
 			}
-			return false;
+			return crit;
 		}
 	};
 
@@ -307,8 +310,24 @@ namespace Code4 {
 		c->level++;
 		c->Update();
 		xx::CoutN("level = ", c->level);
+		xx::CoutN("life = ", c->life);
 		c->sp.Dump();
-		// todo: bullet hurt test
+		xx::CoutN("bullet hurt test");
+		auto b = xx::MakeShared<Bullet1>();
+		b->Init(dynamic_cast<Equipment1*>(c->equipments[0].pointer));
+		auto r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		r = b->Hurt(c);
+		xx::CoutN("r = ", r, " life = ", c->life);
+		
 	}
 
 };
