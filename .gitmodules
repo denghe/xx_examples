@@ -16,3 +16,6 @@
 [submodule "miniaudio"]
 	path = miniaudio
 	url = https://github.com/mackron/miniaudio.git
+[submodule "FixPointCS"]
+	path = FixPointCS
+	url = https://github.com/XMunkki/FixPointCS.git
