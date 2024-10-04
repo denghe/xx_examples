@@ -123,11 +123,10 @@ namespace server {
 		d.si = &gSerdeInfo;
 		d.Write(frameNumber, rnd);
 		// todo: write monsters
+		//d.Write(monsters);
 		auto e = monsters.len;
-		d.Write(monsters.len);
 		for (int32_t i = 0; i < e; ++i) {
-			auto& m = monsters[i];
-			m->WriteTo(d);
+			d.Write(monsters[i]);
 		}
 		// todo: rebuild monsterGrid
 		xx::CoutN(d);
