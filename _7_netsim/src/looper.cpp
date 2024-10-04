@@ -61,6 +61,11 @@ xx::Task<> Looper::MainTask() {
 	ok = true;
 }
 
+void Looper::AfterInit() {
+	server::InitSerdeInfo();
+	client::InitSerdeInfo();
+}
+
 void Looper::BeforeUpdate() {
 	if (!ok) return;
 }
@@ -86,6 +91,12 @@ void Looper::Draw() {
 }
 
 namespace server {
+	xx::SerdeInfo gSerdeInfo;
+
+	void InitSerdeInfo() {
+		gSerdeInfo.Register<Monster>();
+		// ...
+	}
 
 	void Scene::Init() {
 		gLooper.msg.Clear();
@@ -104,10 +115,23 @@ namespace server {
 		}
 
 		if (frameNumber % 180 == 0) {
-			monsters.Emplace()->Init();
+			monsters.Emplace().Emplace<Monster, true>()->Init();
 		}
 
-		// todo: write data to msgFull 
+		// todo: write all to msg
+		xx::DataEx d;
+		d.si = &gSerdeInfo;
+		d.Write(frameNumber, rnd);
+		// todo: write monsters
+		auto e = monsters.len;
+		d.Write(monsters.len);
+		for (int32_t i = 0; i < e; ++i) {
+			auto& m = monsters[i];
+			m->WriteTo(d);
+		}
+		// todo: rebuild monsterGrid
+		xx::CoutN(d);
+		// todo: move d's buf to gLooper.msg
 	}
 
 	Monster::~Monster() {
@@ -124,15 +148,31 @@ namespace server {
 		return false;
 	}
 
+	void Monster::WriteTo(xx::Data& d) {
+		d.WriteFixedArray(&x, 4);
+	}
+
 }
 
 namespace client {
+	xx::SerdeInfo gSerdeInfo;
+
+	void InitSerdeInfo() {
+		gSerdeInfo.Register<Monster>();
+		// ...
+	}
+
 	void Scene::Init(XY centerPos_) {
 		centerPos = centerPos_;
 	}
 
 	void Scene::Update() {
 		// todo: restore all data from msg
+		xx::Data_r dr{ gLooper.msg };
+		dr.Read(frameNumber, rnd);
+		// todo: restore monsters
+		// todo: rebuild monsterGrid
+		assert(dr.offset == dr.len);
 	}
 
 	void Scene::Draw() {
@@ -155,5 +195,17 @@ namespace client {
 	void Monster::Draw() {
 
 	}
+
+	Monster::~Monster() {
+		if (_sgab) {
+			_sgab->Remove(this);
+			_sgab = {};
+		}
+	}
+
+	int32_t Monster::ReadFrom(xx::Data_r& dr) {
+		return dr.ReadFixedArray(&x, 4);
+	}
+
 
 }

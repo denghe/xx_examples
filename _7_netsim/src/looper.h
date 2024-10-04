@@ -21,16 +21,22 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 	xx::Shared<client::Scene> cScene1, cScene2;
 	xx::Data msg;	// todo: msgSyncCmd
 
+	void AfterInit();
 	void BeforeUpdate();
 	void Update();				// fixed update
 	void Draw();
 };
 
 namespace server {
-	struct Monster : xx::SpaceGridAB2Item<Monster> {
+	extern xx::SerdeInfo gSerdeInfo;
+	void InitSerdeInfo();
+	struct Monster : xx::SerdeBase, xx::SpaceGridAB2Item<Monster> {
+		static constexpr uint16_t cTypeId{ 1 };
+		static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 		virtual ~Monster();
 		void Init();
 		virtual bool Update();	// true: kill
+		virtual void WriteTo(xx::Data& d);
 		Scene* scene;
 		FX64 x{}, y{}, radians{}, radius{};
 	};
@@ -45,11 +51,16 @@ namespace server {
 }
 
 namespace client {
-	struct Monster : xx::SpaceGridAB2Item<Monster> {
-		virtual ~Monster() {}
+	extern xx::SerdeInfo gSerdeInfo;
+	void InitSerdeInfo();
+	struct Monster : xx::SerdeBase, xx::SpaceGridAB2Item<Monster> {
+		static constexpr uint16_t cTypeId{ 1 };
+		static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+		virtual ~Monster();
 		void Init();
 		virtual bool Update();	// true: kill
 		virtual void Draw();
+		virtual int32_t ReadFrom(xx::Data_r& dr);
 		Scene* scene;
 		FX64 x{}, y{}, radians{}, radius{};
 	};
