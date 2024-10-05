@@ -16,13 +16,14 @@ namespace client {
 	}
 
 	void Scene::Update() {
-		// todo: restore all data from msg
+		// restore all data from msg
 		xx::DataEx_r dr{ gLooper.msg.GetBuf(), gLooper.msg.GetLen() };
 		dr.si = &gSerdeInfo;
 		int r = dr.Read(frameNumber, rnd, monsters);
 		assert(!r);
 		// todo: read monsterGrid
 		assert(dr.offset == dr.len);
+		xx::CoutN(dr);
 	}
 
 	void Scene::Draw() {

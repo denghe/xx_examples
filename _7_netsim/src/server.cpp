@@ -31,12 +31,12 @@ namespace server {
 			monsters.Emplace().Emplace<Monster, true>()->Init();
 		}
 
-		// todo: write all to msg
+		// write all to msg
 		xx::DataEx d;
 		d.si = &gSerdeInfo;
 		d.Write(frameNumber, rnd, monsters);
 		// todo: write monsterGrid
-		xx::CoutN(d);
+		//xx::CoutN(d);
 		gLooper.msg = xx::DataShared(std::move(d));
 	}
 
