@@ -4,12 +4,12 @@
 #define XX_EXAMPLES_7_H_
 
 #include <xx2d.h>
-#include <xx_space_ex.h>
 using XY = xx::XY;
-inline static constexpr float gPI = xx::gPI;
-inline static constexpr float gNPI = xx::gNPI;
-inline static constexpr float g2PI = xx::g2PI;
-inline static constexpr float gPI_2 = xx::gPI_2;
+//inline static constexpr float gPI = xx::gPI;
+//inline static constexpr float gNPI = xx::gNPI;
+//inline static constexpr float g2PI = xx::g2PI;
+//inline static constexpr float gPI_2 = xx::gPI_2;
+#include "space.h"
 #include <Fixed64.h>
 using FX64 = Fixed64::FP_LONG;
 
@@ -22,7 +22,7 @@ namespace xx {
         virtual ~SerdeBase() = default;
         virtual void Write(Data& d) const {};
         virtual int Read(Data_r& dr) { return __LINE__; }
-        uint16_t typeId{};  // fill by maker
+        uint16_t typeId;  // fill by MakeShared<T, true>, after constructor
     };
 
     struct SerdeInfo {
@@ -31,6 +31,10 @@ namespace xx {
 
         std::array<Func, 65536> fs{};
         std::array<uint16_t, 65536> pids{};
+        void Init() {
+            memset(fs.data(), 0, sizeof(Func) * fs.size());
+            memset(pids.data(), 0, sizeof(uint16_t) * pids.size());
+        }
 
 		XX_INLINE bool IsBaseOf(uint16_t baseTypeId, uint16_t typeId) noexcept {
 			for (; typeId != baseTypeId; typeId = pids[typeId]) {
@@ -53,17 +57,17 @@ namespace xx {
 		}
 
 		template<typename T>
-		XX_INLINE void Register() {
+		void Register() {
 			static_assert(std::is_base_of_v<SerdeBase, T>);
 			pids[T::cTypeId] = T::cParentTypeId;
-			fs[T::cTypeId] = []() -> Shared<SerdeBase> { return MakeShared<T, true>(); };
+			fs[T::cTypeId] = []() -> Shared<SerdeBase> { return ::xx::MakeShared<T, true>(); };
 		}
 
         template<typename T = SerdeBase>
-        XX_INLINE Shared<T> Create(uint16_t const& typeId) {
+        XX_INLINE Shared<T> MakeShared(uint16_t const& typeId) {
             static_assert(std::is_base_of_v<SerdeBase, T>);
             if (!typeId || !fs[typeId] || !IsBaseOf<T>(typeId)) return nullptr;
-			return (Shared<T>&&)fs[typeId]();
+			return (Shared<T>&)fs[typeId]();
 		}
     };
 
@@ -132,14 +136,14 @@ namespace xx {
                 if (!si.IsBaseOf<U>(typeId)) return __LINE__;
 
                 if (!out || out->typeId != typeId) {
-                    out = std::move(si.Create<U>(typeId));
+                    out = std::move(si.MakeShared<U>(typeId));
                     assert(out);
                 }
                 ptrs.Emplace(out);
                 return out->ReadFrom(dr);
             } else {
                 if (idx > len) return __LINE__;
-                auto& o = ptrs[idx];
+                auto& o = ptrs[(int32_t)idx];
                 if (!si.IsBaseOf<U>(o->typeId)) return __LINE__;
                 out = (Shared<U>&)o;
                 return 0;
