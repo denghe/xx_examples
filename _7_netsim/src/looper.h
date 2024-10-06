@@ -14,6 +14,7 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 	ResTpFrames res;
 	xx::Scale9SpriteConfig s9cfg_btn;
 	xx::Shared<xx::Node> ui;
+	xx::FrameBuffer fb;
 	xx::Task<> MainTask();		// loading logic
 	bool ok{};	// true: loading finished
 

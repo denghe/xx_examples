@@ -35,7 +35,7 @@ struct Space {
 		memset(cells.get(), 0, sizeof(Cell) * cellsLen);
 	}
 
-    void Init(int32_t const& numRows_, int32_t numCols_, int32_t cellSize_) {
+    void Init(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
         assert(!cells);
         assert(numRows_ > 0 && numCols_ > 0 && cellSize_ > 0);
         numRows = numRows_;

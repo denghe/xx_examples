@@ -40,7 +40,7 @@ xx::Task<> Looper::MainTask() {
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -50 }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"client1 add", [&]() {
-			cScene1.Emplace()->Init({ -width_2 / 2, 0 });
+			cScene1.Emplace()->Init();
 	});
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -100 }, gLooper.xy7a
@@ -50,7 +50,7 @@ xx::Task<> Looper::MainTask() {
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
 		, gLooper.s9cfg_btn, U"client2 add", [&]() {
-			cScene2.Emplace()->Init({ width_2 / 2, 0 });
+			cScene2.Emplace()->Init();
 	});
 
 	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
@@ -59,6 +59,7 @@ xx::Task<> Looper::MainTask() {
 	});
 
 	clearColor = { 33, 33, 33, 255 };
+	fb.Init();
 
 	ok = true;
 }
@@ -83,11 +84,18 @@ void Looper::Update() {
 void Looper::Draw() {
 	if (!ok) return;
 
-	if (cScene1) cScene1->Draw();
-	if (cScene2) cScene2->Draw();
+	xx::Quad q;
+	if (cScene1) {
+		cScene1->Draw();
+		q.SetFrame(cScene1->frame).SetPosition({ -width_2 / 2, 0 }).Draw();
+	}
+	if (cScene2) {
+		cScene2->Draw();
+		q.SetFrame(cScene2->frame).SetPosition({ width_2 / 2, 0 }).Draw();
+	}
 
 	xx::LineStrip ls;
-	ls.FillBoxPoints({}, { 2, height }).Draw();
+	ls.FillBoxPoints({}, { 2, height }).SetColor(xx::RGBA8_Red).Draw();
 
 	gLooper.DrawNode(ui);
 }

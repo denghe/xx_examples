@@ -14,7 +14,7 @@ namespace server {
 	void Scene::Init() {
 		gLooper.msg.Clear();
 		frameNumber = 1000;	// skip some cast delay
-		// todo: init monsterGrid
+		monsterSpace.Init(100, 100, 128);
 	}
 
 	void Scene::Update() {
@@ -27,16 +27,15 @@ namespace server {
 			}
 		}
 
-		if (frameNumber % 180 == 0) {
-			monsters.Emplace().Emplace<Monster, true>()->Init();
-		}
+		//if (frameNumber % 180 == 0) {
+			monsters.Emplace().Emplace<Monster, true>()->Init(this);
+		//}
 
 		// write all to msg
 		xx::DataEx d;
 		d.si = &gSerdeInfo;
 		d.Write(frameNumber, rnd, monsters);
 		// todo: write monsterGrid
-		//xx::CoutN(d);
 		gLooper.msg = xx::DataShared(std::move(d));
 	}
 
@@ -46,15 +45,26 @@ namespace server {
 		}
 	}
 
-	void Monster::Init() {
+	void Monster::Init(Scene* scene_) {
+		scene = scene_;
+		x = scene->rnd.Next<int32_t>(-500, 500);
+		y = scene->rnd.Next<int32_t>(-500, 500);
+		radius = scene->rnd.Next<int32_t>(16, 129);
+		radians = FX64{ scene->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
+		frameIndex.SetZero();
 	}
 
 	bool Monster::Update() {
+		frameIndex = frameIndex + cFrameIndexStep;
+		if (frameIndex >= cFrameIndexMax) {
+			frameIndex = frameIndex - cFrameIndexMax;
+		}
+
 		return false;
 	}
 
 	void Monster::WriteTo(xx::Data& d) {
-		d.WriteFixedArray(&x,4);
+		d.Write(x, y, radius, radians, frameIndex);
 	}
 
 }

@@ -8,13 +8,15 @@ namespace client {
 	struct Monster : xx::SerdeBase, SpaceItem<Monster> {
 		static constexpr uint16_t cTypeId{ 1 };
 		static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+		static constexpr FX64 cFrameIndexStep{ FX64{1} / FX64{10} };
+		static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
 		virtual ~Monster();
-		void Init();
+		void Init(Scene* scene_);
 		virtual bool Update();	// true: kill
 		virtual void Draw();
 		virtual int32_t ReadFrom(xx::Data_r& dr);
 		Scene* scene{};
-		FX64 x{}, y{}, radius{}, radians{};
+		FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
 	};
 
 	struct Scene {
@@ -22,8 +24,9 @@ namespace client {
 		xx::Rnd rnd;
 		Space<Monster> monsterSpace;
 		xx::Listi32<xx::Shared<Monster>> monsters;
-		XY centerPos;
-		void Init(XY centerPos_);
+		xx::Ref<xx::GLTexture> tex;
+		xx::Ref<xx::Frame> frame;
+		void Init();
 		void Update();
 		void Draw();
 	};
