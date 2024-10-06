@@ -10,17 +10,17 @@ namespace client {
 }
 struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 
-	// all picture resource here
 	ResTpFrames res;
-	xx::Scale9SpriteConfig s9cfg_btn;
+	xx::Scale9SpriteConfig btnCfg;
 	xx::Shared<xx::Node> ui;
-	xx::FrameBuffer fb;
+	xx::FrameBuffer fb;			// for draw client
 	xx::Task<> MainTask();		// loading logic
-	bool ok{};	// true: loading finished
+	bool ok{};					// true: loading finished
 
 	xx::Shared<server::Scene> sScene;
 	xx::Shared<client::Scene> cScene1, cScene2;
-	xx::DataShared msg;	// todo: msgSyncCmd
+	xx::DataShared msg;
+	// todo: msg queue
 
 	void AfterInit();
 	void BeforeUpdate();
@@ -29,4 +29,4 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 };
 
 extern Looper gLooper;
-extern ResTpFrames& gRes;
+extern ResTpFrames& gRes;		// gLooper.res

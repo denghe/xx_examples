@@ -27,6 +27,7 @@ namespace server {
 			}
 		}
 
+		// todo: make command
 		//if (frameNumber % 180 == 0) {
 			monsters.Emplace().Emplace<Monster, true>()->Init(this);
 		//}

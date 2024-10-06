@@ -26,36 +26,31 @@ int32_t main() {
 xx::Task<> Looper::MainTask() {
 	co_await res.AsyncLoad("res/");
 
-	s9cfg_btn.frame = res.button;
-	s9cfg_btn.texScale = { 2, 2 };
-	s9cfg_btn.center = { 2, 3, 2, 2 };
-	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
+	btnCfg.frame = res.button;
+	btnCfg.texScale = { 2, 2 };
+	btnCfg.center = { 2, 3, 2, 2 };
+	btnCfg.color = { 0x5f, 0x15, 0xd9, 0xff };
 
 	ui.Emplace()->Init();
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, 0 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"server reset", [&]() {
-			sScene.Emplace()->Init();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, 0 }, xy7a, btnCfg, U"server reset", [&]() {
+		sScene.Emplace()->Init();
 	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -50 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"client1 add", [&]() {
-			cScene1.Emplace()->Init();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -50 }, xy7a, btnCfg, U"client1 add", [&]() {
+		cScene1.Emplace()->Init();
 	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -100 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"client1 remove", [&]() {
-			cScene1.Reset();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -100 }, xy7a, btnCfg, U"client1 remove", [&]() {
+		cScene1.Reset();
 	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -150 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"client2 add", [&]() {
-			cScene2.Emplace()->Init();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -150 }, xy7a, btnCfg, U"client2 add", [&]() {
+		cScene2.Emplace()->Init();
 	});
 
-	gLooper.ui->MakeChildren<xx::Button>()->Init(1, gLooper.xy7m + XY{ 0, -200 }, gLooper.xy7a
-		, gLooper.s9cfg_btn, U"client2 remove", [&]() {
-			cScene2.Reset();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -200 }, xy7a, btnCfg, U"client2 remove", [&]() {
+		cScene2.Reset();
 	});
 
 	clearColor = { 33, 33, 33, 255 };
@@ -97,5 +92,5 @@ void Looper::Draw() {
 	xx::LineStrip ls;
 	ls.FillBoxPoints({}, { 2, height }).SetColor(xx::RGBA8_Red).Draw();
 
-	gLooper.DrawNode(ui);
+	DrawNode(ui);
 }
