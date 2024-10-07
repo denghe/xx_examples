@@ -2,70 +2,40 @@
 #include "looper.h"
 #include "server.h"
 
-namespace server {
-	xx::SerdeInfo gSerdeInfo;
+void Server::Init() {
+	gIsServer = true;
+	scene.Emplace()->Init();
+}
 
-	void InitSerdeInfo() {
-		gSerdeInfo.Init();
-		gSerdeInfo.Register<Monster>();
-		// ...
-	}
-
-	void Scene::Init() {
-		gLooper.msg.Clear();
-		frameNumber = 1000;	// skip some cast delay
-		monsterSpace.Init(100, 100, 128);
-	}
-
-	void Scene::Update() {
-		++frameNumber;
-
-		for (int32_t i = monsters.len - 1; i >= 0; --i) {
-			auto& m = monsters[i];
-			if (m->Update()) {
-				monsters.SwapRemoveAt(i);
+void Server::Update() {
+	gIsServer = true;
+	
+	for(auto i = peers.len - 1; i >= 0; --i) {
+		auto& peer = peers[i];
+		auto& recvs = peer->recvs;
+		xx::DataShared ds;
+		if (recvs.TryPop(ds)) {
+			auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
+			xx::Shared<xx::SerdeBase> ssb;
+			if (auto r = dr.Read(ssb)) {
+				Log_Msg_Read_Error();
+				peers.SwapRemoveAt(i);
+				continue;
+			}
+			switch (ssb->typeId) {
+			case Msgs::C2S::Join::cTypeId: {
+				auto d = Msgs::gSerdeInfo.MakeDataEx();
+				// todo: send Join_r
+				d.Write(scene);
+				peer->Send(xx::DataShared(std::move(d)));
+				break;
+			}
+			// todo
+			default:
+				Log_Msg_Receive_Unknown();
 			}
 		}
-
-		// todo: make command
-		//if (frameNumber % 180 == 0) {
-			monsters.Emplace().Emplace<Monster, true>()->Init(this);
-		//}
-
-		// write all to msg
-		xx::DataEx d;
-		d.si = &gSerdeInfo;
-		d.Write(frameNumber, rnd, monsters);
-		// todo: write monsterGrid
-		gLooper.msg = xx::DataShared(std::move(d));
 	}
 
-	Monster::~Monster() {
-		if (_sgc) {
-			_sgc->Remove(this);
-		}
-	}
-
-	void Monster::Init(Scene* scene_) {
-		scene = scene_;
-		x = scene->rnd.Next<int32_t>(-500, 500);
-		y = scene->rnd.Next<int32_t>(-500, 500);
-		radius = scene->rnd.Next<int32_t>(16, 129);
-		radians = FX64{ scene->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
-		frameIndex.SetZero();
-	}
-
-	bool Monster::Update() {
-		frameIndex = frameIndex + cFrameIndexStep;
-		if (frameIndex >= cFrameIndexMax) {
-			frameIndex = frameIndex - cFrameIndexMax;
-		}
-
-		return false;
-	}
-
-	void Monster::WriteTo(xx::Data& d) {
-		d.Write(x, y, radius, radians, frameIndex);
-	}
-
+	scene->Update();
 }

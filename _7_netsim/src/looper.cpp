@@ -2,9 +2,11 @@
 #include "looper.h"
 #include "server.h"
 #include "client.h"
+#include "msgs.h"
 
 Looper gLooper;
 ResTpFrames& gRes(gLooper.res);
+bool gIsServer{};
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {
@@ -34,23 +36,23 @@ xx::Task<> Looper::MainTask() {
 	ui.Emplace()->Init();
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, 0 }, xy7a, btnCfg, U"server reset", [&]() {
-		sScene.Emplace()->Init();
+		server.Emplace()->Init();
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -50 }, xy7a, btnCfg, U"client1 add", [&]() {
-		cScene1.Emplace()->Init();
+		client1.Emplace()->Init();
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -100 }, xy7a, btnCfg, U"client1 remove", [&]() {
-		cScene1.Reset();
+		client1.Reset();
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -150 }, xy7a, btnCfg, U"client2 add", [&]() {
-		cScene2.Emplace()->Init();
+		client2.Emplace()->Init();
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -200 }, xy7a, btnCfg, U"client2 remove", [&]() {
-		cScene2.Reset();
+		client2.Reset();
 	});
 
 	clearColor = { 33, 33, 33, 255 };
@@ -60,8 +62,7 @@ xx::Task<> Looper::MainTask() {
 }
 
 void Looper::AfterInit() {
-	server::InitSerdeInfo();
-	client::InitSerdeInfo();
+	Msgs::InitSerdeInfo();
 }
 
 void Looper::BeforeUpdate() {
@@ -71,22 +72,29 @@ void Looper::BeforeUpdate() {
 void Looper::Update() {
 	if (!ok) return;
 
-	if (sScene) sScene->Update();
-	if (cScene1) cScene1->Update();
-	if (cScene2) cScene2->Update();
+	if (server) {
+		server->Update();
+	}
+
+	if (client1) {
+		client1->Update();
+	}
+	if (client2) {
+		client2->Update();
+	}
 }
 
 void Looper::Draw() {
 	if (!ok) return;
 
 	xx::Quad q;
-	if (cScene1) {
-		cScene1->Draw();
-		q.SetFrame(cScene1->frame).SetPosition({ -width_2 / 2, 0 }).Draw();
+	if (client1) {
+		client1->Draw();
+		//q.SetFrame(cScene1->frame).SetPosition({ -width_2 / 2, 0 }).Draw();
 	}
-	if (cScene2) {
-		cScene2->Draw();
-		q.SetFrame(cScene2->frame).SetPosition({ width_2 / 2, 0 }).Draw();
+	if (client2) {
+		client2->Draw();
+		//q.SetFrame(cScene2->frame).SetPosition({ width_2 / 2, 0 }).Draw();
 	}
 
 	xx::LineStrip ls;

@@ -2,81 +2,81 @@
 #include "looper.h"
 #include "client.h"
 
-namespace client {
-	xx::SerdeInfo gSerdeInfo;
+void Client::CleanUp() {
+	Close();
+	clientId = 0;
+	scene.Reset();
+	// ...
+}
 
-	void InitSerdeInfo() {
-		gSerdeInfo.Init();
-		gSerdeInfo.Register<Monster>();
-		// ...
+xx::Task<> Client::Task() {
+LabBegin:
+	co_yield 0;
+	CleanUp();
+LabDial:
+	co_yield 0;
+	Dial();
+	if (!Alive()) {
+		Log_Dial_Retry();
+		goto LabDial;
 	}
-
-	void Scene::Init() {
-		tex = gLooper.fb.MakeTexture({ gLooper.width_2, gLooper.height });
-		frame = xx::Frame::Create(tex);
+	if (!Send_Join()) {
+		Log_Send_Join_Fail();
+		goto LabBegin;
 	}
-
-	void Scene::Update() {
-		// restore all data from msg
-		xx::DataEx_r dr{ gLooper.msg.GetBuf(), gLooper.msg.GetLen() };
-		dr.si = &gSerdeInfo;
-		int r = dr.Read(frameNumber, rnd, monsters);
-		assert(!r);
-		for (auto& m : monsters) {
-			m->scene = this;
-		}
-		// todo: read monsterGrid
-		assert(dr.offset == dr.len);
-		//xx::CoutN(dr);
+LabWait_Join_r:
+	co_yield 0;
+	if (!Alive()) {
+		Log_Msg_Wait_Join_r_Disconnected();
+		goto LabBegin;
 	}
-
-	void Scene::Draw() {
-		gLooper.fb.DrawTo(tex, xx::RGBA8_Black, [this] {
-			for (int32_t i = 0, e = monsters.len; i < e; ++i) {
-				auto& m = monsters[i];
-				m->Draw();
+	{
+		xx::DataShared ds;
+		if (recvs.TryPop(ds)) {
+			auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
+			xx::Shared<xx::SerdeBase> ssb;
+			if (dr.Read(ssb)) {
+				Log_Msg_Read_Join_r_Error();
+				goto LabBegin;
 			}
-		});
-	}
-
-	Monster::~Monster() {
-		if (_sgc) {
-			_sgc->Remove(this);
+			switch (ssb->typeId) {
+			case Msgs::S2C::Join_r::cTypeId: {
+				auto& msg = ssb.Cast<Msgs::S2C::Join_r>();
+				clientId = msg->clientId;
+				scene = std::move(msg->scene);
+				break;
+			}
+			default:
+				Log_Msg_Wait_Join_r_Receive_Unknown();
+				goto LabBegin;
+			}
 		}
 	}
-
-	void Monster::Init(Scene* scene_) {
-		scene = scene_;
-		x = scene->rnd.Next<int32_t>(-500, 500);
-		y = scene->rnd.Next<int32_t>(-500, 500);
-		radius = scene->rnd.Next<int32_t>(16, 129);
-		radians = FX64{ scene->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
-		frameIndex.SetZero();
+	goto LabWait_Join_r;
+LabPlay:
+	co_yield 0;
+	if (!Alive()) {
+		Log_Msg_Wait_Commands_Disconnected();
+		goto LabBegin;
 	}
+	// todo: handle commands & sync
+	goto LabPlay;
+}
 
-	bool Monster::Update() {
-		frameIndex = frameIndex + cFrameIndexStep;
-		if (frameIndex >= cFrameIndexMax) {
-			frameIndex = frameIndex - cFrameIndexMax;
-		}
+void Client::Init() {
+	gIsServer = false;
+	task = Task();
+}
 
-		return false;
-	}
+void Client::Update() {
+	gIsServer = false;
+	task();
+	if (!scene) return;
+	scene->Update();
+}
 
-	void Monster::Draw() {
-		auto& frame = gRes.monster_[frameIndex.ToInt()];
-		auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
-		q.pos = { x.ToFloat(), y.ToFloat() };
-		q.anchor = *frame->anchor;
-		q.scale = (radius / FX64{ 64 }).ToFloat();
-		q.radians = radians.ToFloat();
-		q.colorplus = 1;
-		q.color = xx::RGBA8_White;
-		q.texRect.data = frame->textureRect.data;
-	}
-
-	int32_t Monster::ReadFrom(xx::Data_r& dr) {
-		return dr.Read(x, y, radius, radians, frameIndex);
-	}
-
+void Client::Draw() {
+	gIsServer = false;
+	if (!scene) return;
+	scene->Draw();
 }

@@ -1,33 +1,22 @@
 ﻿#pragma once
 #include "looper.h"
+#include "msgs.h"
+#include "net.h"
 
-namespace client {
-	extern xx::SerdeInfo gSerdeInfo;
-	void InitSerdeInfo();
+struct Client : NetClient {
+	int32_t clientId{};
+	xx::Shared<Msgs::Global::Scene> scene;
+	xx::Task<> task;
+	xx::Task<> Task();
+	void CleanUp();
+	void Init();
+	void Update();
+	void Draw();
 
-	struct Monster : xx::SerdeBase, SpaceItem<Monster> {
-		static constexpr uint16_t cTypeId{ 1 };
-		static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
-		static constexpr FX64 cFrameIndexStep{ FX64{1} / FX64{10} };
-		static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
-		virtual ~Monster();
-		void Init(Scene* scene_);
-		virtual bool Update();	// true: kill
-		virtual void Draw();
-		virtual int32_t ReadFrom(xx::Data_r& dr);
-		Scene* scene{};
-		FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
-	};
-
-	struct Scene {
-		int64_t frameNumber{};
-		xx::Rnd rnd;
-		Space<Monster> monsterSpace;
-		xx::Listi32<xx::Shared<Monster>> monsters;
-		xx::Ref<xx::GLTexture> tex;
-		xx::Ref<xx::Frame> frame;
-		void Init();
-		void Update();
-		void Draw();
-	};
-}
+	void Log_Dial_Retry() {};
+	void Log_Send_Join_Fail() {};
+	void Log_Msg_Wait_Join_r_Disconnected() {};
+	void Log_Msg_Read_Join_r_Error() {};
+	void Log_Msg_Wait_Join_r_Receive_Unknown() {};
+	void Log_Msg_Wait_Commands_Disconnected() {};
+};
