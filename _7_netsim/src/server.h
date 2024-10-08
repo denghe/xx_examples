@@ -4,6 +4,7 @@
 #include "net.h"
 
 struct Server : NetServer {
+	int32_t autoClientId{};
 	xx::Shared<Msgs::Global::Scene> scene;
 
 	void Init();

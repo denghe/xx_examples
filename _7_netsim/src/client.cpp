@@ -31,6 +31,7 @@ LabWait_Join_r:
 		goto LabBegin;
 	}
 	{
+		// todo: wrap to func
 		xx::DataShared ds;
 		if (recvs.TryPop(ds)) {
 			auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
@@ -44,6 +45,7 @@ LabWait_Join_r:
 				auto& msg = ssb.Cast<Msgs::S2C::Join_r>();
 				clientId = msg->clientId;
 				scene = std::move(msg->scene);
+				scene->InitForDraw();
 				break;
 			}
 			default:

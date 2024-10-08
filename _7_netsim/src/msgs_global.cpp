@@ -10,9 +10,13 @@ namespace Msgs {
 				frameNumber = 1000;	// skip some cast delay
 				monsterSpace.Init(100, 100, 128);
 			} else {
-				tex = gLooper.fb.MakeTexture({ gLooper.width_2, gLooper.height });
-				frame = xx::Frame::Create(tex);
+				assert(false);
 			}
+		}
+
+		void Scene::InitForDraw() {
+			tex = gLooper.fb.MakeTexture({ gLooper.width_2, gLooper.height });
+			frame = xx::Frame::Create(tex);
 		}
 
 		void Scene::Update() {
@@ -38,12 +42,11 @@ namespace Msgs {
 		}
 
 		int32_t Scene::ReadFrom(xx::Data_r& dr) {
-			// restore all data from msg
 			if (auto r = dr.Read(frameNumber, rnd, monsters)) return r;
 			// todo: monsterSpace
 			assert(dr.offset == dr.len);
-			// todo: restore more fields? for client draw ?
-			//xx::CoutN(dr);
+			// todo: restore more fields for Draw ?
+			// xx::CoutN(dr);
 			return 0;
 		}
 
@@ -52,14 +55,33 @@ namespace Msgs {
 			// todo: monsterSpace
 		}
 
-		int32_t Player::ReadFrom(xx::Data_r& dr) {
+		/*******************************************************************************************/
+		/*******************************************************************************************/
+
+		void Player::Init(Scene* scene_, int32_t clientId_) {
+			scene = xx::WeakFromThis(scene_);
+			clientId = clientId_;
+		}
+
+		void Player::Update() {
 			assert(false);
-			return 0;
+		}
+
+		void Player::Draw() {
+			assert(false);
 		}
 
 		void Player::WriteTo(xx::Data& d) const {
 			assert(false);
 		}
+
+		int32_t Player::ReadFrom(xx::Data_r& dr) {
+			assert(false);
+			return 0;
+		}
+
+		/*******************************************************************************************/
+		/*******************************************************************************************/
 
 		Monster::~Monster() {
 			if (_sgc) {

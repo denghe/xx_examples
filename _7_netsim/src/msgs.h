@@ -17,10 +17,12 @@ namespace Msgs {
 			xx::Rnd rnd;
 			Space<Monster> monsterSpace;
 			xx::Listi32<xx::Shared<Monster>> monsters;
+			xx::Listi32<xx::Shared<Player>> players;
 			/* C */ xx::Ref<xx::GLTexture> tex;
 			/* C */ xx::Ref<xx::Frame> frame;
 
 			void Init();
+			/* C */ void InitForDraw();
 			void Update();
 			/* C */ void Draw();
 			/* S */ void WriteTo(xx::Data& d) const override;
@@ -32,10 +34,10 @@ namespace Msgs {
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 
 			xx::Weak<Scene> scene;
-			int32_t id{};
+			int32_t clientId{};
 			int32_t score{};
 
-			void Init();
+			void Init(Scene* scene_, int32_t clientId_);
 			void Update();
 			/* C */ void Draw();
 			/* S */ void WriteTo(xx::Data& d) const override;
