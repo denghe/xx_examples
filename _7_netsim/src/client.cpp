@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "looper.h"
 #include "client.h"
+#include "server.h"
 
 void Client::CleanUp() {
 	Close();
@@ -11,7 +12,6 @@ void Client::CleanUp() {
 
 xx::Task<> Client::Task() {
 LabBegin:
-	co_yield 0;
 	CleanUp();
 LabDial:
 	co_yield 0;
@@ -20,9 +20,14 @@ LabDial:
 		Log_Dial_Retry();
 		goto LabDial;
 	}
-	if (!Send_Join()) {
-		Log_Send_Join_Fail();
-		goto LabBegin;
+	{
+		auto d = Msgs::gSerdeInfo.MakeDataEx();
+		auto msg = xx::MakeShared<Msgs::C2S::Join>();
+		d.Write(msg);
+		if (!Send(xx::DataShared(std::move(d)))) {
+			Log_Send_Join_Fail();
+			goto LabBegin;
+		}
 	}
 LabWait_Join_r:
 	co_yield 0;
@@ -30,31 +35,29 @@ LabWait_Join_r:
 		Log_Msg_Wait_Join_r_Disconnected();
 		goto LabBegin;
 	}
-	{
-		// todo: wrap to func
-		xx::DataShared ds;
-		if (recvs.TryPop(ds)) {
-			auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
-			xx::Shared<xx::SerdeBase> ssb;
-			if (dr.Read(ssb)) {
-				Log_Msg_Read_Join_r_Error();
-				goto LabBegin;
-			}
-			switch (ssb->typeId) {
-			case Msgs::S2C::Join_r::cTypeId: {
-				auto& msg = ssb.Cast<Msgs::S2C::Join_r>();
-				clientId = msg->clientId;
-				scene = std::move(msg->scene);
-				scene->InitForDraw();
-				break;
-			}
-			default:
-				Log_Msg_Wait_Join_r_Receive_Unknown();
-				goto LabBegin;
-			}
+	if (xx::DataShared ds; recvs.TryPop(ds)) {
+		auto typeId = xx::ReadTypeId(ds);
+		if (!typeId) {
+			Log_Msg_Receive_Bad_Data();
+			goto LabBegin;
 		}
+		if (typeId != Msgs::S2C::Join_r::cTypeId) {
+			Log_Msg_Wait_Join_r_Receive_Unknown();
+			goto LabBegin;
+		}
+		auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
+		xx::Shared<Msgs::S2C::Join_r> msg;
+		if (dr.Read(msg)) {
+			Log_Msg_Read_Join_r_Error();
+			goto LabBegin;
+		}
+		clientId = msg->clientId;
+		scene = std::move(msg->scene);
+		scene->InitForDraw();
+	} else {
+		// todo: timeout check?
+		goto LabWait_Join_r;
 	}
-	goto LabWait_Join_r;
 LabPlay:
 	co_yield 0;
 	if (!Alive()) {
@@ -83,4 +86,26 @@ void Client::Draw() {
 	if (!scene) return;
 	scene->Draw();
 	xx::Quad().SetFrame(scene->frame).SetPosition(centerPos).Draw();
+}
+
+void Client::Dial() {
+	assert(!peer);
+	if (gLooper.server) {
+		peer = gLooper.server->Accept(xx::SharedFromThis(this));
+	}
+}
+
+bool Client::Alive() const {
+	return peer;
+}
+
+void Client::Close() {
+	peer.Reset();
+	recvs.Clear();
+}
+
+bool Client::Send(xx::DataShared ds) {
+	if (!peer) return false;
+	peer->recvs.Emplace(std::move(ds));
+	return true;
 }

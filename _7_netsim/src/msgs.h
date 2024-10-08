@@ -15,14 +15,14 @@ namespace Msgs {
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
-			Space<Monster> monsterSpace;
+			xx::Spacei32<Monster> monsterSpace;
 			xx::Listi32<xx::Shared<Monster>> monsters;
 			xx::Listi32<xx::Shared<Player>> players;
 			/* C */ xx::Ref<xx::GLTexture> tex;
 			/* C */ xx::Ref<xx::Frame> frame;
 
 			void Init();
-			/* C */ void InitForDraw();
+			/* C */ void InitForDraw();	// todo: recursive call all childs
 			void Update();
 			/* C */ void Draw();
 			/* S */ void WriteTo(xx::Data& d) const override;
@@ -44,7 +44,7 @@ namespace Msgs {
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
-		struct Monster : xx::SerdeBase, SpaceItem<Monster> {
+		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
 			static constexpr uint16_t cTypeId{ 3 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 
@@ -65,6 +65,8 @@ namespace Msgs {
 	}
 
 	namespace C2S {	// id == 1000 ~ 1999
+
+		// todo: list/array data length limit protect
 
 		struct Join : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 1001 };
