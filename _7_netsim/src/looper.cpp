@@ -29,7 +29,7 @@ xx::Task<> Looper::MainTask() {
 	co_await res.AsyncLoad("res/");
 
 	btnCfg.frame = res.button;
-	btnCfg.texScale = { 2, 2 };
+	btnCfg.texScale = { 0.99, 0.99 };
 	btnCfg.center = { 2, 3, 2, 2 };
 	btnCfg.color = { 0x5f, 0x15, 0xd9, 0xff };
 
@@ -40,7 +40,7 @@ xx::Task<> Looper::MainTask() {
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -50 }, xy7a, btnCfg, U"client1 add", [&]() {
-		client1.Emplace()->Init();
+		client1.Emplace()->Init({ -width_2 / 2, 0 });
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -100 }, xy7a, btnCfg, U"client1 remove", [&]() {
@@ -48,7 +48,7 @@ xx::Task<> Looper::MainTask() {
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -150 }, xy7a, btnCfg, U"client2 add", [&]() {
-		client2.Emplace()->Init();
+		client2.Emplace()->Init({ width_2 / 2, 0 });
 	});
 
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -200 }, xy7a, btnCfg, U"client2 remove", [&]() {
@@ -90,11 +90,9 @@ void Looper::Draw() {
 	xx::Quad q;
 	if (client1) {
 		client1->Draw();
-		//q.SetFrame(cScene1->frame).SetPosition({ -width_2 / 2, 0 }).Draw();
 	}
 	if (client2) {
 		client2->Draw();
-		//q.SetFrame(cScene2->frame).SetPosition({ width_2 / 2, 0 }).Draw();
 	}
 
 	xx::LineStrip ls;

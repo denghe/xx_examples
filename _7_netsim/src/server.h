@@ -9,6 +9,7 @@ struct Server : NetServer {
 	void Init();
 	void Update();
 
-	void Log_Msg_Read_Error() {}
-	void Log_Msg_Receive_Unknown() {}
+	void Log_Msg_Read_Error() { xx::CoutTN("S Log_Msg_Read_Error"); };
+	void Log_Msg_Receive_Unknown() { xx::CoutTN("S Log_Msg_Receive_Unknown"); };
+	void Log_Msg_Receive_Bad_Data() { xx::CoutTN("S Log_Msg_Receive_Bad_Data"); };
 };

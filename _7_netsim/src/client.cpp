@@ -63,9 +63,10 @@ LabPlay:
 	goto LabPlay;
 }
 
-void Client::Init() {
+void Client::Init(XY const& centerPos_) {
 	gIsServer = false;
 	task = Task();
+	centerPos = centerPos_;
 }
 
 void Client::Update() {
@@ -79,4 +80,5 @@ void Client::Draw() {
 	gIsServer = false;
 	if (!scene) return;
 	scene->Draw();
+	xx::Quad().SetFrame(scene->frame).SetPosition(centerPos).Draw();
 }
