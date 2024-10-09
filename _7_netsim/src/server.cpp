@@ -28,54 +28,58 @@ xx::Weak<Peer> Server::Accept(xx::Shared<Client> const& client_) {
 }
 
 xx::Task<> Peer::Task() {
+
 LabWaitJoin:
 	co_yield 0;
+
 	if (!Alive()) {
 		Log_Msg_Wait_Join_Disconnected();
 		co_return;
 	}
+
 	if (xx::DataShared ds; recvs.TryPop(ds)) {
-		auto typeId = xx::ReadTypeId(ds);
-		if (!typeId) {
-			Log_Msg_Receive_Bad_Data();
-			co_return;
-		}
-		if (typeId != Msgs::C2S::Join::cTypeId) {
+		if (xx::ReadTypeId(ds) != Msgs::C2S::Join::cTypeId) {
 			Log_Msg_Wait_Join_Receive_Unknown();
 			co_return;
 		}
-		auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
-		xx::Shared<Msgs::C2S::Join> msg;
-		if (dr.Read(msg)) {
+		if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::C2S::Join>(ds); !msg) {
 			Log_Msg_Read_Join_Error();
-			goto LabWaitJoin;
+			co_return;
+		} else {
+			// handle
+			clientId = ++server->autoClientId;
+			auto player = xx::MakeShared<Msgs::Global::Player>();
+			player->Init(server->scene, clientId);
+			server->scene->players.Emplace(player);
+
+			// make & send result
+			auto rtv = xx::MakeShared<Msgs::S2C::Join_r>();
+			rtv->clientId = clientId;
+			rtv->scene = server->scene;
+			Send(Msgs::gSerdeInfo.MakeDataShared(rtv));
 		}
-		// handle
-		clientId = ++server->autoClientId;
-		auto player = xx::MakeShared<Msgs::Global::Player>();
-		player->Init(server->scene, clientId);
-		server->scene->players.Emplace(player);
-
-		// make return msg
-		auto rtv = xx::MakeShared<Msgs::S2C::Join_r>();
-		rtv->clientId = clientId;
-		rtv->scene = server->scene;
-
-		// serialize & send
-		auto d = Msgs::gSerdeInfo.MakeDataEx();
-		d.Write(rtv);
-		Send(xx::DataShared(std::move(d)));
 	} else {
 		// todo: timeout check?
 		goto LabWaitJoin;
 	}
+
 LabPlay:
 	co_yield 0;
+
 	if (!Alive()) {
 		Log_Msg_Wait_Commands_Disconnected();
 		co_return;
 	}
-	// todo: handle commands & sync
+	// handle commands & sync
+	{
+		xx::DataShared ds;
+		while (recvs.TryPop(ds)) {
+			auto typeId = xx::ReadTypeId(ds);
+			switch (typeId) {
+				// todo
+			}
+		}
+	}
 	goto LabPlay;
 }
 

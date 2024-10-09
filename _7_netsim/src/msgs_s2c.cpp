@@ -13,5 +13,14 @@ namespace Msgs {
 			d.Write(clientId, scene);
 		}
 
+
+		void Summon_r::WriteTo(xx::Data& d) const {
+			data.WriteTo(d);
+		}
+
+		int32_t Summon_r::ReadFrom(xx::Data_r& dr) {
+			return data.ReadFrom(dr);
+		}
+
 	}
 }

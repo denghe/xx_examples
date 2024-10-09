@@ -12,5 +12,13 @@ namespace Msgs {
 		void Join::WriteTo(xx::Data& d) const {
 		}
 
+
+		int32_t Msgs::C2S::Summon::ReadFrom(xx::Data_r& dr) {
+			return 0;
+		}
+
+		void Msgs::C2S::Summon::WriteTo(xx::Data& d) const {
+		}
+
 	}
 }

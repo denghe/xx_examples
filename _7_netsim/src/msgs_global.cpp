@@ -27,9 +27,9 @@ namespace Msgs {
 					monsters.SwapRemoveAt(i);
 				}
 			}
-			if (frameNumber % ((int)gLooper.fps * 3) == 0) {
-				monsters.Emplace().Emplace<Monster>()->Init(this);
-			}
+			//if (frameNumber % ((int)gLooper.fps * 3) == 0) {
+			//	monsters.Emplace().Emplace<Monster>()->Init(this);
+			//}
 		}
 
 		void Scene::Draw() {
@@ -83,6 +83,17 @@ namespace Msgs {
 		/*******************************************************************************************/
 		/*******************************************************************************************/
 
+		void MonsterData::WriteTo(xx::Data& d) const {
+			d.Write(x, y, radius, radians, frameIndex);
+		}
+
+		int32_t MonsterData::ReadFrom(xx::Data_r& dr) {
+			return dr.Read(x, y, radius, radians, frameIndex);
+		}
+
+		/*******************************************************************************************/
+		/*******************************************************************************************/
+
 		Monster::~Monster() {
 			if (_sgc) {
 				_sgc->Remove(this);
@@ -98,6 +109,11 @@ namespace Msgs {
 			frameIndex.SetZero();
 		}
 
+		void Monster::Init(Scene* scene_, MonsterData const& md) {
+			scene = xx::WeakFromThis(scene_);
+			*(MonsterData*)this = md;
+		}
+
 		bool Monster::Update() {
 			frameIndex = frameIndex + cFrameIndexStep;
 			if (frameIndex >= cFrameIndexMax) {
@@ -108,6 +124,14 @@ namespace Msgs {
 		}
 
 		void Monster::Draw() {
+			static constexpr xx::RGBA8 colors[] = { xx::RGBA8_Red, xx::RGBA8_Green, xx::RGBA8_Blue };
+			xx::RGBA8 color;
+			if (player) {
+				color = colors[player->clientId & 0b11];
+			} else {
+				color = xx::RGBA8_White;
+			}
+
 			auto& frame = gRes.monster_[frameIndex.ToInt()];
 			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
 			q.pos = { x.ToFloat(), y.ToFloat() };
@@ -115,16 +139,18 @@ namespace Msgs {
 			q.scale = (radius / FX64{ 64 }).ToFloat();
 			q.radians = radians.ToFloat();
 			q.colorplus = 1;
-			q.color = xx::RGBA8_White;
+			q.color = color;
 			q.texRect.data = frame->textureRect.data;
 		}
 
 		int32_t Monster::ReadFrom(xx::Data_r& dr) {
-			return dr.Read(scene, x, y, radius, radians, frameIndex);
+			if (auto r = MonsterData::ReadFrom(dr)) return r;
+			return dr.Read(scene, player);
 		}
 
 		void Monster::WriteTo(xx::Data& d) const {
-			d.Write(scene, x, y, radius, radians, frameIndex);
+			MonsterData::WriteTo(d);
+			d.Write(scene, player);
 		}
 
 	}

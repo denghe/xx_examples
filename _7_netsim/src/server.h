@@ -20,7 +20,6 @@ struct Peer {
 	void Log_Msg_Wait_Join_Disconnected() { xx::CoutTN("S Log_Msg_Wait_Join_Disconnected"); };
 	void Log_Msg_Wait_Join_Receive_Unknown() { xx::CoutTN("S Log_Msg_Wait_Join_Receive_Unknown"); };
 	void Log_Msg_Read_Join_Error() { xx::CoutTN("S Log_Msg_Read_Join_Error"); };
-	void Log_Msg_Receive_Bad_Data() { xx::CoutTN("S Log_Msg_Receive_Bad_Data"); };
 	void Log_Msg_Wait_Commands_Disconnected() { xx::CoutTN("S Log_Msg_Wait_Commands_Disconnected"); };
 };
 

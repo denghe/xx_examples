@@ -23,11 +23,11 @@ struct Client {
 	void Close();
 	bool Send(xx::DataShared ds);
 
-	void Log_Dial_Retry() { xx::CoutTN("C Log_Dial_Retry"); };
+	void Log_Dial_Fail_Retry() { xx::CoutTN("C Log_Dial_Fail_Retry"); };
 	void Log_Send_Join_Fail() { xx::CoutTN("C Log_Send_Join_Fail"); };
 	void Log_Msg_Wait_Join_r_Disconnected() { xx::CoutTN("C Log_Msg_Wait_Join_r_Disconnected"); };
 	void Log_Msg_Read_Join_r_Error() { xx::CoutTN("C Log_Msg_Read_Join_r_Error"); };
 	void Log_Msg_Wait_Join_r_Receive_Unknown() { xx::CoutTN("C Log_Msg_Wait_Join_r_Receive_Unknown"); };
 	void Log_Msg_Wait_Commands_Disconnected() { xx::CoutTN("C Log_Msg_Wait_Commands_Disconnected"); };
-	void Log_Msg_Receive_Bad_Data() { xx::CoutTN("C Log_Msg_Receive_Bad_Data"); };
+	void Log_Msg_Wait_Commands_Receive_Unknown() { xx::CoutTN("C Log_Msg_Wait_Commands_Receive_Unknown"); };
 };

@@ -44,7 +44,13 @@ namespace Msgs {
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
-		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
+		struct MonsterData {
+			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
+			/* S */ void WriteTo(xx::Data& d) const;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr);
+		};
+
+		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster>, MonsterData {
 			static constexpr uint16_t cTypeId{ 3 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 
@@ -52,10 +58,11 @@ namespace Msgs {
 			static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
 
 			xx::Weak<Scene> scene;
-			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
+			xx::Weak<Player> player;	// owner
 
 			virtual ~Monster();
 			void Init(Scene* scene_);
+			/* C */ void Init(Scene* scene_, MonsterData const& md);
 			virtual bool Update();	// true: kill
 			/* C */ void Draw();
 			/* S */ void WriteTo(xx::Data& d) const override;
@@ -75,6 +82,13 @@ namespace Msgs {
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
+		struct Summon : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 1002 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+		};
+
 	}
 
 	namespace S2C {	// id == 2000 ~ 2999
@@ -83,7 +97,15 @@ namespace Msgs {
 			static constexpr uint16_t cTypeId{ 2001 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			int32_t clientId{};
-			xx::Shared<::Msgs::Global::Scene> scene;
+			xx::Shared<Global::Scene> scene;
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+		};
+
+		struct Summon_r : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 1002 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			Global::MonsterData data;
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};

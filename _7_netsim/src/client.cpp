@@ -11,60 +11,90 @@ void Client::CleanUp() {
 }
 
 xx::Task<> Client::Task() {
+
 LabBegin:
 	CleanUp();
+
 LabDial:
 	co_yield 0;
+
 	Dial();
+
 	if (!Alive()) {
-		Log_Dial_Retry();
+		Log_Dial_Fail_Retry();
 		goto LabDial;
 	}
-	{
-		auto d = Msgs::gSerdeInfo.MakeDataEx();
-		auto msg = xx::MakeShared<Msgs::C2S::Join>();
-		d.Write(msg);
-		if (!Send(xx::DataShared(std::move(d)))) {
-			Log_Send_Join_Fail();
-			goto LabBegin;
-		}
-	}
+
+	Send(Msgs::gSerdeInfo.MakeDataShared<Msgs::C2S::Join>());
+
 LabWait_Join_r:
 	co_yield 0;
+
 	if (!Alive()) {
 		Log_Msg_Wait_Join_r_Disconnected();
 		goto LabBegin;
 	}
+
 	if (xx::DataShared ds; recvs.TryPop(ds)) {
-		auto typeId = xx::ReadTypeId(ds);
-		if (!typeId) {
-			Log_Msg_Receive_Bad_Data();
-			goto LabBegin;
-		}
-		if (typeId != Msgs::S2C::Join_r::cTypeId) {
+		if (xx::ReadTypeId(ds) != Msgs::S2C::Join_r::cTypeId) {
 			Log_Msg_Wait_Join_r_Receive_Unknown();
 			goto LabBegin;
 		}
-		auto dr = Msgs::gSerdeInfo.MakeDataEx_r(ds);
-		xx::Shared<Msgs::S2C::Join_r> msg;
-		if (dr.Read(msg)) {
+		if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Join_r>(ds); !msg) {
 			Log_Msg_Read_Join_r_Error();
 			goto LabBegin;
+		} else {
+			clientId = msg->clientId;
+			scene = std::move(msg->scene);
+			scene->InitForDraw();
 		}
-		clientId = msg->clientId;
-		scene = std::move(msg->scene);
-		scene->InitForDraw();
 	} else {
 		// todo: timeout check?
 		goto LabWait_Join_r;
 	}
+
 LabPlay:
 	co_yield 0;
+
 	if (!Alive()) {
 		Log_Msg_Wait_Commands_Disconnected();
 		goto LabBegin;
 	}
-	// todo: handle commands & sync
+
+	// handle commands & sync
+	{
+		xx::DataShared ds;
+		while (recvs.TryPop(ds)) {
+			auto typeId = xx::ReadTypeId(ds);
+			switch (typeId) {
+			case Msgs::S2C::Summon_r::cTypeId: {
+				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Summon_r>(ds); !msg) {
+					Log_Msg_Read_Join_r_Error();
+					goto LabBegin;
+				} else {
+					auto monster = xx::MakeShared<Msgs::Global::Monster>();
+					monster->Init(scene, msg->data);
+					scene->monsters.Add(monster);
+					// todo: sync space
+				}
+				break;
+			}
+			default:
+				Log_Msg_Wait_Commands_Receive_Unknown();
+				break;
+			}
+		}
+	}
+
+	// handle local input
+	if (!gLooper.mouseEventHandler) {
+		if (gLooper.mouse.PressedMBLeft()) {
+			if (std::abs(centerPos.x - gLooper.mouse.pos.x) < gLooper.width_2) {
+				Send(Msgs::gSerdeInfo.MakeDataShared<Msgs::C2S::Summon>());
+			}
+		}
+	}
+
 	goto LabPlay;
 }
 
