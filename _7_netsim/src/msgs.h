@@ -5,13 +5,15 @@ namespace Msgs {
 	extern xx::SerdeInfo gSerdeInfo;
 	void InitSerdeInfo();
 
-	namespace Global {	// id = 1 ~ 999
+	namespace Global {	// id = 1 ~ 99
 
 		struct Player;
 		struct Monster;
 		struct Scene : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 1 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
@@ -25,23 +27,22 @@ namespace Msgs {
 			/* C */ void InitForDraw();	// todo: recursive call all childs
 			void Update();
 			/* C */ void Draw();
-			/* S */ void WriteTo(xx::Data& d) const override;
-			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+			xx::Shared<Player> const& RefPlayer(int32_t clientId);
 		};
 
 		struct Player : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 2 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			xx::Weak<Scene> scene;
 			int32_t clientId{};
 			int32_t score{};
 
-			void Init(Scene* scene_, int32_t clientId_);
+			/* S */ void Init(Scene* scene_, int32_t clientId_);	// auto add to scene.players
 			void Update();
 			/* C */ void Draw();
-			/* S */ void WriteTo(xx::Data& d) const override;
-			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
 		struct MonsterData {
@@ -53,61 +54,69 @@ namespace Msgs {
 		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster>, MonsterData {
 			static constexpr uint16_t cTypeId{ 3 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			static constexpr FX64 cFrameIndexStep{ FX64{1} / FX64{10} };
 			static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
 
 			xx::Weak<Scene> scene;
-			xx::Weak<Player> player;	// owner
+			xx::Weak<Player> owner;
 
 			virtual ~Monster();
-			void Init(Scene* scene_);
-			/* C */ void Init(Scene* scene_, MonsterData const& md);
+			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
+			/* C */ Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, MonsterData const& md);
 			virtual bool Update();	// true: kill
 			/* C */ void Draw();
-			/* S */ void WriteTo(xx::Data& d) const override;
-			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
 	}
 
-	namespace C2S {	// id == 1000 ~ 1999
+	namespace C2S {	// id == 100 ~ 199
 
 		// todo: list/array data length limit protect
 
 		struct Join : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 1001 };
+			static constexpr uint16_t cTypeId{ 101 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
 		struct Summon : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 1002 };
+			static constexpr uint16_t cTypeId{ 102 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			xx::XYi bornPos;
 		};
 
 	}
 
-	namespace S2C {	// id == 2000 ~ 2999
+	namespace S2C {	// id == 200 ~ 299
 
+		// 1 to 1
 		struct Join_r : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 2001 };
+			static constexpr uint16_t cTypeId{ 201 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
 			int32_t clientId{};
 			xx::Shared<Global::Scene> scene;
-			/* S */ void WriteTo(xx::Data& d) const override;
-			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
+		// 1 to n
 		struct Summon_r : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 1002 };
+			static constexpr uint16_t cTypeId{ 202 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
-			Global::MonsterData data;
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			int32_t clientId{};
+			int64_t frameNumber{};
+			Global::MonsterData data;
 		};
 
 	}

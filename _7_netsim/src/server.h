@@ -17,10 +17,24 @@ struct Peer {
 	bool Send(xx::DataShared ds);
 
 	// print client id ?
-	void Log_Msg_Wait_Join_Disconnected() { xx::CoutTN("S Log_Msg_Wait_Join_Disconnected"); };
-	void Log_Msg_Wait_Join_Receive_Unknown() { xx::CoutTN("S Log_Msg_Wait_Join_Receive_Unknown"); };
-	void Log_Msg_Read_Join_Error() { xx::CoutTN("S Log_Msg_Read_Join_Error"); };
-	void Log_Msg_Wait_Commands_Disconnected() { xx::CoutTN("S Log_Msg_Wait_Commands_Disconnected"); };
+	void Log_Msg_Wait_Join_Disconnected() {
+		xx::CoutTN(clientId, " S Log_Msg_Wait_Join_Disconnected"); 
+	};
+	void Log_Msg_Wait_Join_Receive_Unknown(int16_t typeId) {
+		xx::CoutTN(clientId, " S Log_Msg_Wait_Join_Receive_Unknown: ", typeId);
+	};
+	void Log_Msg_Wait_Commands_Disconnected() {
+		xx::CoutTN(clientId, " S Log_Msg_Wait_Commands_Disconnected");
+	};
+	void Log_Msg_Handle_Summon_Error_Player_Not_Found() {
+		xx::CoutTN(clientId, " S Log_Msg_Handle_Summon_Error_Player_Not_Found");
+	};
+	void Log_Msg_Wait_Commands_Receive_Unknown(int16_t typeId) {
+		xx::CoutTN(clientId, " S Log_Msg_Wait_Commands_Receive_Unknown: ", typeId);
+	};
+	template<typename T> void Log_Msg_ReadError() {
+		xx::CoutTN(clientId, " S Log_Msg_ReadError: ", nameof::nameof_type<T>());
+	};
 };
 
 struct Server {

@@ -14,10 +14,11 @@ namespace Msgs {
 
 
 		int32_t Msgs::C2S::Summon::ReadFrom(xx::Data_r& dr) {
-			return 0;
+			return dr.Read(bornPos);
 		}
 
 		void Msgs::C2S::Summon::WriteTo(xx::Data& d) const {
+			d.Write(bornPos);
 		}
 
 	}

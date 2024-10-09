@@ -36,12 +36,12 @@ LabWait_Join_r:
 	}
 
 	if (xx::DataShared ds; recvs.TryPop(ds)) {
-		if (xx::ReadTypeId(ds) != Msgs::S2C::Join_r::cTypeId) {
-			Log_Msg_Wait_Join_r_Receive_Unknown();
+		if (auto typeId = xx::ReadTypeId(ds); typeId != Msgs::S2C::Join_r::cTypeId) {
+			Log_Msg_Wait_Join_r_Receive_Unknown(typeId);
 			goto LabBegin;
 		}
 		if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Join_r>(ds); !msg) {
-			Log_Msg_Read_Join_r_Error();
+			Log_Msg_ReadError<Msgs::S2C::Join_r>();
 			goto LabBegin;
 		} else {
 			clientId = msg->clientId;
@@ -69,13 +69,15 @@ LabPlay:
 			switch (typeId) {
 			case Msgs::S2C::Summon_r::cTypeId: {
 				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Summon_r>(ds); !msg) {
-					Log_Msg_Read_Join_r_Error();
+					Log_Msg_ReadError<Msgs::S2C::Summon_r>();
 					goto LabBegin;
 				} else {
-					auto monster = xx::MakeShared<Msgs::Global::Monster>();
-					monster->Init(scene, msg->data);
-					scene->monsters.Add(monster);
-					// todo: sync space
+					if (auto& player = scene->RefPlayer(msg->clientId); !player) {
+						Log_Msg_Handle_Summon_r_Error_Player_Not_Found(msg->clientId);
+						goto LabBegin;
+					} else {
+						xx::MakeShared<Msgs::Global::Monster>()->Init(scene, player, msg->data);
+					}
 				}
 				break;
 			}

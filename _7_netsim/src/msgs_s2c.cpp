@@ -15,10 +15,12 @@ namespace Msgs {
 
 
 		void Summon_r::WriteTo(xx::Data& d) const {
+			d.Write(clientId, frameNumber);
 			data.WriteTo(d);
 		}
 
 		int32_t Summon_r::ReadFrom(xx::Data_r& dr) {
+			if (auto r = dr.Read(clientId, frameNumber)) return r;
 			return data.ReadFrom(dr);
 		}
 

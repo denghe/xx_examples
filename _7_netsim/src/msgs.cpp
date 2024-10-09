@@ -12,6 +12,8 @@ namespace Msgs {
 		gSerdeInfo.Register<::Msgs::Global::Monster>();
 		gSerdeInfo.Register<::Msgs::C2S::Join>();
 		gSerdeInfo.Register<::Msgs::S2C::Join_r>();
+		gSerdeInfo.Register<::Msgs::C2S::Summon>();
+		gSerdeInfo.Register<::Msgs::S2C::Summon_r>();
 		// ...
 	}
 }

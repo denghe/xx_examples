@@ -38,19 +38,17 @@ LabWaitJoin:
 	}
 
 	if (xx::DataShared ds; recvs.TryPop(ds)) {
-		if (xx::ReadTypeId(ds) != Msgs::C2S::Join::cTypeId) {
-			Log_Msg_Wait_Join_Receive_Unknown();
+		if (auto typeId = xx::ReadTypeId(ds); typeId != Msgs::C2S::Join::cTypeId) {
+			Log_Msg_Wait_Join_Receive_Unknown(typeId);
 			co_return;
 		}
 		if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::C2S::Join>(ds); !msg) {
-			Log_Msg_Read_Join_Error();
+			Log_Msg_ReadError<Msgs::C2S::Join>();
 			co_return;
 		} else {
 			// handle
 			clientId = ++server->autoClientId;
-			auto player = xx::MakeShared<Msgs::Global::Player>();
-			player->Init(server->scene, clientId);
-			server->scene->players.Emplace(player);
+			xx::MakeShared<Msgs::Global::Player>()->Init(server->scene, clientId);
 
 			// make & send result
 			auto rtv = xx::MakeShared<Msgs::S2C::Join_r>();
@@ -76,7 +74,33 @@ LabPlay:
 		while (recvs.TryPop(ds)) {
 			auto typeId = xx::ReadTypeId(ds);
 			switch (typeId) {
-				// todo
+			case Msgs::C2S::Summon::cTypeId:
+			{
+				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::C2S::Summon>(ds); !msg) {
+					Log_Msg_ReadError<Msgs::C2S::Summon>();
+					co_return;
+				} else {
+					if (auto& player = server->scene->RefPlayer(clientId); !player) {
+						Log_Msg_Handle_Summon_Error_Player_Not_Found();
+						co_return;
+					} else {
+						// handle
+						auto m = xx::MakeShared<Msgs::Global::Monster>()->Init(server->scene, player, msg->bornPos);
+
+						// make & send result
+						auto rtv = xx::MakeShared<Msgs::S2C::Summon_r>();
+						rtv->clientId = clientId;
+						rtv->frameNumber = server->scene->frameNumber;
+						rtv->data = *m;
+						Send(Msgs::gSerdeInfo.MakeDataShared(rtv));
+					}
+				}
+				break;
+			}
+			// todo: more case
+			default:
+				Log_Msg_Wait_Commands_Receive_Unknown(typeId);
+				co_return;
 			}
 		}
 	}
