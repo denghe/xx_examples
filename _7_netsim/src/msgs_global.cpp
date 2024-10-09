@@ -7,24 +7,31 @@ namespace Msgs {
 
 		int32_t Scene::ReadFrom(xx::Data_r& dr) {
 			if (auto r = dr.Read(frameNumber, rnd, monsters, players)) return r;
-			int32_t numRows{}, numCols{}, cellSize{}, monstersLen{};
-			if (auto r = dr.Read(numRows, numCols, cellSize, monstersLen)) return r;
-			if (monstersLen != monsters.len) return __LINE__;
-			for (int32_t i = 0; i < monstersLen; ++i) {
+			auto& der = (xx::DataEx_r&)dr;
+			int32_t numRows{}, numCols{}, cellSize{};
+			if (auto r = dr.Read(numRows, numCols, cellSize)) return r;
+			monsterSpace.Init(numRows, numCols, cellSize);
+			for (int32_t i = 0, e = monsters.len; i < e; ++i) {
 				auto& m = monsters[i];
 				m->_sgc = &monsterSpace;
+				m->_x = m->x.ToInt();
+				m->_y = m->y.ToInt();
+				m->_radius = m->radius.ToInt();
+				m->_sgcIdx = monsterSpace.PosToCIdx(m->_x, m->_y);
 				size_t prev{}, next{};
-				if (auto r = dr.Read(prev, next, m->_sgcIdx, m->_x, m->_y, m->_radius)) return r;
+				if (auto r = dr.Read(prev, next)) return r;
 				if (prev) {
-					// m->_sgcPrev = todo
+					m->_sgcPrev = (decltype(m->_sgcPrev))der.ptrs[(int32_t)prev - 1].pointer;
 				} else {
 					m->_sgcPrev = {};
+					monsterSpace.cells[m->_sgcIdx].item = m.pointer; 
 				}
 				if (next) {
-					// m->_sgcNext = todo
+					m->_sgcNext = (decltype(m->_sgcNext))der.ptrs[(int32_t)next - 1].pointer;
 				} else {
-					m->_sgcPrev = {};
+					m->_sgcNext = {};
 				}
+				++monsterSpace.cells[m->_sgcIdx].count;
 			}
 			return 0;
 		}
@@ -32,22 +39,21 @@ namespace Msgs {
 		void Scene::WriteTo(xx::Data& d) const {
 			d.Write(frameNumber, rnd, monsters, players);
 			auto& s = monsterSpace;
-			auto monstersLen = monsters.len;
-			d.Write(s.numRows, s.numCols, s.cellSize, monstersLen);
-			for (int32_t i = 0; i < monstersLen; ++i) {
+			d.Write(s.numRows, s.numCols, s.cellSize);
+			for (auto e = monsters.len, i = 0; i < e; ++i) {
 				auto& m = monsters[i];
 				// m->_sgc: ignore; always == monsterSpace
+				// m->_x, m->_y, m->_radius, m->_sgcIdx: ignore; fill by calculate
 				if (m->_sgcPrev) {
-					d.Write(xx::SharedFromThis(m->_sgcPrev).GetHeader()->ud);
+					d.Write(xx::GetPtrHeader(m->_sgcPrev)->ud);
 				} else {
 					d.WriteFixed(uint8_t(0));
 				}
 				if (m->_sgcNext) {
-					d.Write(xx::SharedFromThis(m->_sgcNext).GetHeader()->ud);
+					d.Write(xx::GetPtrHeader(m->_sgcNext)->ud);
 				} else {
 					d.WriteFixed(uint8_t(0));
 				}
-				d.Write(m->_sgcIdx, m->_x, m->_y, m->_radius);
 			}
 		}
 
@@ -165,6 +171,10 @@ namespace Msgs {
 			owner = owner_.ToWeak();
 			*(MonsterData*)this = md;
 			scene->monsters.Emplace(xx::SharedFromThis(this));
+
+			_x = x.ToInt();
+			_y = y.ToInt();
+			_radius = radius.ToInt();
 			scene->monsterSpace.Add(this);
 			return this;
 		}
@@ -175,6 +185,10 @@ namespace Msgs {
 				frameIndex = frameIndex - cFrameIndexMax;
 			}
 
+			_x = x.ToInt();
+			_y = y.ToInt();
+			_radius = radius.ToInt();
+			scene->monsterSpace.Update(this);
 			return false;
 		}
 
@@ -189,7 +203,7 @@ namespace Msgs {
 
 			auto& frame = gRes.monster_[frameIndex.ToInt()];
 			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
-			q.pos = { x.ToFloat(), y.ToFloat() };
+			q.pos = XY{ x.ToFloat(), y.ToFloat() } - scene->monsterSpace.max / 2;
 			q.anchor = *frame->anchor;
 			q.scale = (radius / FX64{ 64 }).ToFloat();
 			q.radians = radians.ToFloat();

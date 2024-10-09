@@ -12,7 +12,7 @@ void Client::CleanUp() {
 
 xx::Task<> Client::Task() {
 
-LabBegin:
+LabReset:
 	CleanUp();
 
 LabDial:
@@ -32,17 +32,17 @@ LabWait_Join_r:
 
 	if (!Alive()) {
 		Log_Msg_Wait_Join_r_Disconnected();
-		goto LabBegin;
+		goto LabReset;
 	}
 
 	if (xx::DataShared ds; recvs.TryPop(ds)) {
 		if (auto typeId = xx::ReadTypeId(ds); typeId != Msgs::S2C::Join_r::cTypeId) {
 			Log_Msg_Wait_Join_r_Receive_Unknown(typeId);
-			goto LabBegin;
+			goto LabReset;
 		}
 		if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Join_r>(ds); !msg) {
 			Log_Msg_ReadError<Msgs::S2C::Join_r>();
-			goto LabBegin;
+			goto LabReset;
 		} else {
 			clientId = msg->clientId;
 			scene = std::move(msg->scene);
@@ -58,7 +58,7 @@ LabPlay:
 
 	if (!Alive()) {
 		Log_Msg_Wait_Commands_Disconnected();
-		goto LabBegin;
+		goto LabReset;
 	}
 
 	// handle commands & sync
@@ -67,20 +67,34 @@ LabPlay:
 		while (recvs.TryPop(ds)) {
 			auto typeId = xx::ReadTypeId(ds);
 			switch (typeId) {
-			case Msgs::S2C::Summon_r::cTypeId: {
-				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Summon_r>(ds); !msg) {
-					Log_Msg_ReadError<Msgs::S2C::Summon_r>();
-					goto LabBegin;
+			case Msgs::S2C::PlayerJoin::cTypeId: {
+				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::PlayerJoin>(ds); !msg) {
+					Log_Msg_ReadError<Msgs::S2C::PlayerJoin>();
+					goto LabReset;
 				} else {
+					if (msg->clientId != clientId) {
+						// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
+						xx::MakeShared<Msgs::Global::Player>()->Init(scene, msg->clientId);
+					}
+				}
+				break;
+			}
+			case Msgs::S2C::Summon::cTypeId: {
+				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Summon>(ds); !msg) {
+					Log_Msg_ReadError<Msgs::S2C::Summon>();
+					goto LabReset;
+				} else {
+					// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
 					if (auto& player = scene->RefPlayer(msg->clientId); !player) {
 						Log_Msg_Handle_Summon_r_Error_Player_Not_Found(msg->clientId);
-						goto LabBegin;
+						goto LabReset;
 					} else {
 						xx::MakeShared<Msgs::Global::Monster>()->Init(scene, player, msg->data);
 					}
 				}
 				break;
 			}
+			// ...
 			default:
 				Log_Msg_Wait_Commands_Receive_Unknown();
 				break;
@@ -91,8 +105,10 @@ LabPlay:
 	// handle local input
 	if (!gLooper.mouseEventHandler) {
 		if (gLooper.mouse.PressedMBLeft()) {
-			if (std::abs(centerPos.x - gLooper.mouse.pos.x) < gLooper.width_2) {
-				Send(Msgs::gSerdeInfo.MakeDataShared<Msgs::C2S::Summon>());
+			if (std::abs(gLooper.mouse.pos.x - centerPos.x) < gLooper.width_2) {
+				auto msg = xx::MakeShared<Msgs::C2S::Summon>();
+				msg->bornPos = scene->monsterSpace.max / 2 + gLooper.mouse.pos - centerPos;
+				Send(Msgs::gSerdeInfo.MakeDataShared(msg));
 			}
 		}
 	}

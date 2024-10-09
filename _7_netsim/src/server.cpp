@@ -27,6 +27,12 @@ xx::Weak<Peer> Server::Accept(xx::Shared<Client> const& client_) {
 	return p.ToWeak();
 }
 
+void Server::SendToAll(xx::DataShared ds) {
+	for (auto e = peers.len, i = 0; i < e; ++i) {
+		peers[i]->Send(ds);
+	}
+}
+
 xx::Task<> Peer::Task() {
 
 LabWaitJoin:
@@ -51,10 +57,20 @@ LabWaitJoin:
 			xx::MakeShared<Msgs::Global::Player>()->Init(server->scene, clientId);
 
 			// make & send result
-			auto rtv = xx::MakeShared<Msgs::S2C::Join_r>();
-			rtv->clientId = clientId;
-			rtv->scene = server->scene;
-			Send(Msgs::gSerdeInfo.MakeDataShared(rtv));
+			{
+				auto rtv = xx::MakeShared<Msgs::S2C::Join_r>();
+				rtv->clientId = clientId;
+				rtv->scene = server->scene;
+				Send(Msgs::gSerdeInfo.MakeDataShared(rtv));
+			}
+
+			// make & notice all
+			{
+				auto notice = xx::MakeShared<Msgs::S2C::PlayerJoin>();
+				notice->clientId = clientId;
+				notice->frameNumber = server->scene->frameNumber;
+				server->SendToAll(Msgs::gSerdeInfo.MakeDataShared(notice));
+			}
 		}
 	} else {
 		// todo: timeout check?
@@ -87,17 +103,19 @@ LabPlay:
 						// handle
 						auto m = xx::MakeShared<Msgs::Global::Monster>()->Init(server->scene, player, msg->bornPos);
 
-						// make & send result
-						auto rtv = xx::MakeShared<Msgs::S2C::Summon_r>();
-						rtv->clientId = clientId;
-						rtv->frameNumber = server->scene->frameNumber;
-						rtv->data = *m;
-						Send(Msgs::gSerdeInfo.MakeDataShared(rtv));
+						// make & notice all
+						{
+							auto rtv = xx::MakeShared<Msgs::S2C::Summon>();
+							rtv->clientId = clientId;
+							rtv->frameNumber = server->scene->frameNumber;
+							rtv->data = *m;
+							server->SendToAll(Msgs::gSerdeInfo.MakeDataShared(rtv));
+						}
 					}
 				}
 				break;
 			}
-			// todo: more case
+			// ...
 			default:
 				Log_Msg_Wait_Commands_Receive_Unknown(typeId);
 				co_return;

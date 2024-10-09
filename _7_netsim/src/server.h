@@ -11,6 +11,7 @@ struct Peer {
 	xx::Queue<xx::DataShared> recvs;
 	xx::Task<> task;
 	xx::Task<> Task();
+	// ~Peer() notice all ?
 
 	void Init(Server* server_, xx::Weak<Client>&& client_);
 	bool Alive() const;
@@ -47,4 +48,5 @@ struct Server {
 	void Update();
 
 	xx::Weak<Peer> Accept(xx::Shared<Client> const& client_);
+	void SendToAll(xx::DataShared ds);
 };

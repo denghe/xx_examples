@@ -107,9 +107,20 @@ namespace Msgs {
 			xx::Shared<Global::Scene> scene;
 		};
 
-		// 1 to n
-		struct Summon_r : xx::SerdeBase {
+		// 1 to n ( after Join_r )
+		struct PlayerJoin : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 202 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			int32_t clientId{};
+			int64_t frameNumber{};
+		};
+
+		// 1 to n
+		struct Summon : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 203 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
