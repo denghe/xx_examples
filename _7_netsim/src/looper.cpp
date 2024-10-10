@@ -72,15 +72,42 @@ void Looper::BeforeUpdate() {
 void Looper::Update() {
 	if (!ok) return;
 
+	xx::DataShared ds, ds1, ds2;
 	if (server) {
 		server->Update();
+		ds = Msgs::gSerdeInfo.MakeDataShared(server->scene);
 	}
 
 	if (client1) {
 		client1->Update();
+		ds1 = Msgs::gSerdeInfo.MakeDataShared(client1->scene);
 	}
 	if (client2) {
 		client2->Update();
+		ds2 = Msgs::gSerdeInfo.MakeDataShared(client2->scene);
+	}
+
+	// verify data
+	if (server && client1 && client1->Joined()) {
+		if (ds.GetLen() != ds1.GetLen()) {
+			xx::CoutTN("ds.GetLen() != ds1.GetLen() ", ds.GetLen(), " ", ds1.GetLen());
+		} else {
+			auto n = memcmp(ds.GetBuf(), ds1.GetBuf(), ds1.GetLen());
+			if (n) {
+				xx::CoutTN("memcmp(ds.GetBuf(), ds1.GetBuf(), ds1.GetLen()) = ", n);
+				ds = Msgs::gSerdeInfo.MakeDataShared(server->scene);
+			}
+		}
+	}
+	if (server && client2 && client2->Joined()) {
+		if (ds.GetLen() != ds2.GetLen()) {
+			xx::CoutTN("ds.GetLen() != ds2.GetLen() ", ds.GetLen(), " ", ds2.GetLen());
+		} else {
+			auto n = memcmp(ds.GetBuf(), ds2.GetBuf(), ds2.GetLen());
+			if (n) {
+				xx::CoutTN("memcmp(ds.GetBuf(), ds2.GetBuf(), ds2.GetLen()) = ", n);
+			}
+		}
 	}
 }
 

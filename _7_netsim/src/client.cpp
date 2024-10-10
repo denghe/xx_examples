@@ -79,6 +79,16 @@ LabPlay:
 				}
 				break;
 			}
+			case Msgs::S2C::PlayerLeave::cTypeId: {
+				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::PlayerLeave>(ds); !msg) {
+					Log_Msg_ReadError<Msgs::S2C::PlayerLeave>();
+					goto LabReset;
+				} else {
+					// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
+					scene->RemovePlayer(msg->clientId);
+				}
+				break;
+			}
 			case Msgs::S2C::Summon::cTypeId: {
 				if (auto msg = Msgs::gSerdeInfo.MakeMessage<Msgs::S2C::Summon>(ds); !msg) {
 					Log_Msg_ReadError<Msgs::S2C::Summon>();
@@ -89,7 +99,7 @@ LabPlay:
 						Log_Msg_Handle_Summon_r_Error_Player_Not_Found(msg->clientId);
 						goto LabReset;
 					} else {
-						xx::MakeShared<Msgs::Global::Monster>()->Init(scene, player, msg->data);
+						xx::MakeShared<Msgs::Global::Monster>()->Init(scene, player, msg->bornPos);
 					}
 				}
 				break;
@@ -145,6 +155,10 @@ void Client::Dial() {
 
 bool Client::Alive() const {
 	return peer;
+}
+
+bool Client::Joined() const {
+	return clientId;
 }
 
 void Client::Close() {

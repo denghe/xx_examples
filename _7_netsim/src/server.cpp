@@ -14,7 +14,14 @@ void Server::Update() {
 	for(auto i = peers.len - 1; i >= 0; --i) {
 		auto& peer = peers[i];
 		if (peer->task()) {
+			auto clientId = peer->clientId;
 			peers.SwapRemoveAt(i);
+			scene->RemovePlayer(clientId);
+			// make & notice all
+			auto rtv = xx::MakeShared<Msgs::S2C::PlayerLeave>();
+			rtv->clientId = clientId;
+			rtv->frameNumber = scene->frameNumber;
+			SendToAll(Msgs::gSerdeInfo.MakeDataShared(rtv));
 		}
 	}
 
@@ -101,14 +108,14 @@ LabPlay:
 						co_return;
 					} else {
 						// handle
-						auto m = xx::MakeShared<Msgs::Global::Monster>()->Init(server->scene, player, msg->bornPos);
+						xx::MakeShared<Msgs::Global::Monster>()->Init(server->scene, player, msg->bornPos);
 
 						// make & notice all
 						{
 							auto rtv = xx::MakeShared<Msgs::S2C::Summon>();
 							rtv->clientId = clientId;
 							rtv->frameNumber = server->scene->frameNumber;
-							rtv->data = *m;
+							rtv->bornPos = msg->bornPos;
 							server->SendToAll(Msgs::gSerdeInfo.MakeDataShared(rtv));
 						}
 					}

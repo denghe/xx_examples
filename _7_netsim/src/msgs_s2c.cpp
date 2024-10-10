@@ -23,14 +23,21 @@ namespace Msgs {
 		}
 
 
-		void Summon::WriteTo(xx::Data& d) const {
+		int32_t PlayerLeave::ReadFrom(xx::Data_r& dr) {
+			return dr.Read(clientId, frameNumber);
+		}
+
+		void PlayerLeave::WriteTo(xx::Data& d) const {
 			d.Write(clientId, frameNumber);
-			data.WriteTo(d);
+		}
+
+
+		void Summon::WriteTo(xx::Data& d) const {
+			d.Write(clientId, frameNumber, bornPos);
 		}
 
 		int32_t Summon::ReadFrom(xx::Data_r& dr) {
-			if (auto r = dr.Read(clientId, frameNumber)) return r;
-			return data.ReadFrom(dr);
+			return dr.Read(clientId, frameNumber, bornPos);
 		}
 
 	}

@@ -20,6 +20,7 @@ struct Client {
 	void CleanUp();
 	void Dial();
 	bool Alive() const;
+	bool Joined() const;
 	void Close();
 	bool Send(xx::DataShared ds);
 

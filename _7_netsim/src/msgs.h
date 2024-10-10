@@ -28,6 +28,7 @@ namespace Msgs {
 			void Update();
 			/* C */ void Draw();
 			xx::Shared<Player> const& RefPlayer(int32_t clientId);
+			void RemovePlayer(int32_t clientId);
 		};
 
 		struct Player : xx::SerdeBase {
@@ -45,13 +46,7 @@ namespace Msgs {
 			/* C */ void Draw();
 		};
 
-		struct MonsterData {
-			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
-			/* S */ void WriteTo(xx::Data& d) const;
-			/* C */ int32_t ReadFrom(xx::Data_r& dr);
-		};
-
-		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster>, MonsterData {
+		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
 			static constexpr uint16_t cTypeId{ 3 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
@@ -62,10 +57,10 @@ namespace Msgs {
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
+			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
-			/* C */ Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, MonsterData const& md);
 			virtual bool Update();	// true: kill
 			/* C */ void Draw();
 		};
@@ -118,8 +113,8 @@ namespace Msgs {
 			int64_t frameNumber{};
 		};
 
-		// 1 to n
-		struct Summon : xx::SerdeBase {
+		// 1 to n ( after player disconnect )
+		struct PlayerLeave : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 203 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
@@ -127,7 +122,18 @@ namespace Msgs {
 
 			int32_t clientId{};
 			int64_t frameNumber{};
-			Global::MonsterData data;
+		};
+
+		// 1 to n
+		struct Summon : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 204 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			int32_t clientId{};
+			int64_t frameNumber{};
+			xx::XYi bornPos;
 		};
 
 	}

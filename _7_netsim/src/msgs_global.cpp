@@ -37,7 +37,9 @@ namespace Msgs {
 		}
 
 		void Scene::WriteTo(xx::Data& d) const {
-			d.Write(frameNumber, rnd, monsters, players);
+			//d.Write(frameNumber, rnd, monsters, players);
+			d.Write(frameNumber, rnd);
+			d.Write(monsters, players);
 			auto& s = monsterSpace;
 			d.Write(s.numRows, s.numCols, s.cellSize);
 			for (auto e = monsters.len, i = 0; i < e; ++i) {
@@ -101,6 +103,29 @@ namespace Msgs {
 			return (xx::Shared<Player>&)xx::Nil;
 		}
 
+		void Scene::RemovePlayer(int32_t clientId) {
+			// find & remove player
+			xx::Weak<Msgs::Global::Player> p;
+			bool found{};
+			for (auto j = players.len - 1; j >= 0; --j) {
+				auto& player = players[j];
+				if (player->clientId == clientId) {
+					p = player.ToWeak();
+					found = true;
+					players.SwapRemoveAt(j);
+					break;
+				}
+			}
+			assert(found);
+
+			// remove all owned monsters
+			for (auto k = monsters.len - 1; k >= 0; --k) {
+				if (monsters[k]->owner == p) {
+					monsters.SwapRemoveAt(k);
+				}
+			}
+		}
+
 		/*******************************************************************************************/
 		/*******************************************************************************************/
 
@@ -129,25 +154,12 @@ namespace Msgs {
 		/*******************************************************************************************/
 		/*******************************************************************************************/
 
-		void MonsterData::WriteTo(xx::Data& d) const {
-			d.Write(x, y, radius, radians, frameIndex);
-		}
-
-		int32_t MonsterData::ReadFrom(xx::Data_r& dr) {
-			return dr.Read(x, y, radius, radians, frameIndex);
-		}
-
-		/*******************************************************************************************/
-		/*******************************************************************************************/
-
 		int32_t Monster::ReadFrom(xx::Data_r& dr) {
-			if (auto r = MonsterData::ReadFrom(dr)) return r;
-			return dr.Read(scene, owner);
+			return dr.Read(scene, owner, x, y, radius, radians, frameIndex);
 		}
 
 		void Monster::WriteTo(xx::Data& d) const {
-			MonsterData::WriteTo(d);
-			d.Write(scene, owner);
+			d.Write(scene, owner, x, y, radius, radians, frameIndex);
 		}
 
 		Monster::~Monster() {
@@ -157,20 +169,15 @@ namespace Msgs {
 		}
 
 		Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
-			MonsterData md;
-			md.x = bornPos.x;
-			md.y = bornPos.y;
-			md.radius = scene_->rnd.Next<int32_t>(16, 129);
-			md.radians = FX64{ scene_->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
-			md.frameIndex.SetZero();
-			return Init(scene_, owner_, md);
-		}
-
-		Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, MonsterData const& md) {
+			scene_->monsters.Emplace(xx::SharedFromThis(this));
 			scene = xx::WeakFromThis(scene_);
 			owner = owner_.ToWeak();
-			*(MonsterData*)this = md;
-			scene->monsters.Emplace(xx::SharedFromThis(this));
+
+			x = bornPos.x;
+			y = bornPos.y;
+			radius = scene_->rnd.Next<int32_t>(16, 129);
+			radians = FX64{ scene_->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
+			frameIndex.SetZero();
 
 			_x = x.ToInt();
 			_y = y.ToInt();

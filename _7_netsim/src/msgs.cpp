@@ -17,6 +17,7 @@ namespace Msgs {
 
 		gSerdeInfo.Register<::Msgs::S2C::Join_r>();
 		gSerdeInfo.Register<::Msgs::S2C::PlayerJoin>();
+		gSerdeInfo.Register<::Msgs::S2C::PlayerLeave>();
 		gSerdeInfo.Register<::Msgs::S2C::Summon>();
 
 		// ...
