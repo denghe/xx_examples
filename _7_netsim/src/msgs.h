@@ -52,8 +52,12 @@ namespace Msgs {
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
-			static constexpr FX64 cFrameIndexStep{ FX64{1} / FX64{10} };
+			static constexpr FX64 cResRadius{ 32 };
+			static constexpr FX64 cMinValue{ 0.001 };
+			static constexpr FX64 cFrameIndexStep{ 0.1 };
 			static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
+			static constexpr FX64 cMovementSpeed{ 30 };
+			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
