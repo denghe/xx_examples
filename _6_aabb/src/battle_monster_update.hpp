@@ -6,7 +6,7 @@ namespace Battle {
 		auto posBak = pos;
 		auto& ms = gScene->monsters;
 		
-		// todo: get round count and find move wayout
+		// get round count and find move wayout
 		auto idx = ms.PosToCIdx(pos);
 		auto count = ms.counts[idx];
 		if (count > cNeighbourMaxCount) {

@@ -6,7 +6,7 @@ struct Peer;
 struct Client {
 	xx::Shared<Msgs::Global::Scene> scene;
 	XY centerPos;
-	float minX{}, maxX{};
+	XY min{}, max{};
 
 	int32_t clientId{};
 	xx::Weak<Peer> peer;

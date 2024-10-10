@@ -54,7 +54,6 @@ LabWait_Join_r:
 	}
 
 LabPlay:
-	co_yield 0;
 
 	if (!Alive()) {
 		Log_Msg_Wait_Commands_Disconnected();
@@ -72,8 +71,9 @@ LabPlay:
 					Log_Msg_ReadError<Msgs::S2C::PlayerJoin>();
 					goto LabReset;
 				} else {
-					if (msg->clientId != clientId) {
+					if (msg->clientId != clientId) {	// not self
 						// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
+						assert(scene->frameNumber == msg->frameNumber);
 						xx::MakeShared<Msgs::Global::Player>()->Init(scene, msg->clientId);
 					}
 				}
@@ -85,6 +85,7 @@ LabPlay:
 					goto LabReset;
 				} else {
 					// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
+					assert(scene->frameNumber == msg->frameNumber);
 					scene->RemovePlayer(msg->clientId);
 				}
 				break;
@@ -95,6 +96,7 @@ LabPlay:
 					goto LabReset;
 				} else {
 					// if (scene->frameNumber != msg->frameNumber) // todo: rollback or fast forward
+					assert(scene->frameNumber == msg->frameNumber);
 					if (auto& player = scene->RefPlayer(msg->clientId); !player) {
 						Log_Msg_Handle_Summon_r_Error_Player_Not_Found(msg->clientId);
 						goto LabReset;
@@ -115,14 +117,18 @@ LabPlay:
 	// handle local input
 	if (!gLooper.mouseEventHandler) {
 		if (gLooper.mouse.PressedMBLeft()) {
-			if (gLooper.mouse.pos.x >= minX && gLooper.mouse.pos.x <= maxX) {
-				auto msg = xx::MakeShared<Msgs::C2S::Summon>();
-				msg->bornPos = scene->monsterSpace.max / 2 + gLooper.mouse.pos - centerPos;
-				Send(Msgs::gSerdeInfo.MakeDataShared(msg));
+			if (gLooper.mouse.pos.x >= min.x && gLooper.mouse.pos.x <= max.x
+			 && gLooper.mouse.pos.y >= min.y && gLooper.mouse.pos.y <= max.y) {
+				for (int i = 0; i < 10; ++i) {
+					auto msg = xx::MakeShared<Msgs::C2S::Summon>();
+					msg->bornPos = scene->monsterSpace.max / 2 + (gLooper.mouse.pos - centerPos) / gLooper.camera.scale;
+					Send(Msgs::gSerdeInfo.MakeDataShared(msg));
+				}
 			}
 		}
 	}
 
+	co_yield 0;
 	goto LabPlay;
 }
 
@@ -130,8 +136,10 @@ void Client::Init(XY const& centerPos_) {
 	gIsServer = false;
 	task = Task();
 	centerPos = centerPos_;
-	minX = centerPos.x - gLooper.width_2 / 2;
-	maxX = centerPos.x + gLooper.width_2 / 2;
+	min.x = centerPos.x - gLooper.width_2 / 2;
+	max.x = centerPos.x + gLooper.width_2 / 2;
+	min.y = centerPos.y - gLooper.height_2 / 2;
+	max.y = centerPos.y + gLooper.height_2 / 2;
 }
 
 void Client::Update() {

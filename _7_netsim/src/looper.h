@@ -11,10 +11,11 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 	xx::Shared<xx::Node> ui;
 	xx::FrameBuffer fb;						// for draw client
 	xx::Task<> MainTask();					// loading logic
+	xx::Camera camera;
 	bool ok{};								// true: loading finished
 
 	xx::Shared<Server> server;
-	xx::Shared<Client> client1, client2;
+	xx::Shared<Client> client1, client2, client3, client4;
 
 	void AfterInit();
 	void BeforeUpdate();

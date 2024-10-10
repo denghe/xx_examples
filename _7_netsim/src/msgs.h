@@ -58,20 +58,29 @@ namespace Msgs {
 			static constexpr FX64 c0_01{ 0.01 };
 			static constexpr FX64 c0_001{ 0.001 };
 
+			static constexpr int32_t cNeighbourMaxCount{ 7 };
+			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps * 2 };
+
 			static constexpr FX64 cResRadius{ 32 };
 			static constexpr FX64 cFrameIndexStep{ 0.1 };
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
-			static constexpr FX64 cMovementSpeed{ 30 };
+			static constexpr FX64 cMovementSpeed{ 20 };
+			static constexpr FX64 cMovementSpeed2{ cMovementSpeed * 2 };
+			static constexpr FX64 cMovementSpeed3{ cMovementSpeed * 3 };
 			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
 			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
+			FX64 incX{}, incY{};
+			int64_t timeout{};
+			bool runawayMode{};
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
 			virtual bool Update();	// true: kill
 			/* C */ void Draw();
+			bool FillCrossInc();
 		};
 
 	}

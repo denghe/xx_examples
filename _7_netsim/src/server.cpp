@@ -36,7 +36,10 @@ xx::Weak<Peer> Server::Accept(xx::Shared<Client> const& client_) {
 
 void Server::SendToAll(xx::DataShared ds) {
 	for (auto e = peers.len, i = 0; i < e; ++i) {
-		peers[i]->Send(ds);
+		auto& peer = peers[i];
+		if (peer->clientId) {
+			peer->Send(ds);
+		}
 	}
 }
 
