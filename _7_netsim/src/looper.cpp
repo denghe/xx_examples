@@ -39,7 +39,7 @@ xx::Task<> Looper::MainTask() {
 		server.Emplace()->Init();
 	});
 
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -50 }, xy7a, btnCfg, U"client1 add", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -50 }, xy7a, btnCfg, U"client1 reset", [&]() {
 		client1.Emplace()->Init({ -width_2 / 2, 0 });
 	});
 
@@ -47,7 +47,7 @@ xx::Task<> Looper::MainTask() {
 		client1.Reset();
 	});
 
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -150 }, xy7a, btnCfg, U"client2 add", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, -150 }, xy7a, btnCfg, U"client2 reset", [&]() {
 		client2.Emplace()->Init({ width_2 / 2, 0 });
 	});
 

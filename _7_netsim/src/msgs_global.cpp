@@ -62,7 +62,7 @@ namespace Msgs {
 		void Scene::Init() {
 			if (gIsServer) {
 				frameNumber = 1000;	// skip some cast delay
-				monsterSpace.Init(100, 100, 64);
+				monsterSpace.Init(100, 100, 64 + 32);
 			} else {
 				assert(false);
 			}
@@ -176,7 +176,7 @@ namespace Msgs {
 			x = bornPos.x;
 			y = bornPos.y;
 			radius = scene_->rnd.Next<int32_t>(8, 65);
-			radians = FX64{ scene_->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
+			radians = FX64{ scene_->rnd.Next<int32_t>(-c314159, c314159) } * c1_100000;
 			frameIndex.SetZero();
 
 			_x = x.ToInt();
@@ -202,14 +202,14 @@ namespace Msgs {
 				auto rr = r * r;
 				if (mag2 < rr) {	// cross?
 					if (mag2 > 0) {
-						auto mag = FX64{ mag2 }.SqrtFastest();
-						auto vx = FX64{ dx } / mag;
-						auto vy = FX64{ dy } / mag;
-						auto s = (FX64{ r } - mag) / r * cMovementSpeed;
+						auto mag = mag2.SqrtFastest();	// todo: check zero ?
+						auto vx = dx / mag;
+						auto vy = dy / mag;
+						auto s = (r - mag) / r * cMovementSpeed;
 						incX += vx * s;
 						incY += vy * s;
 					} else {
-						auto r = FX64{ scene->rnd.Next<int32_t>(-31416, 31416) } / FX64{ 10000 };
+						auto r = FX64{ scene->rnd.Next<int32_t>(-c314159, c314159) } * c1_100000;
 						incX += r.CosFastest() * cMovementSpeed;
 						incY += r.SinFastest() * cMovementSpeed;
 					}
@@ -217,20 +217,15 @@ namespace Msgs {
 				return false;
 			}, this);
 
-			if (incX.Abs() < cMinValue && incY.Abs() < cMinValue) {
-				incX.SetZero();
-				incY.SetZero();
-			} else {
-				// speed limit
-				auto mx = incX * incX;
-				auto my = incY * incY;
-				if (mx + my > cMovementSpeedPow2) {
-					incX = incX / mx.SqrtFastest() * cMovementSpeed;
-					incY = incY / my.SqrtFastest() * cMovementSpeed;
-				}
+			auto mx = incX * incX;
+			auto my = incY * incY;
+			if (mx > cMovementSpeedPow2 || my > cMovementSpeedPow2) {
+				x += incX * mx.RSqrtFastest() * cMovementSpeed;
+				y += incY * my.RSqrtFastest() * cMovementSpeed;
+			} else if (mx > c0_01 || my > c0_01) {
+				x += incX;
+				y += incY;
 			}
-			x += incX;
-			y += incY;
 
 			_x = x.ToInt();
 			_y = y.ToInt();

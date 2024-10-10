@@ -115,7 +115,7 @@ LabPlay:
 	// handle local input
 	if (!gLooper.mouseEventHandler) {
 		if (gLooper.mouse.PressedMBLeft()) {
-			if (std::abs(gLooper.mouse.pos.x - centerPos.x) < gLooper.width_2) {
+			if (gLooper.mouse.pos.x >= minX && gLooper.mouse.pos.x <= maxX) {
 				auto msg = xx::MakeShared<Msgs::C2S::Summon>();
 				msg->bornPos = scene->monsterSpace.max / 2 + gLooper.mouse.pos - centerPos;
 				Send(Msgs::gSerdeInfo.MakeDataShared(msg));
@@ -130,6 +130,8 @@ void Client::Init(XY const& centerPos_) {
 	gIsServer = false;
 	task = Task();
 	centerPos = centerPos_;
+	minX = centerPos.x - gLooper.width_2 / 2;
+	maxX = centerPos.x + gLooper.width_2 / 2;
 }
 
 void Client::Update() {

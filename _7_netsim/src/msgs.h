@@ -52,10 +52,15 @@ namespace Msgs {
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
+			static constexpr int32_t c314159{ 314159 };
+			static constexpr FX64 c1_100000{ FX64{1} / FX64{100000} };
+			static constexpr FX64 c0_1{ 0.1 };
+			static constexpr FX64 c0_01{ 0.01 };
+			static constexpr FX64 c0_001{ 0.001 };
+
 			static constexpr FX64 cResRadius{ 32 };
-			static constexpr FX64 cMinValue{ 0.001 };
 			static constexpr FX64 cFrameIndexStep{ 0.1 };
-			static constexpr FX64 cFrameIndexMax{ gRes._countof_monster_ };
+			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
 			static constexpr FX64 cMovementSpeed{ 30 };
 			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 
