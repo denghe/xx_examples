@@ -5,9 +5,11 @@
 
 #include <xx2d.h>
 #include <xx_space_i32.h>
+#include <xx_spaceab_i32.h>
 #include <xx_data_ex.h>
 #include <xx_fx64.h>
 using XY = xx::XY;
+using XYi = xx::XYi;
 using FX64 = xx::FX64;
 
 #endif

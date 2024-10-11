@@ -9,6 +9,8 @@ namespace Msgs {
 
 		struct Player;
 		struct Monster;
+		struct Block;
+
 		struct Scene : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 1 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
@@ -20,6 +22,9 @@ namespace Msgs {
 			xx::Spacei32<Monster> monsterSpace;
 			xx::Listi32<xx::Shared<Monster>> monsters;
 			xx::Listi32<xx::Shared<Player>> players;
+			xx::SpaceABi32<Block> blockSpace;
+			xx::Listi32<xx::Shared<Block>> blocks;
+
 			/* C */ xx::Ref<xx::GLTexture> tex;
 			/* C */ xx::Ref<xx::Frame> frame;
 
@@ -83,6 +88,34 @@ namespace Msgs {
 			bool FillCrossInc();
 		};
 
+
+		struct BlockWayout {
+			uint8_t up : 1;			// 1
+			uint8_t right : 1;		// 2
+			uint8_t down : 1;		// 4
+			uint8_t left : 1;		// 8
+		};
+
+		struct Block : xx::SerdeBase, xx::SpaceABi32Item<Block> {
+			static constexpr uint16_t cTypeId{ 4 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			xx::Weak<Scene> scene;
+			XYi pos{}, halfSize{};
+			BlockWayout wayout;
+
+			virtual ~Block();
+			void Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
+
+			void FillWayout();
+
+			bool IntersectCircle(XYi const& p, int32_t radius);
+			void PushOut(Monster* m);
+
+			void Draw();
+		};
 	}
 
 	namespace C2S {	// id == 100 ~ 199
