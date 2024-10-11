@@ -122,6 +122,7 @@ namespace Msgs {
 
 			virtual ~Block();
 			void Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
+			void Init(Scene* scene_, XYi const& pos_, XYi const& siz_);
 
 			void FillWayout();
 

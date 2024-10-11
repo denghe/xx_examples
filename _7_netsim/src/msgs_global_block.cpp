@@ -36,14 +36,20 @@ namespace Msgs {
             scene_->blockSpace.Add(this);
         }
 
+        void Block::Init(Scene* scene_, XYi const& pos_, XYi const& siz_) {
+            auto half = siz_ / 2;
+            Init(scene_, pos_.x - half.x, pos_.y - half.y, pos_.x + half.x, pos_.y + half.y);
+        }
+
         void Block::FillWayout() {
             // search neighbor & set wayout bit
             auto& bs = scene->blockSpace;
             (uint8_t&)wayout = 0;
-            auto left = bs.ExistsPoint(_aabb.from + XYi{ -5, 0 });
-            auto up = bs.ExistsPoint(_aabb.from + XYi{ 0, -5 });
-            auto right = bs.ExistsPoint(_aabb.to + XYi{ 5, 0 });
-            auto down = bs.ExistsPoint(_aabb.to + XYi{ 0, 5 });
+            static constexpr int dx{ 5 }, dy{ 5 };
+            auto left = bs.ExistsPoint(_aabb.from + XYi{ -dx, -dy });
+            auto up = bs.ExistsPoint(_aabb.from + XYi{ dy, -dx });
+            auto right = bs.ExistsPoint(_aabb.to + XYi{ dx, -dy });
+            auto down = bs.ExistsPoint(_aabb.to + XYi{ -dy, dx });
             if (left > 0 && up > 0 && right > 0 && down > 0) {
                 wayout.left = left == 1;
                 wayout.up = up == 1;

@@ -83,11 +83,11 @@ top1                  2                    3
  │                                         │ 
  │                                         │ 
  │                                         │ 
- │                                         │ 
- │                                         │ 
- │middle1                                  │2
- │                                         │ 
- │                                         │ 
+ │          c1-------c2------c3            │ 
+ │          c4               c5            │ 
+ │middle1   c4                             │2
+ │          c4               c6            │ 
+ │          c7-------c8------c9            │ 
  │                                         │ 
  │                                         │ 
  │                                         │ 
@@ -113,6 +113,27 @@ bottom1               2                    3
 			xx::MakeShared<Block>()->Init(this, mapEdgeMin.x, mapEdgeMax.y, mapEdgeMax.x - 1, mapSize.y - 1);
 			// bottom3
 			xx::MakeShared<Block>()->Init(this, mapEdgeMax.x, mapEdgeMax.y, mapSize.x - 1, mapSize.y - 1);
+
+
+			// c1
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4, -cellSize * 4 }, cellSize);
+			// c2
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ 0, -cellSize * 4 }, XYi{ cellSize * 7, cellSize });
+			// c3
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, -cellSize * 4 }, cellSize);
+			// c4
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4, 0 }, XYi{ cellSize, cellSize * 7 });
+			// c5
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, -cellSize * 2.5 }, XYi{ cellSize, cellSize * 2 });
+			// c6
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, cellSize * 2.5 }, XYi{ cellSize, cellSize * 2 });
+			// c7
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4,cellSize * 4 }, cellSize);
+			// c8
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ 0, cellSize * 4 }, XYi{ cellSize * 7, cellSize });
+			// c9
+			xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, cellSize * 4 }, cellSize);
+
 
 			for(auto& o : blocks) {
 				o->FillWayout();
