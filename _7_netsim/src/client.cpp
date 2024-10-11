@@ -119,10 +119,14 @@ LabPlay:
 		if (gLooper.mouse.PressedMBLeft()) {
 			if (gLooper.mouse.pos.x >= min.x && gLooper.mouse.pos.x <= max.x
 			 && gLooper.mouse.pos.y >= min.y && gLooper.mouse.pos.y <= max.y) {
-				for (int i = 0; i < 10; ++i) {
-					auto msg = xx::MakeShared<Msgs::C2S::Summon>();
-					msg->bornPos = scene->monsterSpace.max / 2 + (gLooper.mouse.pos - centerPos) / gLooper.camera.scale;
-					Send(Msgs::gSerdeInfo.MakeDataShared(msg));
+				auto pos = Msgs::Global::Scene::mapSize_2 + (gLooper.mouse.pos - centerPos) / gLooper.camera.scale;
+				if (pos.x > 0 && pos.x < Msgs::Global::Scene::mapSize.x
+					&& pos.y > 0 && pos.y < Msgs::Global::Scene::mapSize.y) {
+					for (int i = 0; i < 5; ++i) {
+						auto msg = xx::MakeShared<Msgs::C2S::Summon>();
+						msg->bornPos = pos;
+						Send(Msgs::gSerdeInfo.MakeDataShared(msg));
+					}
 				}
 			}
 		}

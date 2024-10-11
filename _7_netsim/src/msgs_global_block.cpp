@@ -7,13 +7,13 @@ namespace Msgs {
 
         void Block::WriteTo(xx::Data& d) const {
             d.Write(
-                scene, pos, halfSize, (uint8_t&)wayout
+                scene, pos, halfSize, (uint8_t&)wayout, _aabb.from, _aabb.to
             );
         }
 
         int32_t Block::ReadFrom(xx::Data_r& dr) {
             return dr.Read(
-                scene, pos, halfSize, (uint8_t&)wayout
+                scene, pos, halfSize, (uint8_t&)wayout, _aabb.from, _aabb.to
             );
         }
 
@@ -40,10 +40,10 @@ namespace Msgs {
             // search neighbor & set wayout bit
             auto& bs = scene->blockSpace;
             (uint8_t&)wayout = 0;
-            auto left = bs.ExistsPoint(_aabb.from + XYi{ -1, 0 });
-            auto up = bs.ExistsPoint(_aabb.from + XYi{ 0, -1 });
-            auto right = bs.ExistsPoint(_aabb.to + XYi{ 1, 0 });
-            auto down = bs.ExistsPoint(_aabb.to + XYi{ 0, 1 });
+            auto left = bs.ExistsPoint(_aabb.from + XYi{ -5, 0 });
+            auto up = bs.ExistsPoint(_aabb.from + XYi{ 0, -5 });
+            auto right = bs.ExistsPoint(_aabb.to + XYi{ 5, 0 });
+            auto down = bs.ExistsPoint(_aabb.to + XYi{ 0, 5 });
             if (left > 0 && up > 0 && right > 0 && down > 0) {
                 wayout.left = left == 1;
                 wayout.up = up == 1;
@@ -57,27 +57,27 @@ namespace Msgs {
             }
         }
 
-        XX_INLINE bool Block::IntersectCircle(XYi const& p, int32_t radius) {
+        bool Block::IntersectCircle(XYi const& p, int32_t radius) {
             return xx::Calc::Intersects::BoxCircle<int32_t>(pos.x, pos.y, halfSize.x, halfSize.y, p.x, p.y, radius);
         }
 
-        XX_INLINE void Block::PushOut(Monster* m) {
+        bool Block::PushOut(Monster* m, XYi& mp) {
             assert(m);
             auto idx = (uint8_t&)wayout;
             assert(idx < _countof(xx::TranslateControl::pushOutFuncsInt32));
-            xx::TranslateControl::pushOutFuncsInt32[idx](pos.x, pos.y, halfSize.x, halfSize.y, m->_x, m->_y, m->_radius);
+            return xx::TranslateControl::pushOutFuncsInt32[idx](pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius);
         }
 
-        XX_INLINE void Block::Draw() {
-            auto& f = *gRes.quad;
-            auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 1);
-            q.pos = gLooper.camera.ToGLPos(_aabb.from);
-            q.anchor = { 0, 1 };
-            q.scale = (_aabb.to - _aabb.from) / 64 * gLooper.camera.scale;
+        void Block::Draw() {
+            auto& frame = *gRes.quad;
+            auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame.tex->GetValue(), 1);
+            q.pos = (XY{ pos } - Msgs::Global::Scene::mapSize_2f) * gLooper.camera.scale;
+            q.anchor = { 0.5f, 0.5f };
+            q.scale = XY{ halfSize } / 32.f * gLooper.camera.scale;
             q.radians = 0;
             q.colorplus = 1;
             q.color = { 55,55,55,255 };
-            q.texRect.data = f.textureRect.data;
+            q.texRect.data = frame.textureRect.data;
         }
 
 	}

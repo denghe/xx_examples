@@ -102,7 +102,7 @@ void Looper::BeforeUpdate() {
 	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.01f)) {
 		camera.IncreaseScale(0.01f, 5);
 	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.01f)) {
-		camera.DecreaseScale(0.01f,  gLooper.height_2 / (96 * 400 - 1000));
+		camera.DecreaseScale(0.01f,  gLooper.height_2 / float(Msgs::Global::Scene::mapSize.y));
 	}
 }
 

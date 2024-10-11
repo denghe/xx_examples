@@ -80,6 +80,32 @@ namespace Msgs {
 			return true;
 		}
 
+		int Monster::BlocksLimit() {
+			auto& sg = scene->blockSpace;
+			XYi pos{ x.ToInt(), y.ToInt() };
+			xx::FromTo<XYi> aabb{ pos - _radius, pos + _radius };	// pos to aabb
+			if (!sg.TryLimitAABB(aabb)) {
+				return -1;	// bug?
+			}
+			bool changed{};
+			sg.ForeachAABB(aabb);	// search
+			for (auto b : sg.results) {
+				if (b->PushOut(this, pos)) {
+					changed = true;
+				}
+			}
+			sg.ClearResults();	// after search
+			if (pos.IsOutOfEdge(Msgs::Global::Scene::mapSize)) {
+				return -1;	// bug?
+			}
+			if (changed) {
+				x = pos.x;
+				y = pos.y;
+				return 1;
+			}
+			return 0;
+		}
+
 		bool Monster::Update() {
 			frameIndex = frameIndex + cFrameIndexStep;
 			if (frameIndex >= cFrameIndexMax) {
@@ -88,6 +114,7 @@ namespace Msgs {
 
 			auto ox = x;
 			auto oy = y;
+			auto oradius = radius;
 
 			// get round count and find move wayout
 			auto count = scene->monsterSpace.cells[_sgcIdx].count;
@@ -107,12 +134,24 @@ namespace Msgs {
 			} else {
 				runawayMode = false;
 				if (FillCrossInc()) {
+					// distance limit protect
+					if (incX * incX + incY * incY > cMovementSpeed3Pow2) {
+						auto r = FX64::Atan2Fastest(incY, incX);
+						incX = r.CosFastest() * cMovementSpeed3;
+						incY = r.SinFastest() * cMovementSpeed3;
+					}
 					x += incX;
 					y += incY;
 				}
 			}
 
-			if (ox != x || oy != y) {
+		LabRetry:
+			if (auto r = BlocksLimit(); r == -1)
+				return true;
+			else if (r == 1)
+				goto LabRetry;
+
+			if (ox != x || oy != y || oradius != radius) {
 				_x = x.ToInt();
 				_y = y.ToInt();
 				_radius = radius.ToInt();
@@ -132,7 +171,7 @@ namespace Msgs {
 
 			auto& frame = gRes.monster_[frameIndex.ToInt()];
 			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
-			q.pos = (XY{ x.ToFloat(), y.ToFloat() } - scene->monsterSpace.max / 2) * gLooper.camera.scale;
+			q.pos = (XY{ x.ToFloat(), y.ToFloat() } - Msgs::Global::Scene::mapSize_2f) * gLooper.camera.scale;
 			q.anchor = *frame->anchor;
 			q.scale = (radius / cResRadius).ToFloat() * gLooper.camera.scale;
 			q.radians = radians.ToFloat();

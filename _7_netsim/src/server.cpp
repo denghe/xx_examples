@@ -106,6 +106,14 @@ LabPlay:
 					Log_Msg_ReadError<Msgs::C2S::Summon>();
 					co_return;
 				} else {
+
+					// safe auth
+					if (msg->bornPos.x < 0 || msg->bornPos.x >= Msgs::Global::Scene::mapSize.x
+						|| msg->bornPos.y < 0 || msg->bornPos.y >= Msgs::Global::Scene::mapSize.y) {
+						Log_Msg_ReadError<Msgs::C2S::Summon>();
+						co_return;
+					}
+
 					if (auto& player = server->scene->RefPlayer(clientId); !player) {
 						Log_Msg_Handle_Summon_Error_Player_Not_Found();
 						co_return;

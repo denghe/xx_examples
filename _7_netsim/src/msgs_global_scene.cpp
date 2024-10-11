@@ -39,7 +39,6 @@ namespace Msgs {
 			// restore serialize blockSpace from blocks
 			blockSpace.Init(monsterSpace.numRows, monsterSpace.numCols, monsterSpace.cellSize);
 			for (auto& o : blocks) {
-				o->Fill_aabb(o->pos, o->halfSize * 2);
 				blockSpace.Add(o);
 			}
 
@@ -74,17 +73,6 @@ namespace Msgs {
 		void Scene::Init() {
 			assert(gIsServer);
 			frameNumber = 1000;	// skip some cast delay
-
-			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482
-
-			static constexpr int32_t numRows{ 482 };
-			static constexpr int32_t numCols{ 482 };
-			static constexpr int32_t cellSize{ 96 };
-			static constexpr int32_t maxItemSize{ 64 };
-			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
-			static constexpr XYi mapSize_2{ mapSize / 2 };
-			static constexpr XYi mapEdgeMin{ maxItemSize * 2, maxItemSize * 2 };
-			static constexpr XYi mapEdgeMax{ mapSize - mapEdgeMin };
 
 			monsterSpace.Init(numRows, numCols, cellSize);
 			blockSpace.Init(numRows, numCols, cellSize);
@@ -144,6 +132,7 @@ bottom1               2                    3
 					monsters.SwapRemoveAt(i);
 				}
 			}
+
 			// auto generate some ?
 			//if (frameNumber % ((int)gLooper.fps * 3) == 0) {
 			//	monsters.Emplace().Emplace<Monster>()->Init(this);
@@ -152,12 +141,13 @@ bottom1               2                    3
 
 		void Scene::Draw() {
 			gLooper.fb.DrawTo(tex, xx::RGBA8_Black, [this] {
-				for (int32_t i = 0, e = monsters.len; i < e; ++i) {
-					auto& m = monsters[i];
-					m->Draw();
+				for (auto e = blocks.len, i = 0; i < e; ++i) {
+					blocks[i]->Draw();
 				}
 
-				// todo: draw blocks
+				for (auto e = monsters.len, i = 0; i < e; ++i) {
+					monsters[i]->Draw();
+				}
 			});
 		}
 
