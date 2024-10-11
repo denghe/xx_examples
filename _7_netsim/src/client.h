@@ -7,6 +7,7 @@ struct Client {
 	xx::Shared<Msgs::Global::Scene> scene;
 	XY centerPos;
 	XY min{}, max{};
+	int64_t nextGenTime{};
 
 	int32_t clientId{};
 	xx::Weak<Peer> peer;

@@ -104,6 +104,11 @@ void Looper::BeforeUpdate() {
 	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.01f)) {
 		camera.DecreaseScale(0.01f,  gLooper.height_2 / float(Msgs::Global::Scene::mapSize.y));
 	}
+
+	// quickly reset support
+	if (gLooper.KeyDownDelay(xx::KeyboardKeys::R, 0.1f)) {
+		server.Emplace()->Init();
+	}
 }
 
 void Looper::Update() {

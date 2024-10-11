@@ -36,7 +36,8 @@ namespace Msgs {
 
 			x = bornPos.x;
 			y = bornPos.y;
-			radius = scene_->rnd.Next<int32_t>(32, 65);
+			//radius = scene_->rnd.Next<int32_t>(16, 33);
+			radius = 32;
 			radians = FX64{ scene_->rnd.Next<int32_t>(-c314159, c314159) } * c1_100000;
 			frameIndex.SetZero();
 

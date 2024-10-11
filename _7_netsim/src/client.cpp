@@ -6,6 +6,7 @@
 void Client::CleanUp() {
 	Close();
 	clientId = 0;
+	nextGenTime = 0;
 	scene.Reset();
 	// ...
 }
@@ -116,13 +117,23 @@ LabPlay:
 
 	// handle local input
 	if (!gLooper.mouseEventHandler) {
-		if (gLooper.mouse.PressedMBLeft()) {
-			if (gLooper.mouse.pos.x >= min.x && gLooper.mouse.pos.x <= max.x
-			 && gLooper.mouse.pos.y >= min.y && gLooper.mouse.pos.y <= max.y) {
-				auto pos = Msgs::Global::Scene::mapSize_2 + (gLooper.mouse.pos - centerPos) / gLooper.camera.scale;
-				if (pos.x > 0 && pos.x < Msgs::Global::Scene::mapSize.x
-					&& pos.y > 0 && pos.y < Msgs::Global::Scene::mapSize.y) {
-					for (int i = 0; i < 5; ++i) {
+		if (gLooper.mouse.pos.x >= min.x && gLooper.mouse.pos.x <= max.x
+			&& gLooper.mouse.pos.y >= min.y && gLooper.mouse.pos.y <= max.y) {
+			auto pos = Msgs::Global::Scene::mapSize_2 + (gLooper.mouse.pos - centerPos) / gLooper.camera.scale;
+			if (pos.x > 0 && pos.x < Msgs::Global::Scene::mapSize.x
+				&& pos.y > 0 && pos.y < Msgs::Global::Scene::mapSize.y) {
+				if (gLooper.mouse.PressedMBLeft()) {
+					if (nextGenTime <= scene->frameNumber) {
+						nextGenTime = scene->frameNumber + 10;
+						for (int i = 0; i < 1; ++i) {
+							auto msg = xx::MakeShared<Msgs::C2S::Summon>();
+							msg->bornPos = pos;
+							Send(Msgs::gSerdeInfo.MakeDataShared(msg));
+						}
+					}
+				}
+				if (gLooper.mouse.PressedMBRight()) {
+					for (int i = 0; i < 10; ++i) {
 						auto msg = xx::MakeShared<Msgs::C2S::Summon>();
 						msg->bornPos = pos;
 						Send(Msgs::gSerdeInfo.MakeDataShared(msg));

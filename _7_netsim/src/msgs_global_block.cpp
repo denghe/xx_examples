@@ -23,7 +23,7 @@ namespace Msgs {
             }
         }
 
-        void Block::Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY) {
+        Block& Block::Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY) {
             scene = xx::WeakFromThis(scene_);
             scene_->blocks.Emplace(xx::SharedFromThis(this));
             _aabb.from.x = minX;
@@ -34,11 +34,13 @@ namespace Msgs {
             halfSize = siz / 2;
             pos = _aabb.from + halfSize;
             scene_->blockSpace.Add(this);
+            return *this;
         }
 
-        void Block::Init(Scene* scene_, XYi const& pos_, XYi const& siz_) {
+        Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& siz_) {
             auto half = siz_ / 2;
-            Init(scene_, pos_.x - half.x, pos_.y - half.y, pos_.x + half.x, pos_.y + half.y);
+            assert(half * 2 == siz_);
+            return Init(scene_, pos_.x - half.x, pos_.y - half.y, pos_.x + half.x, pos_.y + half.y);
         }
 
         void Block::FillWayout() {
@@ -46,7 +48,7 @@ namespace Msgs {
             auto& bs = scene->blockSpace;
             (uint8_t&)wayout = 0;
             static constexpr int dx{ 5 }, dy{ 5 };
-            auto left = bs.ExistsPoint(_aabb.from + XYi{ -dx, -dy });
+            auto left = bs.ExistsPoint(_aabb.from + XYi{ -dx, dy });
             auto up = bs.ExistsPoint(_aabb.from + XYi{ dy, -dx });
             auto right = bs.ExistsPoint(_aabb.to + XYi{ dx, -dy });
             auto down = bs.ExistsPoint(_aabb.to + XYi{ -dy, dx });
@@ -61,6 +63,10 @@ namespace Msgs {
                 wayout.right = right == 0;
                 wayout.down = down == 0;
             }
+        }
+
+        void Block::AuthWayout(BlockWayout bw) {
+            assert((uint8_t&)bw == (uint8_t&)wayout);
         }
 
         bool Block::IntersectCircle(XYi const& p, int32_t radius) {

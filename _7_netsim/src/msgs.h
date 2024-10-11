@@ -17,10 +17,10 @@ namespace Msgs {
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
-			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482
+			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482		/ 64 = 724
 			static constexpr int32_t numRows{ 20 };
 			static constexpr int32_t numCols{ 20 };
-			static constexpr int32_t cellSize{ 96 };
+			static constexpr int32_t cellSize{ 64 };
 			static constexpr int32_t cellSize_2{ cellSize / 2 };
 			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
 			static constexpr XYi mapSize_2{ mapSize / 2 };
@@ -121,10 +121,11 @@ namespace Msgs {
 			BlockWayout wayout;
 
 			virtual ~Block();
-			void Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
-			void Init(Scene* scene_, XYi const& pos_, XYi const& siz_);
+			Block& Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
+			Block& Init(Scene* scene_, XYi const& pos_, XYi const& siz_);
 
 			void FillWayout();
+			void AuthWayout(BlockWayout bw);
 
 			bool IntersectCircle(XYi const& p, int32_t radius);
 			bool PushOut(Monster* m, XYi& mp);
