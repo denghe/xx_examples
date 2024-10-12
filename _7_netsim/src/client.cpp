@@ -124,7 +124,7 @@ LabPlay:
 				&& pos.y > 0 && pos.y < Msgs::Global::Scene::mapSize.y) {
 				if (gLooper.mouse.PressedMBLeft()) {
 					if (nextGenTime <= scene->frameNumber) {
-						nextGenTime = scene->frameNumber + 10;
+						nextGenTime = scene->frameNumber + 1;
 						for (int i = 0; i < 1; ++i) {
 							auto msg = xx::MakeShared<Msgs::C2S::Summon>();
 							msg->bornPos = pos;

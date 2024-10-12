@@ -80,7 +80,7 @@ namespace Msgs {
 			static constexpr FX64 c0_001{ 0.001 };
 
 			static constexpr int32_t cNeighbourMaxCount{ 7 };
-			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps * 2 };
+			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps >> 1 };
 
 			static constexpr FX64 cResRadius{ 32 };
 			static constexpr FX64 cFrameIndexStep{ 0.1 };

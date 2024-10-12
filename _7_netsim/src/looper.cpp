@@ -217,5 +217,14 @@ void Looper::Draw() {
 	xx::LineStrip().FillBoxPoints({}, {2, height}).SetColor(xx::RGBA8_Red).Draw();
 	xx::LineStrip().FillBoxPoints({}, {width, 2}).SetColor(xx::RGBA8_Red).Draw();
 
+	std::string str;
+	if (!server) {
+		str = xx::ToString("Please click [server reset] first.");
+	} else {
+		str = xx::ToString("Z, X zoom, MBtn1 or 2 drop. count = ", server->scene->monsters.Count());
+	}
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw(XY{ 0, gLooper.windowSize_2.y - 5 } + XY{ 2, 2 }, str, xx::RGBA8_White, { 0.5f, 1 });
+
 	DrawNode(ui);
 }

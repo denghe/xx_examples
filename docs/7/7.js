@@ -791,14 +791,14 @@ var Y,
       return 0;
     },
     ka: a => Y.activeTexture(a),
-    B: (a, b) => {
+    C: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
     c: (a, b) => {
       35051 == a ? Y.Oa = b : 35052 == a && (Y.Ja = b);
       Y.bindBuffer(a, kb[b]);
     },
-    E: (a, b) => {
+    y: (a, b) => {
       Y.bindFramebuffer(a, lb[b]);
     },
     b: (a, b) => {
@@ -814,10 +814,10 @@ var Y,
     },
     F: a => Y.clear(a),
     G: (a, b, c, d) => Y.clearColor(a, b, c, d),
-    aa: a => {
+    da: a => {
       Y.compileShader(X[a]);
     },
-    fa: () => {
+    ia: () => {
       var a = ob(V),
         b = Y.createProgram();
       b.name = a;
@@ -826,7 +826,7 @@ var Y,
       V[a] = b;
       return a;
     },
-    ca: a => {
+    fa: a => {
       var b = ob(X);
       X[b] = Y.createShader(a);
       return b;
@@ -857,7 +857,7 @@ var Y,
         b && (Y.deleteShader(b), X[a] = null);
       }
     },
-    ha: (a, b) => {
+    $: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = D[b + 4 * c >> 2],
           g = W[d];
@@ -882,28 +882,28 @@ var Y,
     f: a => {
       Y.enableVertexAttribArray(a);
     },
-    ga: (a, b, c, d, g) => {
+    _: (a, b, c, d, g) => {
       Y.framebufferTexture2D(a, b, c, W[d], g);
     },
     o: (a, b) => {
       pb(a, b, "createBuffer", kb);
     },
-    y: (a, b) => {
+    z: (a, b) => {
       pb(a, b, "createFramebuffer", lb);
     },
     k: (a, b) => {
       pb(a, b, "createTexture", W);
     },
-    C: (a, b) => {
+    E: (a, b) => {
       pb(a, b, "createVertexArray", mb);
     },
     h: (a, b) => Y.getAttribLocation(V[a], L(b)),
-    da: (a, b, c, d) => {
+    ga: (a, b, c, d) => {
       a = Y.getProgramInfoLog(V[a]);
       b = 0 < b && d ? P(a, y, d, b) : 0;
       c && (D[c >> 2] = b);
     },
-    A: (a, b, c) => {
+    B: (a, b, c) => {
       if (c && !(a >= jb)) if (a = V[a], 35716 == b) D[c >> 2] = Y.getProgramInfoLog(a).length + 1;else if (35719 == b) {
         if (!a.Ga) for (b = 0; b < Y.getProgramParameter(a, 35718); ++b) a.Ga = Math.max(a.Ga, Y.getActiveUniform(a, b).name.length + 1);
         D[c >> 2] = a.Ga;
@@ -915,15 +915,15 @@ var Y,
         D[c >> 2] = a.Fa;
       } else D[c >> 2] = Y.getProgramParameter(a, b);
     },
-    $: (a, b, c, d) => {
+    ca: (a, b, c, d) => {
       a = Y.getShaderInfoLog(X[a]);
       b = 0 < b && d ? P(a, y, d, b) : 0;
       c && (D[c >> 2] = b);
     },
-    z: (a, b, c) => {
+    A: (a, b, c) => {
       c && (35716 == b ? (a = Y.getShaderInfoLog(X[a]), D[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = Y.getShaderSource(X[a]), D[c >> 2] = a ? a.length + 1 : 0) : D[c >> 2] = Y.getShaderParameter(X[a], b));
     },
-    t: (a, b) => {
+    u: (a, b) => {
       b = L(b);
       if (a = V[a]) {
         var c = a,
@@ -950,17 +950,17 @@ var Y,
       }
       return -1;
     },
-    ea: a => {
+    ha: a => {
       a = V[a];
       Y.linkProgram(a);
       a.Da = 0;
       a.Sa = {};
     },
-    ba: (a, b, c, d) => {
+    ea: (a, b, c, d) => {
       for (var g = "", k = 0; k < b; ++k) g += L(G[c + 4 * k >> 2], d ? G[d + 4 * k >> 2] : void 0);
       Y.shaderSource(X[a], g);
     },
-    u: (a, b, c, d, g, k, f, n, m) => {
+    t: (a, b, c, d, g, k, f, n, m) => {
       if (Y.Ja) Y.texImage2D(a, b, c, d, g, k, f, n, m);else if (m) {
         var t = n - 5120;
         t = 0 == t ? ka : 1 == t ? y : 2 == t ? z : 4 == t ? D : 6 == t ? ma : 5 == t || 28922 == t || 28520 == t || 30779 == t || 30782 == t ? G : la;
@@ -986,7 +986,7 @@ var Y,
       Y.vertexAttribPointer(a, b, c, !!d, g, k);
     },
     w: (a, b, c, d) => Y.viewport(a, b, c, d),
-    _: function (a, b, c, d) {
+    ba: function (a, b, c, d) {
       var g = document.createElement("canvas");
       g.width = b;
       g.height = c;
@@ -1164,7 +1164,7 @@ var Y,
       ka.set(B, a);
       return B.length - 1;
     },
-    ia: function (a, b) {
+    aa: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);
