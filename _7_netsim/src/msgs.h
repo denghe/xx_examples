@@ -18,8 +18,10 @@ namespace Msgs {
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482		/ 64 = 724
-			static constexpr int32_t numRows{ 20 };
-			static constexpr int32_t numCols{ 20 };
+			static constexpr FX64 limitFX64{ 46340 };
+			static constexpr FX64 limitFX64N{ -limitFX64 };
+			static constexpr int32_t numRows{ 30 };
+			static constexpr int32_t numCols{ 30 };
 			static constexpr int32_t cellSize{ 64 };
 			static constexpr int32_t cellSize_2{ cellSize / 2 };
 			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
@@ -28,6 +30,8 @@ namespace Msgs {
 			static constexpr int32_t itemSize{ 64 };
 			static constexpr XYi mapEdgeMin{ itemSize * 2 - 1 };
 			static constexpr XYi mapEdgeMax{ mapSize - mapEdgeMin };
+			static constexpr FX64 mapSizeX{ mapSize.x };
+			static constexpr FX64 mapSizeY{ mapSize.y };
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
@@ -84,6 +88,7 @@ namespace Msgs {
 			static constexpr FX64 cMovementSpeed{ 20 };
 			static constexpr FX64 cMovementSpeed2{ cMovementSpeed * 2 };
 			static constexpr FX64 cMovementSpeed3{ cMovementSpeed * 3 };
+			static constexpr FX64 cMovementSpeed3n{ -cMovementSpeed3 };
 			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 			static constexpr FX64 cMovementSpeed3Pow2{ cMovementSpeed3 * cMovementSpeed3 };
 
@@ -96,7 +101,7 @@ namespace Msgs {
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
-			virtual bool Update();	// true: kill
+			virtual int32_t Update();	// non zero: kill
 			/* C */ void Draw();
 			bool FillCrossInc();
 			int BlocksLimit();
@@ -119,6 +124,7 @@ namespace Msgs {
 			xx::Weak<Scene> scene;
 			XYi pos{}, halfSize{};
 			BlockWayout wayout;
+			bool isMapCorner{};
 
 			virtual ~Block();
 			Block& Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);

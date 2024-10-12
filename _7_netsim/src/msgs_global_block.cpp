@@ -7,13 +7,13 @@ namespace Msgs {
 
         void Block::WriteTo(xx::Data& d) const {
             d.Write(
-                scene, pos, halfSize, (uint8_t&)wayout, _aabb.from, _aabb.to
+                scene, pos, halfSize, (uint8_t&)wayout, isMapCorner, _aabb.from, _aabb.to
             );
         }
 
         int32_t Block::ReadFrom(xx::Data_r& dr) {
             return dr.Read(
-                scene, pos, halfSize, (uint8_t&)wayout, _aabb.from, _aabb.to
+                scene, pos, halfSize, (uint8_t&)wayout, isMapCorner, _aabb.from, _aabb.to
             );
         }
 
@@ -52,6 +52,12 @@ namespace Msgs {
             auto up = bs.ExistsPoint(_aabb.from + XYi{ dy, -dx });
             auto right = bs.ExistsPoint(_aabb.to + XYi{ dx, -dy });
             auto down = bs.ExistsPoint(_aabb.to + XYi{ -dy, dx });
+
+            isMapCorner = left == 2 && up == 2
+                || up == 2 && right == 2
+                || right == 2 && down == 2
+                || down == 2 && left == 2;
+
             if (left > 0 && up > 0 && right > 0 && down > 0) {
                 wayout.left = left == 1;
                 wayout.up = up == 1;
@@ -77,7 +83,7 @@ namespace Msgs {
             assert(m);
             auto idx = (uint8_t&)wayout;
             assert(idx < _countof(xx::TranslateControl::pushOutFuncsInt32));
-            return xx::TranslateControl::pushOutFuncsInt32[idx](pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius);
+            return xx::TranslateControl::pushOutFuncsInt32[idx](pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius, isMapCorner);
         }
 
         void Block::Draw() {

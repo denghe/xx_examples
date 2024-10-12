@@ -97,7 +97,7 @@ namespace Msgs {
 			}
 			sg.ClearResults();	// after search
 			if (pos.IsOutOfEdge(Msgs::Global::Scene::mapSize)) {
-				return -1;	// bug?
+				return -2;	// bug?
 			}
 			if (changed) {
 				x = pos.x;
@@ -107,15 +107,17 @@ namespace Msgs {
 			return 0;
 		}
 
-		bool Monster::Update() {
+		int32_t Monster::Update() {
 			frameIndex = frameIndex + cFrameIndexStep;
 			if (frameIndex >= cFrameIndexMax) {
 				frameIndex = frameIndex - cFrameIndexMax;
 			}
 
+			// backup
 			auto ox = x;
 			auto oy = y;
 			auto oradius = radius;
+			int32_t incCalcLine{};
 
 			// get round count and find move wayout
 			auto count = scene->monsterSpace.cells[_sgcIdx].count;
@@ -126,6 +128,7 @@ namespace Msgs {
 					auto r = FX64{ scene->rnd.Next<int32_t>(-c314159, c314159) } * c1_100000;
 					incX = r.CosFastest() * cMovementSpeed3;
 					incY = r.SinFastest() * cMovementSpeed3;
+					incCalcLine = __LINE__;
 				}
 				x += incX;
 				y += incY;
@@ -135,30 +138,51 @@ namespace Msgs {
 			} else {
 				runawayMode = false;
 				if (FillCrossInc()) {
+					// value edge protect
+					if (incX < cMovementSpeed3n) incX = cMovementSpeed3n;
+					else if (incX > cMovementSpeed3) incX = cMovementSpeed3;
+					if (incY < cMovementSpeed3n) incY = cMovementSpeed3n;
+					else if (incY > cMovementSpeed3) incY = cMovementSpeed3;
+
 					// distance limit protect
 					if (incX * incX + incY * incY > cMovementSpeed3Pow2) {
 						auto r = FX64::Atan2Fastest(incY, incX);
 						incX = r.CosFastest() * cMovementSpeed3;
 						incY = r.SinFastest() * cMovementSpeed3;
+						incCalcLine = __LINE__;
+					} else {
+						incCalcLine = __LINE__;
 					}
 					x += incX;
 					y += incY;
 				}
 			}
 
-		LabRetry:
-			if (auto r = BlocksLimit(); r == -1)
-				return true;
-			else if (r == 1)
-				goto LabRetry;
+			// map edge protect
+			if (x < 0)
+				x = 0;
+			else if (x >= Msgs::Global::Scene::mapSizeX)
+				x = Msgs::Global::Scene::mapSizeX;
+			if (y < 0) 
+				y = 0;
+			else if (y >= Msgs::Global::Scene::mapSizeY)
+				y = Msgs::Global::Scene::mapSizeY;
 
+			// block push
+			for (int i = 0; i < 3; ++i) {
+				if (auto r = BlocksLimit(); r < 0)
+					return r;
+				else if (r == 0) break;
+			}
+
+			// changed? update space index
 			if (ox != x || oy != y || oradius != radius) {
 				_x = x.ToInt();
 				_y = y.ToInt();
 				_radius = radius.ToInt();
 				scene->monsterSpace.Update(this);
 			}
-			return false;
+			return 0;
 		}
 
 		void Monster::Draw() {

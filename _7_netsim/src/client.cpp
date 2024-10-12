@@ -133,7 +133,7 @@ LabPlay:
 					}
 				}
 				if (gLooper.mouse.PressedMBRight()) {
-					for (int i = 0; i < 10; ++i) {
+					for (int i = 0; i < 50; ++i) {
 						auto msg = xx::MakeShared<Msgs::C2S::Summon>();
 						msg->bornPos = pos;
 						Send(Msgs::gSerdeInfo.MakeDataShared(msg));
