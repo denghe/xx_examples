@@ -16,7 +16,7 @@ namespace Battle {
 		timeout = cTimeout;
 		runawayMode = {};
 		color = xx::RGBA8_White;
-		BlocksLimit();
+		BlocksLimit();	// todo: if < 0  ???
 	}
 
 };

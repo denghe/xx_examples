@@ -42,11 +42,13 @@ namespace Battle {
 
 		if (color == xx::RGBA8_White) {
 			if (blocksLimitCount < 5) {
-				if (BlocksLimit()) return -1;
+				if (BlocksLimit() < 0)
+					return -__LINE__;
 				else ++blocksLimitCount;
 			}
 		} else {
-			if (BlocksLimit()) return -1;
+			if (BlocksLimit() < 0)
+				return -__LINE__;
 		}
 		if (posBak == pos) {
 			return 0;

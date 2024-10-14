@@ -2,11 +2,11 @@
 
 namespace Battle {
 
-	XX_INLINE bool Monster::BlocksLimit() {
+	XX_INLINE int32_t Monster::BlocksLimit() {
 		auto& sg = gScene->blocks;
 		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };	// pos to aabb
 		if (!sg.TryLimitAABB(aabb)) {
-			return true;	// bug?
+			return -1;	// bug?
 		}
 		sg.ClearResults();
 		sg.ForeachAABB(aabb);	// search
@@ -14,9 +14,9 @@ namespace Battle {
 			b->PushOut(*this);
 		}
 		if (pos.IsOutOfEdge(gLooper.mapSize)) {
-			return true;	// bug?
+			return -2;	// bug?
 		}
-		return false;
+		return 0;
 	}
 
 };

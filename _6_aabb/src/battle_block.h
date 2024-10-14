@@ -16,15 +16,15 @@ namespace Battle {
 		xx::FromTo<XY> aabb{};
 		XY pos{}, halfSize{};
 		BlockWayout wayout;
+		bool isMapCorner{};
 
 		void Init(float minX, float minY, float maxX, float maxY);
-		void Init(xx::FromTo<XY> const& aabb_);
 		void Init(XY const& centerPos, XY const& size);
 
 		void FillWayout(Scene* scene);
 
 		bool IntersectCircle(XY const& p, float radius);
-		void PushOut(Monster& m);
+		bool PushOut(Monster& m);
 
 		void Draw();
 	};

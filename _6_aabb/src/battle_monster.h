@@ -19,6 +19,6 @@ namespace Battle {
 		void Init(XY const& pos_ = gLooper.mapSize_2);
 		int32_t Update();
 		bool FillCrossInc();			// cross: return true
-		bool BlocksLimit();				// return true: limit fail. out of area
+		int32_t BlocksLimit();				// return true: limit fail. out of area
 	};
 }
