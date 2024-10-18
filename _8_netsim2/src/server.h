@@ -49,4 +49,6 @@ struct Server {
 
 	xx::Weak<Peer> Accept(xx::Shared<Client> const& client_);
 	void SendToAll(xx::DataShared ds);
+
+	void Gen250Monsters();
 };

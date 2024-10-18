@@ -158,3 +158,31 @@ bool Peer::Send(xx::DataShared ds) {
 	client->recvs.Emplace(std::move(ds));
 	return true;
 }
+
+
+void Server::Gen250Monsters() {
+	if (peers.Empty()) return;
+	auto clientId = peers[0]->clientId;
+	if (!clientId) return;
+	auto& player = scene->RefPlayer(clientId);
+
+	static constexpr float radius{ Msgs::Global::Scene::mapSize_2.y * 0.8f };
+	static constexpr float radiansStep{ M_PI * 2 / 250.f };
+	for (int i = 0; i < 250; ++i) {
+		auto cos = std::cos(radiansStep * i);// *radius;
+		auto sin = std::sin(radiansStep * i);
+		auto posX = Msgs::Global::Scene::mapSize_2.x + cos * radius;
+		auto posY = Msgs::Global::Scene::mapSize_2.x + sin * radius;
+		XYi bornPos{ posX, posY };
+		xx::MakeShared<Msgs::Global::Monster>()->Init(scene, player, bornPos);
+
+		// make & notice all
+		{
+			auto rtv = xx::MakeShared<Msgs::S2C::Summon>();
+			rtv->clientId = peers[0]->clientId;
+			rtv->frameNumber = scene->frameNumber;
+			rtv->bornPos = bornPos;
+			SendToAll(Msgs::gSerdeInfo.MakeDataShared(rtv));
+		}
+	}
+}

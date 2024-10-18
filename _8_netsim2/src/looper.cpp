@@ -18,7 +18,7 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx_examples_7_netsim";
+	gLooper.title = "xx_examples_8_netsim2";
 	gLooper.Init();
 	//gLooper.Run<true>();	// auto sleep
 	gLooper.Run();
@@ -79,6 +79,23 @@ xx::Task<> Looper::MainTask() {
 	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client4 remove", [&]() {
 		client4.Reset();
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"camera fill", [&]() {
+		camera.SetScale(gLooper.height_2 / float(Msgs::Global::Scene::mapSize.y));
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"camra 1:1", [&]() {
+		camera.SetScale(1);
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"gen 250 monsters", [&]() {
+		if (server) {
+			server->Gen250Monsters();
+		}
 	});
 
 	clearColor = { 33, 33, 33, 255 };

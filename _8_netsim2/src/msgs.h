@@ -20,8 +20,8 @@ namespace Msgs {
 			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482		/ 64 = 724
 			static constexpr FX64 limitFX64{ 46340 };
 			static constexpr FX64 limitFX64N{ -limitFX64 };
-			static constexpr int32_t numRows{ 30 };
-			static constexpr int32_t numCols{ 30 };
+			static constexpr int32_t numRows{ 120 };
+			static constexpr int32_t numCols{ 120 };
 			static constexpr int32_t cellSize{ 64 };
 			static constexpr int32_t cellSize_2{ cellSize / 2 };
 			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
@@ -91,10 +91,12 @@ namespace Msgs {
 			static constexpr FX64 cMovementSpeed3n{ -cMovementSpeed3 };
 			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 			static constexpr FX64 cMovementSpeed3Pow2{ cMovementSpeed3 * cMovementSpeed3 };
+			static constexpr FX64 cMovementSpeed3Pow2m100{ cMovementSpeed3Pow2 * 100 };
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
 			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
+			FX64 tarX{}, tarY{};
 			/* T */ FX64 incX{}, incY{}, newX{}, newY{};
 
 			virtual ~Monster();

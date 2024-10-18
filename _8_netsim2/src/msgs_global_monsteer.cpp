@@ -9,6 +9,7 @@ namespace Msgs {
 			return dr.Read(
 				scene, owner
 				, x, y, radius, radians, frameIndex
+				, tarX, tarY
 			);
 		}
 
@@ -16,6 +17,7 @@ namespace Msgs {
 			d.Write(
 				scene, owner
 				, x, y, radius, radians, frameIndex
+				, tarX, tarY
 			);
 		}
 
@@ -30,8 +32,15 @@ namespace Msgs {
 			scene = xx::WeakFromThis(scene_);
 			owner = owner_.ToWeak();
 
+			auto offsetBornPos = scene->mapSize_2 - bornPos;
+			auto tarPos = scene->mapSize_2 + offsetBornPos;
+
 			x = bornPos.x;
 			y = bornPos.y;
+
+			tarX = tarPos.x;
+			tarY = tarPos.y;
+
 			//radius = scene_->rnd.Next<int32_t>(16, 33);
 			radius = 32;
 			radians = FX64{ scene_->rnd.Next<int32_t>(-c314159, c314159) } * c1_100000;
@@ -109,17 +118,26 @@ namespace Msgs {
 				frameIndex = frameIndex - cFrameIndexMax;
 			}
 
-			// todo: RVO2
+			// make move to tar's vect
+			auto dx = tarX - x;
+			auto dy = tarY - y;
+			auto mag2 = dx * dx + dy * dy;
+			FX64 vx{}, vy{};
+			if (mag2 > FX64::One) {
+				auto _1_mag_s = mag2.RSqrtFastest() * cMovementSpeed;
+				vx = dx *_1_mag_s;
+				vy = dy *_1_mag_s;
+			}
 
 			if (FillCrossInc(x, y)) {
 				assert(incX < scene->limitFX64);
 				assert(incY < scene->limitFX64);
-				assert(incX * incX + incY * incY <= cMovementSpeed3Pow2);
-				newX = x + incX;
-				newY = y + incY;
+				assert(incX * incX + incY * incY <= cMovementSpeed3Pow2m100);
+				newX = x + incX + vx;
+				newY = y + incY + vy;
 			} else {
-				newX = x;
-				newY = y;
+				newX = x + vx;
+				newY = y + vy;
 			}
 
 			// map edge protect
