@@ -86,8 +86,8 @@ namespace Battle {
 			return false;
 		} else {
 			// speed limit
-			if (inc.x * inc.x + inc.y * inc.y > cSpeed * cSpeed) {
-				inc = inc.Normalize() * cSpeed;
+			if (auto mag2 = inc.x * inc.x + inc.y * inc.y; mag2 > cSpeed * cSpeed) {
+				inc *= 1 / std::sqrt(mag2) * cSpeed;
 			}
 			return true;
 		}
