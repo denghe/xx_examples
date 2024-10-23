@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+﻿cmake_minimum_required(VERSION 3.10)
 
 # Default to release build if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -18,6 +18,7 @@ include_directories(
 	src/
 	../miniaudio
 	../nameof/include
+	../FixPointCS/Cpp
 	../zstd/lib
 	../stb
 	../glfw/include

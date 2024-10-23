@@ -1,12 +1,12 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "res_frames.h"
 
 xx::Task<> ResFrames::AsyncLoad(std::string picRoot, int32_t texSiz) {
-	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
+	std::vector<std::pair<std::string, xx::Ref<xx::Frame>*>> ffs;
 	co_return co_await AsyncLoad(ffs, picRoot, texSiz);
 }
 
-xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame>*>>& ffs, std::string picRoot, int32_t texSiz) {
+xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<xx::Frame>*>>& ffs, std::string picRoot, int32_t texSiz) {
 	ffs.emplace_back(picRoot + "bug_head1.png", &bug_head1);
 	ffs.emplace_back(picRoot + "bug_body.png", &bug_body);
 	ffs.emplace_back(picRoot + "bug_tail.png", &bug_tail);
@@ -24,7 +24,7 @@ xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame
 			++downloadCount;
 		});
 #else
-		*ff.second = EngineBase3::Instance().LoadFrame(ff.first);
+		*ff.second = xx::EngineBase3::Instance().LoadFrame(ff.first);
 #endif
 	}
 #ifdef __EMSCRIPTEN__
@@ -33,7 +33,7 @@ xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame
 
 	// batch combine textures
 	if (texSiz) {
-		auto ok = DynamicTexturePacker<>::Pack(ffs, texSiz);
+		auto ok = xx::DynamicTexturePacker<>::Pack(ffs, texSiz);
 		assert(ok);
 	}
 

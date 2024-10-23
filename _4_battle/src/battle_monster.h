@@ -12,7 +12,7 @@ namespace Battle {
 		int32_t health{}, maxHealth{};
 		int32_t frameIndex;
 		xx::RGBA8 color;
-		xx::SpaceWeak<Monster> target;
+		xx::SpaceGridWeak<Monster> target;
 		// ...
 
 		/***************************************************/

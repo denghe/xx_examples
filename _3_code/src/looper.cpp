@@ -30,7 +30,7 @@ xx::Task<> Looper::MainTask() {
 	co_await res.AsyncLoad("res/", 128);
 
 	s9cfg_btn.frame = res.button;
-	s9cfg_btn.texScale = { 2, 2 };
+	s9cfg_btn.texScale = { 0.9999, 0.9999 };
 	s9cfg_btn.center = { 2, 3, 2, 2 };
 	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
 

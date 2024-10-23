@@ -6,7 +6,8 @@ namespace Battle {
 		// calculate center point
 		pos = { pos_.x - cCharPixelWidth * cScale * len / 2, pos_.y };
 		// calculate move frame inc with random speed
-		inc = dist_.Normalize() * gLooper.rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
+		auto _1_mag = 1 / std::sqrt(dist_.x * dist_.x + dist_.y * dist_.y);
+		inc = dist_ * _1_mag * gLooper.rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
 		color = color_;
 		alpha = 1;
 		len = xx::ToStringEN(value_, buf.data());

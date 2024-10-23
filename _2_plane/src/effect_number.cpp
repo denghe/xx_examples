@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include "looper.h"
 
-XX_FORCE_INLINE void EffectNumber::FillBuf(int i) {
+XX_INLINE void EffectNumber::FillBuf(int i) {
 	len = {};
 	while (i >= 10) {
 		int a = i / 10;
@@ -16,7 +16,8 @@ void EffectNumber::Init(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color
 	texId = gRes.number_outlined_[0]->tex->GetValue();
 	FillBuf(value_);
 	pos = { pos_.x - cCharPixelWidth * cScale * len / 2, pos_.y };	// calculate center point
-	inc = dist_.Normalize() * gLooper.rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);	// calculate move frame inc with random speed
+	auto _1_mag = 1 / std::sqrt(dist_.x * dist_.x + dist_.y * dist_.y);
+	inc = dist_ * _1_mag * gLooper.rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);	// calculate move frame inc with random speed
 	color = color_;
 }
 
@@ -36,7 +37,7 @@ int EffectNumber::UpdateCore() {
 	COR_END
 }
 
-XX_FORCE_INLINE bool EffectNumber::Update() {
+XX_INLINE bool EffectNumber::Update() {
 	lineNumber = UpdateCore();
 	return lineNumber == 0;		// will remove by caller
 }

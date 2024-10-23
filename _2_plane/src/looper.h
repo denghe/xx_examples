@@ -19,9 +19,9 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::XY mapSize{}, mapSize_2{};
 	xx::TMX::Layer_Tile* layerBG{}, *layerTrees{};
 
-	xx::SpaceRingDiffuseData srdd;		// for sg.ForeachByRange
+	xx::SpaceGridRingDiffuseData srdd;		// for sg.ForeachByRange
 	xx::SpaceGrid<Monster> monsters;
-	xx::SpaceABGrid<Tree> trees;
+	xx::SpaceGridAB<Tree> trees;
 	xx::BlockLink<Bullet> bullets;
 	xx::BlockLink<Explosion> explosions;
 	EffectNumberManager enm;

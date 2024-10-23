@@ -4,20 +4,20 @@
 #include "res_frames.h"
 #include "bug.h"
 
-struct Looper : Engine<Looper>, Cfg {
+struct Looper : xx::Engine<Looper>, Cfg {
 
 	// all picture resource here
 	ResFrames res;
 
 	// button config
-	Scale9SpriteConfig s9cfg_btn;
-	Shared<Node> ui;
+	xx::Scale9SpriteConfig s9cfg_btn;
+	xx::Shared<xx::Node> ui;
 
-	Camera camera;
+	xx::Camera camera;
 
 	// bug container
-	SpaceGrid<BugBody> grid;
-	SpaceRingDiffuseData sgrdd;	// for grid.ForeachByRange
+	xx::SpaceGrid<BugBody> grid;
+	xx::SpaceGridRingDiffuseData sgrdd;	// for grid.ForeachByRange
 
 	// mouse states
 	bool dragging{}, lastMBState{};
@@ -31,9 +31,9 @@ struct Looper : Engine<Looper>, Cfg {
 	void CreateBug(XY const& headPos, int32_t len);
 	void MouseHit();
 
-	Task<> MainTask();		// loading logic
+	xx::Task<> MainTask();		// loading logic
 	void BeforeUpdate();
-	void Update();			// fixed update
+	void Update();				// fixed update
 	void Draw();
 };
 

@@ -28,7 +28,7 @@ bool Bullet::Update() {
 	// calc aabb
 	auto& sg = gLooper.trees;
 	xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };
-	if (!sg.TryFixAABB(aabb)) return true;
+	if (!sg.TryLimitAABB(aabb)) return true;
 
 	// check hit trees
 	sg.ForeachAABB(aabb);

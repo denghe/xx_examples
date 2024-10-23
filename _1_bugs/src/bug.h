@@ -13,12 +13,12 @@ struct BugBody {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cSpeed{ 300.f / Cfg::fps };
 	static constexpr float cDistance{ 10.f };
-	static constexpr float cMinRadians{ g2PI / 32.f };
+	static constexpr float cMinRadians{ xx::g2PI / 32.f };
 
 	XY pos, tarPos;
 	bool isTail{};
 	float radians{};
-	SpaceWeak<BugBody> head, prev;
+	xx::SpaceGridWeak<BugBody> head, prev;
 
 #ifdef UPDATE_USE_COROUTINE
 #else
@@ -27,7 +27,7 @@ struct BugBody {
 
 	XY GenRndPos(float radius, float safeRadius);
 
-	void Init(XY const& pos_, SpaceWeak<BugBody> head_, SpaceWeak<BugBody> prev_, bool isTail_ = false);
+	void Init(XY const& pos_, xx::SpaceGridWeak<BugBody> head_, xx::SpaceGridWeak<BugBody> prev_, bool isTail_ = false);
 
 	bool Update();
 #ifdef UPDATE_USE_COROUTINE

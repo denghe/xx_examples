@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "pch.h"
 
-struct Cfg : GDesign<1280, 800, 60> {
+struct Cfg : xx::GDesign<1280, 800, 60> {
 	static constexpr float maxItemSize{ 32 };
 	static constexpr float maxItemSize_2{ maxItemSize / 2 };
 
@@ -15,5 +15,5 @@ struct Cfg : GDesign<1280, 800, 60> {
 	static constexpr XY mapEdgeMin{ maxItemSize * 5, maxItemSize * 5 };
 	static constexpr XY mapEdgeMax{ mapSize - mapEdgeMin };
 
-	static constexpr FromTo<float> mouseHitRadius{ 20, 500 };
+	static constexpr xx::FromTo<float> mouseHitRadius{ 20, 500 };
 };

@@ -50,7 +50,7 @@ namespace Battle {
 		// calc aabb
 		auto& sg = scene->blocks;
 		xx::FromTo<xx::XY> aabb{ pos - cRadius, pos + cRadius };
-		if (!sg.TryFixAABB(aabb)) {
+		if (!sg.TryLimitAABB(aabb)) {
 			return true;
 		}
 		sg.ForeachAABB(aabb);

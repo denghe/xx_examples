@@ -6,12 +6,12 @@ namespace Battle {
 		int32_t frameNumber{};
 		int32_t autoId{};
 		int32_t genSpeed{ 10 };
-		xx::SpaceABGrid<Block> blocks;
+		xx::SpaceGridAB<Block> blocks;
 		xx::BlockLink<Explosion> explosions;
 		xx::BlockLink<BladeLight> bladeLights;
 		EffectTextManager effectTextManager;
 		xx::SpaceGrid<Monster> monsters;
-		xx::SpaceRingDiffuseData srdd;
+		xx::SpaceGridRingDiffuseData srdd;
 		xx::Rnd rnd;
 		xx::Task<> monsterEmitter;
 

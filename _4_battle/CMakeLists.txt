@@ -18,6 +18,7 @@ include_directories(
 	src/
 	../miniaudio
 	../nameof/include
+	../FixPointCS/Cpp
 	../zstd/lib
 	../stb
 	../glfw/include

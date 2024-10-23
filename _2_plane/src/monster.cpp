@@ -100,7 +100,8 @@ int32_t Monster::UpdateCore() {
 					auto r = gLooper.rnd.Next<float>(float(M_PI * 2));
 					newPos += xx::XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 				} else {
-					newPos += combineForce.Normalize() * cSpeed;
+					auto v = 1 / std::sqrt(combineForce.x * combineForce.x + combineForce.y * combineForce.y) * cSpeed;
+					newPos += combineForce * v;
 				}
 			} else {
 				if (dd > cSpeed * cSpeed) {							// follow shooter directly
@@ -113,7 +114,7 @@ int32_t Monster::UpdateCore() {
 			// calc aabb
 			auto& sg = gLooper.trees;
 			xx::FromTo<xx::XY> aabb{ newPos - cRadius, newPos + cRadius };
-			if (!sg.TryFixAABB(aabb)) COR_EXIT;
+			if (!sg.TryLimitAABB(aabb)) COR_EXIT;
 
 			// check block trees
 			sg.ForeachAABB(aabb);

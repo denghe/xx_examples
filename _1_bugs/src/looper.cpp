@@ -21,41 +21,41 @@ int32_t main() {
 #endif
 
 
-Task<> Looper::MainTask() {
+xx::Task<> Looper::MainTask() {
 	co_await res.AsyncLoad("res/", 128);
 
 	s9cfg_btn.frame = res.button;
-	s9cfg_btn.texScale = { 2, 2 };
+	s9cfg_btn.texScale = { 1, 1 };
 	s9cfg_btn.center = { 2, 3, 2, 2 };
 	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
 
 	ui.Emplace()->Init();
 
-	ui->MakeChildren<Button>()->Init(1, xy7m, xy7a, s9cfg_btn, U"clear", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m, xy7a, s9cfg_btn, U"clear", [&]() {
 		grid.Clear();
 		});
 
-	ui->MakeChildren<Button>()->Init(1, xy4m + XY{ 0, 100 }, xy4a, s9cfg_btn, U"+1", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy4m + XY{ 0, 100 }, xy4a, s9cfg_btn, U"+1", [&]() {
 		CreateBug(mapSize_2, rnd.Next<int32_t>(10, 200));
 		});
 
-	ui->MakeChildren<Button>()->Init(1, xy4m, xy4a, s9cfg_btn, U"+100", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy4m, xy4a, s9cfg_btn, U"+100", [&]() {
 		for (int32_t i = 0; i < 100; i++) {
 			CreateBug(mapSize_2, rnd.Next<int32_t>(10, 200));
 		}
 		});
 
-	ui->MakeChildren<Button>()->Init(1, xy4m - XY{ 0, 100 }, xy4a, s9cfg_btn, U"+1000", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy4m - XY{ 0, 100 }, xy4a, s9cfg_btn, U"+1000", [&]() {
 		for (int32_t i = 0; i < 1000; i++) {
 			CreateBug(mapSize_2, rnd.Next<int32_t>(10, 200));
 		}
 		});
 
-	ui->MakeChildren<Button>()->Init(1, xy2m - XY{ 5,0 }, { 1,0 }, s9cfg_btn, U"zoom in", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy2m - XY{ 5,0 }, { 1,0 }, s9cfg_btn, U"zoom in", [&]() {
 		camera.IncreaseScale(0.1f, 5);
 		});
 
-	ui->MakeChildren<Button>()->Init(1, xy2m + XY{ 5,0 }, { 0,0 }, s9cfg_btn, U"zoom out", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy2m + XY{ 5,0 }, { 0,0 }, s9cfg_btn, U"zoom out", [&]() {
 		camera.DecreaseScale(0.1f, 0.1f);
 		});
 
@@ -74,9 +74,9 @@ Task<> Looper::MainTask() {
 
 
 void Looper::CreateBug(XY const& headPos, int32_t len) {
-	auto& h = grid.EmplaceInit(headPos, SpaceWeak<BugBody>{}, SpaceWeak<BugBody>{}, false);
-	h.radians = -gPI * 0.5f;
-	SpaceWeak<BugBody> hgw(h);
+	auto& h = grid.EmplaceInit(headPos, xx::SpaceGridWeak<BugBody>{}, xx::SpaceGridWeak<BugBody>{}, false);
+	h.radians = -xx::gPI * 0.5f;
+	xx::SpaceGridWeak<BugBody> hgw(h);
 	auto gw = hgw;
 	for (int32_t i = 0; i < len; i++) {
 		auto& o = gw();
@@ -107,16 +107,16 @@ void Looper::BeforeUpdate() {
 	if (!ok) return;
 
 	// scale control
-	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
+	if (gLooper.KeyDownDelay(xx::KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
-	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.02f)) {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 
 	// resize mouse hit area size
-	if (gLooper.KeyDownDelay(KeyboardKeys::D, 0.01f)) {
+	if (gLooper.KeyDownDelay(xx::KeyboardKeys::D, 0.01f)) {
 		if (mouseHitRange > mouseHitRadius.from) mouseHitRange -= 5;
-	} else if (gLooper.KeyDownDelay(KeyboardKeys::A, 0.01f)) {
+	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::A, 0.01f)) {
 		if (mouseHitRange < mouseHitRadius.to) mouseHitRange += 5;
 	}
 
@@ -141,7 +141,7 @@ void Looper::BeforeUpdate() {
 				}
 			}
 		}
-		if (mbs && Calc::DistancePow2(lastMousePos, m.pos) > 16) {		// mouse down + moved == dragging
+		if (mbs && xx::Calc::DistancePow2(lastMousePos, m.pos) > 16) {		// mouse down + moved == dragging
 			dragging = true;
 		}
 		if (dragging) {
@@ -176,15 +176,15 @@ void Looper::Draw() {
 		});
 
 	// draw mouse hit area
-	LineStrip().FillCirclePoints({}, mouseHitRange, {}, 100, camera.scale)
+	xx::LineStrip().FillCirclePoints({}, mouseHitRange, {}, 100, camera.scale)
 		.SetPosition(gLooper.mouse.pos)
 		.Draw();
 
 	// draw tips
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   resize hit area: A / D    move map: mouse right button   hit bug: mouse left button", RGBA8_Green, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   resize hit area: A / D    move map: mouse right button   hit bug: mouse left button", xx::RGBA8_Green, { 0.5f, 1 });
 
-	auto str = ToString("total item count = ", grid.Count());
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
+	auto str = xx::ToString("total item count = ", grid.Count());
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, xx::RGBA8_Green, { 0.5f, 1 });
 
 	// draw ui
 	gLooper.DrawNode(ui);

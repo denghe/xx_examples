@@ -65,7 +65,7 @@ namespace Code2 {
 		double e{}, f{};
 
 		template<typename T>
-		XX_FORCE_INLINE T& GetMember(int32_t memberOffset) {
+		XX_INLINE T& GetMember(int32_t memberOffset) {
 			return *(T*)((char*)this + memberOffset);
 		}
 		// ((ptr - 1) / alignment + 1) * alignment
@@ -90,7 +90,7 @@ namespace Code2 {
 			/* 3 */	MakeCode<CEnd>().Init();
 		}
 
-		XX_FORCE_INLINE bool Update() {
+		XX_INLINE bool Update() {
 			assert(!codes.Empty());
 
 			auto& base = (CBase&)codes[codesCursor];

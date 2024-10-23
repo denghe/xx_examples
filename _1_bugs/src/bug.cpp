@@ -2,7 +2,7 @@
 #include "looper.h"
 #include "bug.h"
 
-void BugBody::Init(XY const& pos_, SpaceWeak<BugBody> head_, SpaceWeak<BugBody> prev_, bool isTail_) {
+void BugBody::Init(XY const& pos_, xx::SpaceGridWeak<BugBody> head_, xx::SpaceGridWeak<BugBody> prev_, bool isTail_) {
 	head = head_;
 	prev = prev_;
 	isTail = isTail_;
@@ -13,7 +13,7 @@ XY BugBody::GenRndPos(float radius, float safeRadius) {
 	float len = radius - safeRadius;
 	float radius_1 = 1 / radius;
 	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len * radius_1) + safeRadius * radius_1) * radius;
-	auto a = gLooper.rnd.Next<float>(gNPI, gPI);
+	auto a = gLooper.rnd.Next<float>(xx::gNPI, xx::gPI);
 	auto p = pos + XY{ std::cos(a) * r, std::sin(a) * r };
 	// map edge limit
 	if (p.x < Cfg::mapEdgeMin.x || p.x >= Cfg::mapEdgeMax.x
@@ -84,8 +84,8 @@ int BugBody::UpdateCore() {
 			{
 				auto v = tarPos - pos;
 				auto r = std::atan2(v.y, v.x);
-				RotateControl::Step(radians, r, cMinRadians);
-				if (v.Mag2() > cSpeed * cSpeed) {
+				xx::RotateControl::Step(radians, r, cMinRadians);
+				if (v.x * v.x + v.y * v.y > cSpeed * cSpeed) {
 					XY inc{ std::cos(radians), std::sin(radians) };
 					pos += inc * cSpeed;
 					gLooper.grid.Update(*this);
@@ -112,18 +112,18 @@ bool BugBody::Update() {
 }
 
 void BugBody::Draw() {
-	Ref<Frame>* f;
+	xx::Ref<xx::Frame>* f;
 	if (prev) {
 		if (isTail) f = &gRes.bug_tail;
 		else f = &gRes.bug_body;
 	} else {
 		f = &gRes.bug_head1;
 	}
-	auto& q = Quad::DrawOnce(*f);
+	auto& q = xx::Quad::DrawOnce(*f);
 	q.pos = gLooper.camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = gLooper.camera.scale * cScale;
 	q.radians = radians;
 	q.colorplus = 1;
-	q.color = RGBA8_White;
+	q.color = xx::RGBA8_White;
 }

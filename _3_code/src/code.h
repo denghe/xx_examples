@@ -12,7 +12,7 @@ namespace Code {
 		double e{}, f{};
 
 		template<typename T>
-		XX_FORCE_INLINE T& GetMember(int32_t memberOffset) {
+		XX_INLINE T& GetMember(int32_t memberOffset) {
 			return *(T*)((char*)this + memberOffset);
 		}
 	};
@@ -28,7 +28,7 @@ namespace Code {
 			this->typeId = 0;
 			this->nexts[0] = next;
 		}
-		XX_FORCE_INLINE int32_t Update(Context* c) {
+		XX_INLINE int32_t Update(Context* c) {
 			return 0;
 		}
 	};
@@ -47,7 +47,7 @@ namespace Code {
 			v = v_;
 		}
 
-		XX_FORCE_INLINE int32_t Update(Context* c) {
+		XX_INLINE int32_t Update(Context* c) {
 			auto& mv = c->GetMember<T>(memberOffset);
 			if (mv < v) return 0;
 			else if (mv == v) return 1;
@@ -65,7 +65,7 @@ namespace Code {
 			memberOffset = memberOffset_;
 		}
 
-		XX_FORCE_INLINE int32_t Update(Context* c) {
+		XX_INLINE int32_t Update(Context* c) {
 			auto& mv = c->GetMember<T>(memberOffset);
 			++mv;
 			return 0;
@@ -76,7 +76,7 @@ namespace Code {
 		void Init() {
 			this->typeId = 3;
 		}
-		XX_FORCE_INLINE int32_t Update(Context* c) {
+		XX_INLINE int32_t Update(Context* c) {
 			return -2;
 		}
 	};
@@ -112,7 +112,7 @@ namespace Code {
 			/* 3 */	MakeCode<Code_End>();
 		}
 
-		XX_FORCE_INLINE bool Update() {
+		XX_INLINE bool Update() {
 			assert(!codes.Empty());
 			assert(codesCursor < codes.len);
 
@@ -172,7 +172,7 @@ namespace Code {
 			/* 3 */	MakeCode<Code_End>().Init();
 		}
 
-		XX_FORCE_INLINE bool Update() {
+		XX_INLINE bool Update() {
 			assert(!codes.Empty());
 			assert(codesCursor < codes.len);
 
@@ -234,7 +234,7 @@ namespace Code {
 			/* 3 */	MakeCode<Code_End>().Init();
 		}
 
-		XX_FORCE_INLINE bool Update() {
+		XX_INLINE bool Update() {
 			assert(!codes.Empty());
 
 			auto& c = (Code_Base&)codes[codesCursor];
