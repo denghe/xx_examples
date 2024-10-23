@@ -18,8 +18,7 @@ namespace Msgs {
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482		/ 64 = 724
-			static constexpr FX64 limitFX64{ 46340 };
-			static constexpr FX64 limitFX64N{ -limitFX64 };
+			static constexpr FX64 maxDistance{ 46340 };
 			static constexpr int32_t numRows{ 120 };
 			static constexpr int32_t numCols{ 120 };
 			static constexpr int32_t cellSize{ 64 };
@@ -30,8 +29,7 @@ namespace Msgs {
 			static constexpr int32_t itemSize{ 64 };
 			static constexpr XYi mapEdgeMin{ itemSize * 2 - 1 };
 			static constexpr XYi mapEdgeMax{ mapSize - mapEdgeMin };
-			static constexpr FX64 mapSizeX{ mapSize.x };
-			static constexpr FX64 mapSizeY{ mapSize.y };
+			static constexpr XYp mapSizep{ mapSize };
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
@@ -50,6 +48,7 @@ namespace Msgs {
 			/* C */ void Draw();
 			xx::Shared<Player> const& RefPlayer(int32_t clientId);
 			void RemovePlayer(int32_t clientId);
+			void PosLimitByMapSize(XYp& p);
 		};
 
 		struct Player : xx::SerdeBase {
@@ -73,12 +72,6 @@ namespace Msgs {
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
-			static constexpr int32_t c314159{ 314159 };
-			static constexpr FX64 c1_100000{ FX64{1} / FX64{100000} };
-			static constexpr FX64 c0_1{ 0.1 };
-			static constexpr FX64 c0_01{ 0.01 };
-			static constexpr FX64 c0_001{ 0.001 };
-
 			static constexpr int32_t cNeighbourMaxCount{ 7 };
 			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps >> 1 };
 
@@ -86,26 +79,22 @@ namespace Msgs {
 			static constexpr FX64 cFrameIndexStep{ 0.1 };
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
 			static constexpr FX64 cMovementSpeed{ 20 };
-			static constexpr FX64 cMovementSpeed2{ cMovementSpeed * 2 };
 			static constexpr FX64 cMovementSpeed3{ cMovementSpeed * 3 };
-			static constexpr FX64 cMovementSpeed3n{ -cMovementSpeed3 };
-			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
-			static constexpr FX64 cMovementSpeed3Pow2{ cMovementSpeed3 * cMovementSpeed3 };
-			static constexpr FX64 cMovementSpeed3Pow2m100{ cMovementSpeed3Pow2 * 100 };
+			static constexpr FX64 cMovementSpeed3Pow2m100{ cMovementSpeed3 * cMovementSpeed3 * 100 };
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
-			FX64 x{}, y{}, radius{}, radians{}, frameIndex{};
-			FX64 tarX{}, tarY{};
-			/* T */ FX64 incX{}, incY{}, newX{}, newY{};
+			XYp pos, tarPos;
+			FX64 radius{}, radians{}, frameIndex{};
+			/* T */ XYp inc{}, newPos{};
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
 			virtual int32_t Update1();	// non zero: kill
 			virtual int32_t Update2();	// non zero: kill
 			/* C */ void Draw();
-			bool FillCrossInc(FX64 const& x_, FX64 const& y_);
-			int32_t BlocksLimit(FX64& x_, FX64& y_);
+			bool FillCrossInc(XYp const& pos_);
+			int32_t BlocksLimit(XYp& pos_);
 		};
 
 

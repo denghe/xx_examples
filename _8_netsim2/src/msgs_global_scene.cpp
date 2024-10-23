@@ -16,8 +16,8 @@ namespace Msgs {
 			for (int32_t i = 0, e = monsters.len; i < e; ++i) {
 				auto& m = monsters[i];
 				m->_sgc = &monsterSpace;
-				m->_x = m->x.ToInt();
-				m->_y = m->y.ToInt();
+				m->_x = m->pos.x.ToInt();
+				m->_y = m->pos.y.ToInt();
 				m->_radius = m->radius.ToInt();
 				m->_sgcIdx = monsterSpace.PosToCIdx(m->_x, m->_y);
 				size_t prev{}, next{};
@@ -215,6 +215,18 @@ bottom1               2                    3
 					monsters.SwapRemoveAt(k);
 				}
 			}
+		}
+
+		void Scene::PosLimitByMapSize(XYp& p) {
+			// map edge protect
+			if (p.x < FX64_0)
+				p.x = FX64_0;
+			else if (p.x >= mapSizep.x)
+				p.x = mapSizep.x;
+			if (p.y < FX64_0)
+				p.y = FX64_0;
+			else if (p.y >= mapSizep.y)
+				p.y = mapSizep.y;
 		}
 	}
 }
