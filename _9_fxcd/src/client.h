@@ -5,8 +5,6 @@
 struct Peer;
 struct Client {
 	xx::Shared<Msgs::Global::Scene> scene;
-	XY centerPos;
-	XY min{}, max{};
 	int64_t nextGenTime{};
 
 	int32_t clientId{};
@@ -15,7 +13,7 @@ struct Client {
 	xx::Task<> task;
 	xx::Task<> Task();
 
-	void Init(XY const& centerPos_);
+	void Init();
 	void Update();
 	void Draw();
 

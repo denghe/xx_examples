@@ -15,7 +15,7 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<2560, 1440, 60> {
 	bool ok{};								// true: loading finished
 
 	xx::Shared<Server> server;
-	xx::Shared<Client> client1, client2, client3, client4;
+	xx::Shared<Client> client1;
 
 	void AfterInit();
 	void BeforeUpdate();

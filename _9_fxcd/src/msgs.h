@@ -39,9 +39,6 @@ namespace Msgs {
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
 
-			/* C */ xx::Ref<xx::GLTexture> tex;
-			/* C */ xx::Ref<xx::Frame> frame;
-
 			void Init();
 			/* C */ void InitForDraw();	// todo: recursive call all childs
 			void Update();
@@ -126,6 +123,21 @@ namespace Msgs {
 			bool IntersectCircle(XYi const& p, int32_t radius);
 			bool PushOut(Monster* m, XYi& mp);
 
+			void Draw();
+		};
+
+		struct Bullet_Sector : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 5 };
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			xx::Weak<Scene> scene;
+			XYp pos{};
+			FX64 radius{}, radians{}, theta{};
+
+			Bullet_Sector& Init(Scene* scene_, XYp const& pos_, FX64 radius_, FX64 radians_, FX64 theta_);
+			bool IntersectCircle(XYp const& c, FX64 r);
 			void Draw();
 		};
 	}

@@ -114,44 +114,9 @@ bottom1               2                    3
 			// bottom3
 			xx::MakeShared<Block>()->Init(this, mapEdgeMax.x, mapEdgeMax.y, mapSize.x - 1, mapSize.y - 1);
 
-
-			//// c1
-			//auto& c1 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4, -cellSize * 4 }, cellSize);
-			//// c2
-			//auto& c2 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ 0, -cellSize * 4 }, XYi{ cellSize * 7, cellSize });
-			//// c3
-			//auto& c3 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, -cellSize * 4 }, cellSize);
-			//// c4
-			//auto& c4 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4, 0 }, XYi{ cellSize, cellSize * 7 });
-			//// c5
-			//auto& c5 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, -cellSize * 2.5 }, XYi{ cellSize, cellSize * 2 });
-			//// c6
-			//auto& c6 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, cellSize * 2.5 }, XYi{ cellSize, cellSize * 2 });
-			//// c7
-			//auto& c7 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ -cellSize * 4,cellSize * 4 }, cellSize);
-			//// c8
-			//auto& c8 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ 0, cellSize * 4 }, XYi{ cellSize * 7, cellSize });
-			//// c9
-			//auto& c9 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, cellSize * 4 }, cellSize);
-
-			//for(auto& o : blocks) {
-			//	o->FillWayout();
-			//}
-
-			//c1.AuthWayout({1,0,0,1});
-			//c2.AuthWayout({1,0,1,0});
-			//c3.AuthWayout({1,1,0,0});
-			//c4.AuthWayout({0,1,0,1});
-			//c5.AuthWayout({0,1,1,1});
-			//c6.AuthWayout({1,1,0,1});
-			//c7.AuthWayout({0,0,1,1});
-			//c8.AuthWayout({1,0,1,0});
-			//c9.AuthWayout({0,1,1,0});
 		}
 
 		void Scene::InitForDraw() {
-			tex = gLooper.fb.MakeTexture({ gLooper.width_2, gLooper.height_2 });
-			frame = xx::Frame::Create(tex);
 		}
 
 		void Scene::Update() {
@@ -176,15 +141,13 @@ bottom1               2                    3
 		}
 
 		void Scene::Draw() {
-			gLooper.fb.DrawTo(tex, xx::RGBA8_Black, [this] {
-				for (auto e = blocks.len, i = 0; i < e; ++i) {
-					blocks[i]->Draw();
-				}
+			for (auto e = blocks.len, i = 0; i < e; ++i) {
+				blocks[i]->Draw();
+			}
 
-				for (auto e = monsters.len, i = 0; i < e; ++i) {
-					monsters[i]->Draw();
-				}
-			});
+			for (auto e = monsters.len, i = 0; i < e; ++i) {
+				monsters[i]->Draw();
+			}
 		}
 
 		xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {

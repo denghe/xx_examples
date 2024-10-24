@@ -43,59 +43,7 @@ xx::Task<> Looper::MainTask() {
 
 	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client1 reset", [&]() {
-		client1.Emplace()->Init({ -width_2 / 2, height_2 / 2 });
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client1 remove", [&]() {
-		client1.Reset();
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client2 reset", [&]() {
-		client2.Emplace()->Init({ width_2 / 2, height_2 / 2 });
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client2 remove", [&]() {
-		client2.Reset();
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client3 reset", [&]() {
-		client3.Emplace()->Init({ -width_2 / 2, -height_2 / 2 });
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client3 remove", [&]() {
-		client3.Reset();
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client4 reset", [&]() {
-		client4.Emplace()->Init({ width_2 / 2, -height_2 / 2 });
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client4 remove", [&]() {
-		client4.Reset();
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"camera fill", [&]() {
-		camera.SetScale(gLooper.height_2 / float(Msgs::Global::Scene::mapSize.y));
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"camra 1:1", [&]() {
-		camera.SetScale(1);
-	});
-
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"gen 250 monsters", [&]() {
-		if (server) {
-			server->Gen250Monsters();
-		}
+		client1.Emplace()->Init();
 	});
 
 	clearColor = { 33, 33, 33, 255 };
@@ -148,27 +96,6 @@ void Looper::Update() {
 #endif
 	}
 
-	if (client2) {
-		client2->Update();
-#ifndef NDEDBUG
-		ds2 = Msgs::gSerdeInfo.MakeDataShared(client2->scene);
-#endif
-	}
-
-	if (client3) {
-		client3->Update();
-#ifndef NDEDBUG
-		ds3 = Msgs::gSerdeInfo.MakeDataShared(client3->scene);
-#endif
-	}
-
-	if (client4) {
-		client4->Update();
-#ifndef NDEDBUG
-		ds4 = Msgs::gSerdeInfo.MakeDataShared(client4->scene);
-#endif
-	}
-
 #ifndef NDEDBUG
 	// verify data
 	if (server && client1 && client1->Joined() && client1->recvs.Empty()) {
@@ -178,36 +105,6 @@ void Looper::Update() {
 			auto n = memcmp(ds.GetBuf(), ds1.GetBuf(), ds1.GetLen());
 			if (n) {
 				xx::CoutTN("memcmp(ds.GetBuf(), ds1.GetBuf(), ds1.GetLen()) = ", n);
-			}
-		}
-	}
-	if (server && client2 && client2->Joined() && client2->recvs.Empty()) {
-		if (ds.GetLen() != ds2.GetLen()) {
-			xx::CoutTN("ds.GetLen() != ds2.GetLen() ", ds.GetLen(), " ", ds2.GetLen());
-		} else {
-			auto n = memcmp(ds.GetBuf(), ds2.GetBuf(), ds2.GetLen());
-			if (n) {
-				xx::CoutTN("memcmp(ds.GetBuf(), ds2.GetBuf(), ds2.GetLen()) = ", n);
-			}
-		}
-	}
-	if (server && client3 && client3->Joined() && client3->recvs.Empty()) {
-		if (ds.GetLen() != ds3.GetLen()) {
-			xx::CoutTN("ds.GetLen() != ds3.GetLen() ", ds.GetLen(), " ", ds3.GetLen());
-		} else {
-			auto n = memcmp(ds.GetBuf(), ds3.GetBuf(), ds3.GetLen());
-			if (n) {
-				xx::CoutTN("memcmp(ds.GetBuf(), ds3.GetBuf(), ds3.GetLen()) = ", n);
-			}
-		}
-	}
-	if (server && client4 && client4->Joined() && client4->recvs.Empty()) {
-		if (ds.GetLen() != ds4.GetLen()) {
-			xx::CoutTN("ds.GetLen() != ds4.GetLen() ", ds.GetLen(), " ", ds4.GetLen());
-		} else {
-			auto n = memcmp(ds.GetBuf(), ds4.GetBuf(), ds4.GetLen());
-			if (n) {
-				xx::CoutTN("memcmp(ds.GetBuf(), ds4.GetBuf(), ds4.GetLen()) = ", n);
 			}
 		}
 	}
@@ -221,18 +118,6 @@ void Looper::Draw() {
 	if (client1) {
 		client1->Draw();
 	}
-	if (client2) {
-		client2->Draw();
-	}
-	if (client3) {
-		client3->Draw();
-	}
-	if (client4) {
-		client4->Draw();
-	}
-
-	xx::LineStrip().FillBoxPoints({}, {2, height}).SetColor(xx::RGBA8_Red).Draw();
-	xx::LineStrip().FillBoxPoints({}, {width, 2}).SetColor(xx::RGBA8_Red).Draw();
 
 	std::string str;
 	if (!server) {
