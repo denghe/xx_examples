@@ -117,7 +117,7 @@ LabPlay:
 
 	// handle local input
 	if (!gLooper.mouseEventHandler) {
-		auto pos = Msgs::Global::Scene::mapSize_2 + gLooper.mouse.pos / gLooper.camera.scale;
+		auto pos = Msgs::Global::Scene::mapSize_2 + gLooper.mouse.pos.FlipY() / gLooper.camera.scale;
 		if (gLooper.mouse.PressedMBLeft()) {
 			if (nextGenTime <= scene->frameNumber) {
 				nextGenTime = scene->frameNumber + 1;
@@ -128,16 +128,7 @@ LabPlay:
 				}
 			}
 		}
-		if (gLooper.mouse.PressedMBRight()) {
-			for (int i = 0; i < 5; ++i) {
-				auto msg = xx::MakeShared<Msgs::C2S::Summon>();
-				msg->bornPos = pos;
-				Send(Msgs::gSerdeInfo.MakeDataShared(msg));
-			}
-		}
 	}
-
-	// todo: mouse right drag
 
 	co_yield 0;
 	goto LabPlay;

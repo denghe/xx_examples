@@ -6,7 +6,7 @@ namespace Msgs {
 	namespace Global {
 
 		int32_t Scene::ReadFrom(xx::Data_r& dr) {
-			if (auto r = dr.Read(frameNumber, rnd, monsters, players, blocks)) return r;
+			if (auto r = dr.Read(frameNumber, rnd, monsters, players, blocks, bullets)) return r;
 
 			// serialize monsterSpace
 			auto& der = (xx::DataEx_r&)dr;
@@ -46,7 +46,7 @@ namespace Msgs {
 		}
 
 		void Scene::WriteTo(xx::Data& d) const {
-			d.Write(frameNumber, rnd, monsters, players, blocks);
+			d.Write(frameNumber, rnd, monsters, players, blocks, bullets);
 
 			// deserialize monsterSpace
 			auto& s = monsterSpace;
@@ -114,6 +114,9 @@ bottom1               2                    3
 			// bottom3
 			xx::MakeShared<Block>()->Init(this, mapEdgeMax.x, mapEdgeMax.y, mapSize.x - 1, mapSize.y - 1);
 
+
+			// make some bullet
+			bullets.Emplace().Emplace()->Init(this, mapSize_2 + XYi{ -300, 0 }, 500, 0, 0.5);
 		}
 
 		void Scene::InitForDraw() {
@@ -121,6 +124,14 @@ bottom1               2                    3
 
 		void Scene::Update() {
 			++frameNumber;
+
+			for (int32_t i = bullets.len - 1; i >= 0; --i) {
+				auto& o = bullets[i];
+				if (o->Update()) {
+					bullets.SwapRemoveAt(i);
+				}
+			}
+
 			for (int32_t i = monsters.len - 1; i >= 0; --i) {
 				auto& m = monsters[i];
 				if (m->Update1()) {
@@ -134,10 +145,11 @@ bottom1               2                    3
 				}
 			}
 
-			// auto generate some ?
+			// auto generate logic ?
 			//if (frameNumber % ((int)gLooper.fps * 3) == 0) {
 			//	monsters.Emplace().Emplace<Monster>()->Init(this);
 			//}
+			monsters.Emplace().Emplace<Monster>()->Init(this, {}, XYi{ 4060, 3818 });
 		}
 
 		void Scene::Draw() {
@@ -148,6 +160,11 @@ bottom1               2                    3
 			for (auto e = monsters.len, i = 0; i < e; ++i) {
 				monsters[i]->Draw();
 			}
+
+			for (auto e = bullets.len, i = 0; i < e; ++i) {
+				bullets[i]->Draw();
+			}
+
 		}
 
 		xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {

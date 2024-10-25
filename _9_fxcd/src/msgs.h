@@ -10,6 +10,7 @@ namespace Msgs {
 		struct Player;
 		struct Monster;
 		struct Block;
+		struct Bullet_Sector;
 
 		struct Scene : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 1 };
@@ -26,6 +27,7 @@ namespace Msgs {
 			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
 			static constexpr XYi mapSize_2{ mapSize / 2 };
 			static constexpr XY mapSize_2f{ mapSize_2 };
+			static constexpr XYp mapSize_2p{ mapSize_2 };
 			static constexpr int32_t itemSize{ 64 };
 			static constexpr XYi mapEdgeMin{ itemSize * 2 - 1 };
 			static constexpr XYi mapEdgeMax{ mapSize - mapEdgeMin };
@@ -38,6 +40,7 @@ namespace Msgs {
 			xx::Listi32<xx::Shared<Player>> players;
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
+			xx::Listi32<xx::Shared<Bullet_Sector>> bullets;
 
 			void Init();
 			/* C */ void InitForDraw();	// todo: recursive call all childs
@@ -137,7 +140,7 @@ namespace Msgs {
 			FX64 radius{}, radians{}, theta{};
 
 			Bullet_Sector& Init(Scene* scene_, XYp const& pos_, FX64 radius_, FX64 radians_, FX64 theta_);
-			bool IntersectCircle(XYp const& c, FX64 r);
+			virtual int32_t Update();	// non zero: kill
 			void Draw();
 		};
 	}

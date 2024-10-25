@@ -49,8 +49,8 @@ xx::Task<> Looper::MainTask() {
 	clearColor = { 33, 33, 33, 255 };
 	fb.Init();
 
-	camera.SetMaxFrameSize(64);			// unused
-	camera.SetOriginal(100 * 96 / 2);	// unused
+	camera.SetMaxFrameSize(64);
+	camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
 	ok = true;
@@ -73,6 +73,36 @@ void Looper::BeforeUpdate() {
 	// quickly reset support
 	if (gLooper.KeyDownDelay(xx::KeyboardKeys::R, 0.1f)) {
 		server.Emplace()->Init();
+	}
+
+	// move control
+	if (!gLooper.mouseEventHandler) {			// not in ui
+		auto& m = gLooper.mouse;
+		auto mbs = m.PressedMBRight();
+
+		auto mp = m.pos / camera.scale;
+		mp.x = -mp.x;
+
+		if (lastMBState != mbs) {
+			lastMBState = mbs;
+			if (mbs) {							// mouse down
+				mouseOffset = mp - camera.original;
+				lastMousePos = m.pos;
+			} else {							// mouse up
+				if (dragging) {					// dragging end
+					dragging = false;
+				} else {						// click
+					//MouseHit();
+				}
+			}
+		}
+		if (mbs && xx::Calc::DistancePow2(lastMousePos, m.pos) > 16) {		// mouse down + moved == dragging
+			dragging = true;
+		}
+		if (dragging) {
+			camera.original = mp - mouseOffset;
+		}
+
 	}
 }
 

@@ -26,12 +26,27 @@ namespace Msgs {
             return *this;
         }
 
-        bool Bullet_Sector::IntersectCircle(XYp const& c, FX64 r) {
-            return false;
+        int32_t Bullet_Sector::Update() {
+            XYp direction{ radians.CosFastest(), radians.SinFastest() };
+            auto& monsters = scene->monsters;
+            for (int32_t i = monsters.len - 1; i >= 0; --i) {
+                auto& m = monsters[i];
+                if (xx::Math::IsSectorCircleIntersect<XYp>(pos, radius, direction, theta, m->pos, m->radius)) {
+                    // todo: effect
+                    monsters.SwapRemoveAt(i);
+                }
+            }
+
+            return 0;
         }
 
         void Bullet_Sector::Draw() {
-            // todo
+            auto p = gLooper.camera.ToGLPos(pos.As<float>());
+            auto r = radius.ToFloat();
+            auto u = radians.ToFloat();
+            auto a = theta.ToFloat();
+
+            xx::LineStrip{}.FillSectorPoints(p,r,u,a, 100, gLooper.camera.scale).Draw();
         }
 
 	}

@@ -14,6 +14,10 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<2560, 1440, 60> {
 	xx::Camera camera;
 	bool ok{};								// true: loading finished
 
+	// mouse states
+	bool dragging{}, lastMBState{};
+	XY lastMousePos{}, mouseOffset{};
+
 	xx::Shared<Server> server;
 	xx::Shared<Client> client1;
 

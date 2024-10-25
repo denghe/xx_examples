@@ -33,7 +33,7 @@ namespace Msgs {
 			owner = owner_.ToWeak();
 
 			pos = bornPos;
-			tarPos = scene->mapSize - bornPos;
+			tarPos = scene->mapSize - bornPos;		// todo: search nearest bullet?
 
 			//radius = scene_->rnd.Next<int32_t>(16, 33);
 			radius = 32;
@@ -160,7 +160,7 @@ namespace Msgs {
 
 			auto& frame = gRes.monster_[frameIndex.ToInt()];
 			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
-			q.pos = (pos.As<float>() - Msgs::Global::Scene::mapSize_2f) * gLooper.camera.scale;
+			q.pos = gLooper.camera.ToGLPos(pos.As<float>());
 			q.anchor = *frame->anchor;
 			q.scale = (radius / cResRadius).ToFloat() * gLooper.camera.scale;
 			q.radians = radians.ToFloat();
