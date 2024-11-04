@@ -28,6 +28,7 @@ namespace Msgs {
 		}
 
 		Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
+			assert(scene_->monsters.Empty() || scene_->monsters.Top().pointer != this);	// auto add check
 			scene_->monsters.Emplace(xx::SharedFromThis(this));
 			scene = xx::WeakFromThis(scene_);
 			owner = owner_.ToWeak();
@@ -118,7 +119,7 @@ namespace Msgs {
 			if (FillCrossInc(pos)) {
 				assert(inc.x < scene->maxDistance);
 				assert(inc.y < scene->maxDistance);
-				assert(inc.x * inc.x + inc.y * inc.y <= cMovementSpeed3Pow2m100);
+				assert(inc.x * inc.x + inc.y * inc.y <= Msgs::Global::Scene::maxDistance);
 				newPos = pos + inc + v;
 			} else {
 				newPos = pos + v;

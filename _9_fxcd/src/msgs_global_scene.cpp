@@ -145,11 +145,7 @@ bottom1               2                    3
 				}
 			}
 
-			// auto generate logic ?
-			//if (frameNumber % ((int)gLooper.fps * 3) == 0) {
-			//	monsters.Emplace().Emplace<Monster>()->Init(this);
-			//}
-			monsters.Emplace().Emplace<Monster>()->Init(this, {}, XYi{ 4060, 3818 });
+			//xx::MakeShared<Msgs::Global::Monster>()->Init(this, {}, XYi{ 4060, 3818 });
 		}
 
 		void Scene::Draw() {

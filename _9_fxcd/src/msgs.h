@@ -33,6 +33,10 @@ namespace Msgs {
 			static constexpr XYi mapEdgeMax{ mapSize - mapEdgeMin };
 			static constexpr XYp mapSizep{ mapSize };
 
+			static constexpr FX64 fps{ (int)Looper::fps };
+			static constexpr FX64 fps60ratio{ fps / FX64{60} };
+			static constexpr FX64 _1_fps60ratio{ FX64{1} / fps60ratio };
+
 			int64_t frameNumber{};
 			xx::Rnd rnd;
 			xx::Spacei32<Monster> monsterSpace;
@@ -76,11 +80,9 @@ namespace Msgs {
 			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps >> 1 };
 
 			static constexpr FX64 cResRadius{ 32 };
-			static constexpr FX64 cFrameIndexStep{ 0.1 };
+			static constexpr FX64 cFrameIndexStep{ FX64{0.1} / Scene::fps60ratio };
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
-			static constexpr FX64 cMovementSpeed{ 20 };
-			static constexpr FX64 cMovementSpeed3{ cMovementSpeed * 3 };
-			static constexpr FX64 cMovementSpeed3Pow2m100{ cMovementSpeed3 * cMovementSpeed3 * 100 };
+			static constexpr FX64 cMovementSpeed{ FX64{5} / Scene::fps60ratio };
 
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
