@@ -134,9 +134,9 @@ bottom1               2                    3
 			//// c9
 			//auto& c9 = xx::MakeShared<Block>()->Init(this, mapSize_2 + XYi{ cellSize * 4, cellSize * 4 }, cellSize);
 
-			//for(auto& o : blocks) {
-			//	o->FillWayout();
-			//}
+			for(auto& o : blocks) {
+				o->FillWayout();
+			}
 
 			//c1.AuthWayout({1,0,0,1});
 			//c2.AuthWayout({1,0,1,0});

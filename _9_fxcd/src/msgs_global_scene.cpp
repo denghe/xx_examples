@@ -114,6 +114,9 @@ bottom1               2                    3
 			// bottom3
 			xx::MakeShared<Block>()->Init(this, mapEdgeMax.x, mapEdgeMax.y, mapSize.x - 1, mapSize.y - 1);
 
+			for (auto& o : blocks) {
+				o->FillWayout();
+			}
 
 			// make some bullet
 			bullets.Emplace().Emplace()->Init(this, mapSize_2 + XYi{ -300, 0 }, 500, 0, 0.5);
