@@ -12,7 +12,9 @@ namespace Msgs {
 		gSerdeInfo.Register<::Msgs::Global::Player>();
 		gSerdeInfo.Register<::Msgs::Global::Monster>();
 		gSerdeInfo.Register<::Msgs::Global::Block>();
+		gSerdeInfo.Register<::Msgs::Global::Bullet_Base>();
 		gSerdeInfo.Register<::Msgs::Global::Bullet_Sector>();
+		gSerdeInfo.Register<::Msgs::Global::Bullet_Box>();
 
 		gSerdeInfo.Register<::Msgs::C2S::Join>();
 		gSerdeInfo.Register<::Msgs::C2S::Summon>();

@@ -119,7 +119,11 @@ bottom1               2                    3
 			}
 
 			// make some bullet
-			bullets.Emplace().Emplace()->Init(this, mapSize_2 + XYi{ -300, 0 }, 500, 0, 0.5);
+			xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{-300, 0}
+			, 0, 500, 0.5);
+
+			xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{300, 0}
+			, 0, {500, 50});
 		}
 
 		void Scene::InitForDraw() {
