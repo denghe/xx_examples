@@ -131,26 +131,22 @@ bottom1               2                    3
 				break;
 			case 3: {
 				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
-				for (auto i = 0; i < 10; ++i) {
 					for (int32_t x = -n; x < n; x += step) {
 						for (int32_t y = -n; y < n; y += step) {
 							xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
 							, 0, 50, 0.5);
 						}
 					}
-				}
 				break;
 			}
 			case 4: {
 				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
-				for (auto i = 0; i < 10; ++i) {
 					for (int32_t x = -n; x < n; x += step) {
 						for (int32_t y = -n; y < n; y += step) {
 							xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
 							, 0, { 50, 10 });
 						}
 					}
-				}
 				break;
 			}
 			// ...
@@ -195,7 +191,7 @@ bottom1               2                    3
 				monsters[i]->Draw();
 			}
 
-#if 0
+#if 1
 			for (auto e = bullets.len, i = 0; i < e; ++i) {
 				bullets[i]->Draw();
 			}

@@ -11,34 +11,48 @@ namespace Msgs {
             scene = xx::WeakFromThis(scene_);
             pos = pos_;
             radians = radians_;
+            FillDirectionByRadians();
         }
 
-        /*********************************************************************************************/
+        void Bullet_Base::FillDirectionByRadians() {
+            direction.x = radians.CosFastest();
+            direction.y = radians.SinFastest();
+        }
 
-        void Bullet_Sector::WriteTo(xx::Data& d) const {
+        void Bullet_Base::WriteTo(xx::Data& d) const {
             d.Write(
-                scene, pos, radians, radius, theta
+                scene, pos, radians
             );
         }
 
-        int32_t Bullet_Sector::ReadFrom(xx::Data_r& dr) {
+        int32_t Bullet_Base::ReadFrom(xx::Data_r& dr) {
             if (auto r = dr.Read(
-                scene, pos, radians, radius, theta
+                scene, pos, radians
             ); r) return r;
             FillDirectionByRadians();
             return 0;
         }
 
-        void Bullet_Sector::FillDirectionByRadians() {
-            direction.x = radians.CosFastest();
-            direction.y = radians.SinFastest();
+        /*********************************************************************************************/
+
+        void Bullet_Sector::WriteTo(xx::Data& d) const {
+            Base::WriteTo(d);
+            d.Write(
+                radius, theta
+            );
+        }
+
+        int32_t Bullet_Sector::ReadFrom(xx::Data_r& dr) {
+            if (auto r = Base::ReadFrom(dr); r) return r;
+            return dr.Read(
+                radius, theta
+            );
         }
 
         Bullet_Sector& Bullet_Sector::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_) {
             Base::Init(scene_, pos_, radians_);
             radius = radius_;
             theta = theta_;
-            FillDirectionByRadians();
             return *this;
         }
 
@@ -79,7 +93,7 @@ namespace Msgs {
             auto u = radians.ToFloat();
             auto a = theta.ToFloat();
 
-            xx::LineStrip{}.FillSectorPoints({}, r, u, a, 100)
+            xx::LineStrip{}.FillSectorPoints({}, r, u, a, 5)
                 .SetPosition(p)
                 .SetScale(gLooper.camera.scale)
                 .SetRotate(radians.ToFloat())
@@ -89,28 +103,22 @@ namespace Msgs {
         /*********************************************************************************************/
 
         void Bullet_Box::WriteTo(xx::Data& d) const {
+            Base::WriteTo(d);
             d.Write(
-                scene, pos, radians, size
+                size
             );
         }
 
         int32_t Bullet_Box::ReadFrom(xx::Data_r& dr) {
-            if (auto r = dr.Read(
-                scene, pos, radians, size
-            ); r) return r;
-            FillDirectionByRadians();
-            return 0;
-        }
-
-        void Bullet_Box::FillDirectionByRadians() {
-            direction.x = radians.CosFastest();
-            direction.y = radians.SinFastest();
+            if (auto r = Base::ReadFrom(dr); r) return r;
+            return dr.Read(
+                size
+            );
         }
 
         Bullet_Box& Bullet_Box::Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_) {
             Base::Init(scene_, pos_, radians_);
             size = size_;
-            FillDirectionByRadians();
             return *this;
         }
 
@@ -132,7 +140,7 @@ namespace Msgs {
                     // todo: effect
                     m->Remove();
                 }
-                });
+            });
 #else
             for (int32_t i = monsters.len - 1; i >= 0; --i) {
                 auto& m = monsters[i];

@@ -6,6 +6,15 @@ namespace Msgs {
 	void InitSerdeInfo();
 
 	namespace Global {	// id = 1 ~ 99
+		struct EffectText;
+	}
+}
+namespace xx {
+	template<>
+	struct IsPod<Msgs::Global::EffectText, void> : std::true_type {};
+}
+namespace Msgs {
+	namespace Global {
 
 		struct Player;
 		struct Monster;
@@ -45,6 +54,7 @@ namespace Msgs {
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
 			xx::Listi32<xx::Shared<Bullet_Base>> bullets;
+			xx::Queue<EffectText> effectTexts;
 
 			void Init(int32_t sid);
 			/* C */ void InitForDraw();	// todo: recursive call all childs
@@ -70,6 +80,8 @@ namespace Msgs {
 			/* C */ void Draw();
 		};
 
+		// todo: Monster Add HP ? 
+
 		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
 			static constexpr uint16_t cTypeId{ 3 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
@@ -88,7 +100,7 @@ namespace Msgs {
 			xx::Weak<Player> owner;
 			XYp pos, tarPos;
 			FX64 radius{}, radians{}, frameIndex{};
-			int32_t indexAtContainer{-1};
+			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
 
 			virtual ~Monster();
@@ -125,16 +137,50 @@ namespace Msgs {
 			void Draw();
 		};
 
+		struct EffectText : xx::SerdeBase {
+			constexpr static float cCharPixelWidth{ 9.f };
+			constexpr static float cScale{ 3.f };
+
+			constexpr static int64_t cMoveDurationSecondsFrames{ int64_t(0.5 * Looper::fps) };
+			constexpr static float cMoveSpeedMin{ 20 / gLooper.fps };
+			constexpr static float cMoveSpeedMax{ 50 / gLooper.fps };
+
+			constexpr static float cFadeOutDurationSeconds{ 0.2f };
+			constexpr static float cFadeOutStep = 1.f / (cFadeOutDurationSeconds / gLooper.frameDelay);
+
+			xx::Weak<Scene> scene;
+			std::array<char, 12> buf{};		// value to string cache
+			int32_t len{};					// buf's len
+
+			int32_t lineNumber{};
+			xx::RGBA8 color{};
+			XY pos{}, inc{};
+			int64_t timeout{};
+			float alpha{};
+
+			// pos: original position,  dist: determine move direction
+			void Init(Scene* scene_, XY const& pos_, XY const& vec_, xx::RGBA8 color_, int32_t value_);
+
+			int32_t UpdateCore();
+			bool Update();
+
+			void Draw();
+		};
+
+		// todo: Bullet -> Projectile ? Weapon -> Item / Skill ?
+
 		struct Bullet_Base : xx::SerdeBase {
 			static constexpr uint16_t cTypeId{ 5 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
-			/* S */ void WriteTo(xx::Data& d) const override { assert(false); }
-			/* C */ int32_t ReadFrom(xx::Data_r& dr) override { assert(false); return 0; };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
 			xx::Weak<Scene> scene;
 			XYp pos{};
 			FX64 radians{};
+			/* T */ XYp direction{};	// { cos(radians), sin(radians) }
 
+			void FillDirectionByRadians();
 			void Init(Scene* scene_, XYp const& pos_, FX64 radians_);
 			virtual int32_t Update() { assert(false); return 0; };
 			virtual void Draw() { assert(false); };
@@ -150,9 +196,6 @@ namespace Msgs {
 			static constexpr FX64 cRotateStep{ FX64{0.05} / Scene::fps60ratio };
 
 			FX64 radius{}, theta{};
-			/* T */ XYp direction{};	// { cos(radians), sin(radians) }
-
-			void FillDirectionByRadians();
 			Bullet_Sector& Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_);
 			int32_t Update() override;	// non zero: kill
 			void Draw() override;
@@ -168,13 +211,12 @@ namespace Msgs {
 			static constexpr FX64 cRotateStep{ FX64{0.05} / Scene::fps60ratio };
 
 			XYp size{};
-			/* T */ XYp direction{};	// { cos(radians), sin(radians) }
 
-			void FillDirectionByRadians();
 			Bullet_Box& Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_);
 			int32_t Update() override;	// non zero: kill
 			void Draw() override;
 		};
+
 	}
 
 	namespace C2S {	// id == 100 ~ 199
