@@ -3,9 +3,9 @@
 #include "server.h"
 #include "client.h"
 
-void Server::Init() {
+void Server::Init(int32_t sid) {
 	gIsServer = true;
-	scene.Emplace()->Init();
+	scene.Emplace()->Init(sid);
 }
 
 void Server::Update() {

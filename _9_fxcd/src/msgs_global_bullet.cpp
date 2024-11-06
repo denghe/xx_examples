@@ -22,15 +22,23 @@ namespace Msgs {
         }
 
         int32_t Bullet_Sector::ReadFrom(xx::Data_r& dr) {
-            return dr.Read(
+            if (auto r = dr.Read(
                 scene, pos, radians, radius, theta
-            );
+            ); r) return r;
+            FillDirectionByRadians();
+            return 0;
+        }
+
+        void Bullet_Sector::FillDirectionByRadians() {
+            direction.x = radians.CosFastest();
+            direction.y = radians.SinFastest();
         }
 
         Bullet_Sector& Bullet_Sector::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_) {
             Base::Init(scene_, pos_, radians_);
             radius = radius_;
             theta = theta_;
+            FillDirectionByRadians();
             return *this;
         }
 
@@ -40,16 +48,27 @@ namespace Msgs {
             if (radians > FX64_PI) {
                 radians = FX64_N2PI + radians;
             }
-
-            XYp direction{ radians.CosFastest(), radians.SinFastest() };
+            FillDirectionByRadians();
             auto& monsters = scene->monsters;
+
+#if 1
+            // search monster by range
+            scene->monsterSpace.ForeachByRange(gLooper.sgrdd, pos.x.ToInt(), pos.y.ToInt(), radius.ToInt(), [&](Monster* m) {
+                if (xx::Math::IsSectorCircleIntersect<XYp>(pos, radius, direction, theta, m->pos, m->radius)) {
+                    // todo: effect
+                    m->Remove();
+                }
+            });
+#else
+            // foreach monster
             for (int32_t i = monsters.len - 1; i >= 0; --i) {
                 auto& m = monsters[i];
                 if (xx::Math::IsSectorCircleIntersect<XYp>(pos, radius, direction, theta, m->pos, m->radius)) {
                     // todo: effect
-                    monsters.SwapRemoveAt(i);
+                    m->Remove();
                 }
             }
+#endif
 
             return 0;
         }
@@ -102,15 +121,27 @@ namespace Msgs {
                 radians = FX64_N2PI + radians;
             }
             FillDirectionByRadians();
-
             auto& monsters = scene->monsters;
+
+            auto radius = size.x.ToInt();   // todo: + min(size.x, size.y) / 2 * 1.4 ?
+
+#if 1
+            // search monster by range
+            scene->monsterSpace.ForeachByRange(gLooper.sgrdd, pos.x.ToInt(), pos.y.ToInt(), radius, [&](Monster* m) {
+                if (xx::Math::IsBoxCircleIntersect<XYp>(pos, size, direction, m->pos, m->radius)) {
+                    // todo: effect
+                    m->Remove();
+                }
+                });
+#else
             for (int32_t i = monsters.len - 1; i >= 0; --i) {
                 auto& m = monsters[i];
                 if (xx::Math::IsBoxCircleIntersect<XYp>(pos, size, direction, m->pos, m->radius)) {
                     // todo: effect
-                    monsters.SwapRemoveAt(i);
+                    m->Remove();
                 }
             }
+#endif
 
             return 0;
         }

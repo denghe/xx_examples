@@ -10,6 +10,7 @@ namespace Msgs {
 				scene, owner
 				, pos, tarPos
 				, radius, radians, frameIndex
+				, indexAtContainer
 			);
 		}
 
@@ -18,17 +19,28 @@ namespace Msgs {
 				scene, owner
 				, pos, tarPos
 				, radius, radians, frameIndex
+				, indexAtContainer
 			);
 		}
 
 		Monster::~Monster() {
+			assert(indexAtContainer == -1);
 			if (_sgc) {
 				_sgc->Remove(this);
 			}
 		}
 
+		// auto sync indexAtContainer. swap remove with last
+		void Monster::Remove() {
+			auto bak = indexAtContainer;
+			scene->monsters.Top()->indexAtContainer = bak;
+			indexAtContainer = -1;
+			scene->monsters.SwapRemoveAt(bak);
+		}
+
 		Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
 			assert(scene_->monsters.Empty() || scene_->monsters.Top().pointer != this);	// auto add check
+			indexAtContainer = scene_->monsters.len;
 			scene_->monsters.Emplace(xx::SharedFromThis(this));
 			scene = xx::WeakFromThis(scene_);
 			owner = owner_.ToWeak();

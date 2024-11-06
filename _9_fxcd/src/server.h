@@ -44,7 +44,7 @@ struct Server {
 	int32_t autoClientId{};
 	xx::Listi32<xx::Shared<Peer>> peers;
 
-	void Init();
+	void Init(int32_t bulletId);
 	void Update();
 
 	xx::Weak<Peer> Accept(xx::Shared<Client> const& client_);

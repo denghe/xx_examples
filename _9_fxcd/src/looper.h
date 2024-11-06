@@ -9,7 +9,7 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<2560, 1440, 240> {
 	ResTpFrames res;
 	xx::Scale9SpriteConfig btnCfg;
 	xx::Shared<xx::Node> ui;
-	xx::FrameBuffer fb;						// for draw client
+	xx::SpaceGridRingDiffuseData sgrdd;		// shared by grid search
 	xx::Task<> MainTask();					// loading logic
 	xx::Camera camera;
 	bool ok{};								// true: loading finished

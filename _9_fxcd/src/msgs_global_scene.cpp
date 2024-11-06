@@ -70,7 +70,7 @@ namespace Msgs {
 			// skip serialize blockSpace ( because blocks never change )
 		}
 
-		void Scene::Init() {
+		void Scene::Init(int32_t sid) {
 			assert(gIsServer);
 			frameNumber = 1000;	// skip some cast delay
 
@@ -118,12 +118,43 @@ bottom1               2                    3
 				o->FillWayout();
 			}
 
-			// make some bullet
-			xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{-300, 0}
-			, 0, 500, 0.5);
 
-			xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{300, 0}
-			, 0, {500, 50});
+			// make some bullet
+			switch (sid) {
+			case 1:
+				xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{0, 0}
+				, 0, 500, 0.5);
+				break;
+			case 2:
+				xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{ 0, 0 }
+				, 0, { 500, 50 });
+				break;
+			case 3: {
+				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
+				for (auto i = 0; i < 10; ++i) {
+					for (int32_t x = -n; x < n; x += step) {
+						for (int32_t y = -n; y < n; y += step) {
+							xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
+							, 0, 50, 0.5);
+						}
+					}
+				}
+				break;
+			}
+			case 4: {
+				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
+				for (auto i = 0; i < 10; ++i) {
+					for (int32_t x = -n; x < n; x += step) {
+						for (int32_t y = -n; y < n; y += step) {
+							xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
+							, 0, { 50, 10 });
+						}
+					}
+				}
+				break;
+			}
+			// ...
+			}
 		}
 
 		void Scene::InitForDraw() {
@@ -164,10 +195,11 @@ bottom1               2                    3
 				monsters[i]->Draw();
 			}
 
+#if 0
 			for (auto e = bullets.len, i = 0; i < e; ++i) {
 				bullets[i]->Draw();
 			}
-
+#endif
 		}
 
 		xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {
@@ -192,12 +224,14 @@ bottom1               2                    3
 			}
 			assert(found);
 
+#if 0
 			// remove all owned monsters
 			for (auto k = monsters.len - 1; k >= 0; --k) {
 				if (monsters[k]->owner == p) {
 					monsters.SwapRemoveAt(k);
 				}
 			}
+#endif
 		}
 
 		void Scene::PosLimitByMapSize(XYp& p) {

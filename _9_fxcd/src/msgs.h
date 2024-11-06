@@ -46,7 +46,7 @@ namespace Msgs {
 			xx::Listi32<xx::Shared<Block>> blocks;
 			xx::Listi32<xx::Shared<Bullet_Base>> bullets;
 
-			void Init();
+			void Init(int32_t sid);
 			/* C */ void InitForDraw();	// todo: recursive call all childs
 			void Update();
 			/* C */ void Draw();
@@ -88,6 +88,7 @@ namespace Msgs {
 			xx::Weak<Player> owner;
 			XYp pos, tarPos;
 			FX64 radius{}, radians{}, frameIndex{};
+			int32_t indexAtContainer{-1};
 			/* T */ XYp inc{}, newPos{};
 
 			virtual ~Monster();
@@ -97,6 +98,7 @@ namespace Msgs {
 			/* C */ void Draw();
 			bool FillCrossInc(XYp const& pos_);
 			int32_t BlocksLimit(XYp& pos_);
+			void Remove();	// remove from scene.monsters & destroy
 		};
 
 		struct Block : xx::SerdeBase, xx::SpaceABi32Item<Block> {
@@ -148,7 +150,9 @@ namespace Msgs {
 			static constexpr FX64 cRotateStep{ FX64{0.05} / Scene::fps60ratio };
 
 			FX64 radius{}, theta{};
+			/* T */ XYp direction{};	// { cos(radians), sin(radians) }
 
+			void FillDirectionByRadians();
 			Bullet_Sector& Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_);
 			int32_t Update() override;	// non zero: kill
 			void Draw() override;

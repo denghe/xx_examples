@@ -36,18 +36,37 @@ xx::Task<> Looper::MainTask() {
 
 	ui.Emplace()->Init();
 
-	float y = 0;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"server reset", [&]() {
-		server.Emplace()->Init();
+	float x{}, y{};
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"s1", [&]() {
+		server.Emplace()->Init(1);
 	});
 
+	x += 60;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"s2", [&]() {
+		server.Emplace()->Init(2);
+	});
+
+	x += 60;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"s3", [&]() {
+		server.Emplace()->Init(3);
+	});
+
+	x += 60;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"s4", [&]() {
+		server.Emplace()->Init(4);
+	});
+
+	// ...
+
+	x = 0;
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ 0, y }, xy7a, btnCfg, U"client1 reset", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"client1 reset", [&]() {
 		client1.Emplace()->Init();
 	});
 
 	clearColor = { 33, 33, 33, 255 };
-	fb.Init();
+	
+	sgrdd.Init(200, 64);
 
 	camera.SetMaxFrameSize(64);
 	camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
@@ -68,11 +87,6 @@ void Looper::BeforeUpdate() {
 		camera.IncreaseScale(0.01f, 5);
 	} else if (gLooper.KeyDownDelay(xx::KeyboardKeys::X, 0.01f)) {
 		camera.DecreaseScale(0.01f,  gLooper.height_2 / float(Msgs::Global::Scene::mapSize.y));
-	}
-
-	// quickly reset support
-	if (gLooper.KeyDownDelay(xx::KeyboardKeys::R, 0.1f)) {
-		server.Emplace()->Init();
 	}
 
 	// move control
@@ -151,12 +165,12 @@ void Looper::Draw() {
 
 	std::string str;
 	if (!server) {
-		str = xx::ToString("Please click [server reset] first.");
+		str = xx::ToString("Please click [s?] first.");
 	} else {
-		str = xx::ToString("Z, X zoom, MBtn1 or 2 drop. count = ", server->scene->monsters.Count());
+		str = xx::ToString("Z, X zoom, mouse1 drop. numBullets = ", server->scene->bullets.Count(),". numMmonsters = ", server->scene->monsters.Count());
 	}
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, xx::RGBA8_Red, { 0.5f, 1 });
-	gLooper.ctcDefault.Draw(XY{ 0, gLooper.windowSize_2.y - 5 } + XY{ 2, 2 }, str, xx::RGBA8_White, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, -gLooper.windowSize_2.y + 5 }, str, xx::RGBA8_Red, { 0.5f, 0 });
+	gLooper.ctcDefault.Draw(XY{ 0, -gLooper.windowSize_2.y + 5 } + XY{ 2, 2 }, str, xx::RGBA8_White, { 0.5f, 0 });
 
 	DrawNode(ui);
 }
