@@ -54,9 +54,7 @@ namespace Battle {
     XX_INLINE bool Block::PushOut(Monster& m) {
         auto& p = m.pos;
         auto& r = m.radius;
-        auto idx = (uint8_t&)wayout;
-        assert(idx < _countof(xx::TranslateControl::pushOutFuncsFloat));
-        return xx::TranslateControl::pushOutFuncsFloat[idx](pos.x, pos.y, halfSize.x, halfSize.y, p.x, p.y, r, isMapCorner);
+        return xx::Math::MoveCircleIfIntersectsBox<float>(wayout, pos.x, pos.y, halfSize.x, halfSize.y, p.x, p.y, r, isMapCorner);
     }
 
     XX_INLINE void Block::Draw() {

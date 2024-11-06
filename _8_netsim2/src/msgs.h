@@ -97,14 +97,6 @@ namespace Msgs {
 			int32_t BlocksLimit(XYp& pos_);
 		};
 
-
-		struct BlockWayout {
-			uint8_t up : 1;			// 1
-			uint8_t right : 1;		// 2
-			uint8_t down : 1;		// 4
-			uint8_t left : 1;		// 8
-		};
-
 		struct Block : xx::SerdeBase, xx::SpaceABi32Item<Block> {
 			static constexpr uint16_t cTypeId{ 4 };
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
@@ -113,7 +105,7 @@ namespace Msgs {
 
 			xx::Weak<Scene> scene;
 			XYi pos{}, halfSize{};
-			BlockWayout wayout;
+			xx::Math::BlockWayout wayout;
 			bool isMapCorner{};
 
 			virtual ~Block();
@@ -121,7 +113,7 @@ namespace Msgs {
 			Block& Init(Scene* scene_, XYi const& pos_, XYi const& siz_);
 
 			void FillWayout();
-			void AuthWayout(BlockWayout bw);
+			void AuthWayout(xx::Math::BlockWayout bw);
 
 			bool IntersectCircle(XYi const& p, int32_t radius);
 			bool PushOut(Monster* m, XYi& mp);

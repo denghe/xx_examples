@@ -71,7 +71,7 @@ namespace Msgs {
             }
         }
 
-        void Block::AuthWayout(BlockWayout bw) {
+        void Block::AuthWayout(xx::Math::BlockWayout bw) {
             assert((uint8_t&)bw == (uint8_t&)wayout);
         }
 
@@ -81,9 +81,7 @@ namespace Msgs {
 
         bool Block::PushOut(Monster* m, XYi& mp) {
             assert(m);
-            auto idx = (uint8_t&)wayout;
-            assert(idx < _countof(xx::TranslateControl::pushOutFuncsInt32));
-            return xx::TranslateControl::pushOutFuncsInt32[idx](pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius, isMapCorner);
+            return xx::Math::MoveCircleIfIntersectsBox<int32_t>(wayout, pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius, isMapCorner);
         }
 
         void Block::Draw() {
