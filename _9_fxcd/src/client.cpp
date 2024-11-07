@@ -121,14 +121,24 @@ LabPlay:
 		//auto pos = Msgs::Global::Scene::mapSize_2 + gLooper.mouse.pos.FlipY() / gLooper.camera.scale;
 		if (pos.x >= 0 && pos.y >= 0 && pos.x < Msgs::Global::Scene::mapSize.x && pos.y < Msgs::Global::Scene::mapSize.y) {
 			if (gLooper.mouse.PressedMBLeft()) {
+				if (lastMousePressed) {
+					genDelay -= 1;
+					if (genDelay < 1) {
+						genDelay = 1;
+					}
+				}
+				lastMousePressed = true;
 				if (nextGenTime <= scene->frameNumber) {
-					nextGenTime = scene->frameNumber + 1;
+					nextGenTime = scene->frameNumber + genDelay;
 					for (int i = 0; i < 1; ++i) {
 						auto msg = xx::MakeShared<Msgs::C2S::Summon>();
 						msg->bornPos = pos;
 						Send(Msgs::gSerdeInfo.MakeDataShared(msg));
 					}
 				}
+			} else {
+				lastMousePressed = false;
+				genDelay = int(Looper::fps / 2);
 			}
 		}
 	}

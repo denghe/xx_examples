@@ -11,6 +11,7 @@ namespace Msgs {
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, indexAtContainer
+				, hp
 			);
 		}
 
@@ -20,18 +21,20 @@ namespace Msgs {
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, indexAtContainer
+				, hp
 			);
 		}
 
 		Monster::~Monster() {
-			assert(indexAtContainer == -1);
+			assert(scene);
+			assert(scene->disposing || indexAtContainer == -1);
 			if (_sgc) {
 				_sgc->Remove(this);
 			}
 		}
 
 		// auto sync indexAtContainer. swap remove with last
-		void Monster::Remove() {
+		void Monster::Kill() {
 			auto bak = indexAtContainer;
 			scene->monsters.Top()->indexAtContainer = bak;
 			indexAtContainer = -1;
@@ -52,6 +55,8 @@ namespace Msgs {
 			radius = 32;
 			radians = scene_->rnd.NextRadians<FX64>();
 			frameIndex.SetZero();
+
+			hp = 10;
 
 			_x = pos.x.ToInt();
 			_y = pos.y.ToInt();
@@ -182,5 +187,19 @@ namespace Msgs {
 			q.texRect.data = frame->textureRect.data;
 		}
 
+		bool Monster::Hurt(Bullet_Base* bullet_) {
+			// todo: calculate damage
+			hp -= bullet_->damage;
+
+			if (hp <= 0) {
+				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Red, bullet_->damage);
+				Kill();			// unsafe
+				return true;
+			} else {
+				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Yellow, bullet_->damage);
+				//Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+				return false;
+			}
+		}
 	}
 }

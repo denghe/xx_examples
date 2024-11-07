@@ -42,6 +42,8 @@ namespace Msgs {
 				blockSpace.Add(o);
 			}
 
+			if (auto r = dr.Read(effectTexts)) return r;
+
 			return 0;
 		}
 
@@ -68,6 +70,8 @@ namespace Msgs {
 			}
 
 			// skip serialize blockSpace ( because blocks never change )
+
+			d.Write(effectTexts);
 		}
 
 		void Scene::Init(int32_t sid) {
@@ -76,6 +80,8 @@ namespace Msgs {
 
 			monsterSpace.Init(numRows, numCols, cellSize);
 			blockSpace.Init(numRows, numCols, cellSize);
+			effectTexts.Reserve(10000);
+
 		
 /*
 top1                  2                    3
@@ -179,7 +185,17 @@ bottom1               2                    3
 				}
 			}
 
-			//xx::MakeShared<Msgs::Global::Monster>()->Init(this, {}, XYi{ 4060, 3818 });
+			{
+				int32_t n{};
+				for (int32_t i = 0, e = effectTexts.Count(); i < e; ++i) {
+					if (effectTexts[i].Update()) {
+						++n;
+					}
+				}
+				effectTexts.PopMulti(n);
+			}
+
+			//xx::MakeShared<Msgs::Global::Monster>()->Init(this, {}, XYi{ 4060, 3818 }); 
 		}
 
 		void Scene::Draw() {
@@ -196,6 +212,10 @@ bottom1               2                    3
 				bullets[i]->Draw();
 			}
 #endif
+
+			for (int32_t i = 0, e = effectTexts.Count(); i < e; ++i) {
+				effectTexts[i].Draw();
+			}
 		}
 
 		xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {
@@ -240,6 +260,14 @@ bottom1               2                    3
 				p.y = FX64_0;
 			else if (p.y >= mapSizep.y)
 				p.y = mapSizep.y;
+		}
+
+		void Scene::MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_) {
+			effectTexts.Emplace().Init(this, pos_, dist_, color_, value_);
+		}
+
+		Scene::~Scene() {
+			disposing = true;
 		}
 	}
 }

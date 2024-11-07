@@ -5,32 +5,71 @@
 namespace Msgs {
 	namespace Global {
 
-        void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_) {
+        void Projectile::WriteTo(xx::Data& d) const {
+            d.Write(
+                scene, pos, radians
+            );
+        }
+
+        int32_t Projectile::ReadFrom(xx::Data_r& dr) {
+            if (auto r = dr.Read(
+                scene, pos, radians
+            ); r) return r;
+            FillDirectionByRadians();
+            return 0;
+        }
+
+        void Projectile::FillDirectionByRadians() {
+            direction.x = radians.CosFastest();
+            direction.y = radians.SinFastest();
+        }
+
+        /*********************************************************************************************/
+
+        void Bullet_Base::WriteTo(xx::Data& d) const {
+            Base::WriteTo(d);
+            d.Write(
+                damage, hitBlackList
+            );
+        }
+
+        int32_t Bullet_Base::ReadFrom(xx::Data_r& dr) {
+            if (auto r = Base::ReadFrom(dr); r) return r;
+            return dr.Read(
+                damage, hitBlackList
+            );
+        }
+
+        void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_) {
             assert(scene_->bullets.Empty() || scene_->bullets.Top().pointer != this);	// auto add check
             scene_->bullets.Emplace(xx::SharedFromThis(this));
             scene = xx::WeakFromThis(scene_);
             pos = pos_;
             radians = radians_;
             FillDirectionByRadians();
+            damage = damage_;
         }
 
-        void Bullet_Base::FillDirectionByRadians() {
-            direction.x = radians.CosFastest();
-            direction.y = radians.SinFastest();
+        void Bullet_Base::HitBlackListClear(int32_t pierceDelay_) {
+            auto now = scene->frameNumber;
+            auto newTime = now + pierceDelay_;
+            for (auto i = hitBlackList.len - 1; i >= 0; --i) {
+                if (hitBlackList[i].second < now) {
+                    auto lastIndex = hitBlackList.len - 1;
+                    hitBlackList[i] = hitBlackList[lastIndex];
+                    hitBlackList.RemoveAt(lastIndex);
+                }
+            }
         }
 
-        void Bullet_Base::WriteTo(xx::Data& d) const {
-            d.Write(
-                scene, pos, radians
-            );
-        }
-
-        int32_t Bullet_Base::ReadFrom(xx::Data_r& dr) {
-            if (auto r = dr.Read(
-                scene, pos, radians
-            ); r) return r;
-            FillDirectionByRadians();
-            return 0;
+        bool Bullet_Base::HitBlackListTryAdd(int32_t pierceDelay_, Monster* m) {
+            auto listLen = hitBlackList.len;
+            for (auto i = 0; i < listLen; ++i) {
+                if (hitBlackList[i].first.GetPointer() == m) return false;
+            }
+            hitBlackList.Emplace(std::make_pair<xx::Weak<Monster>, int64_t>(
+                xx::WeakFromThis(m), scene->frameNumber + pierceDelay_));
+            return true;
         }
 
         /*********************************************************************************************/
@@ -49,8 +88,9 @@ namespace Msgs {
             );
         }
 
+        // todo: damage args
         Bullet_Sector& Bullet_Sector::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_) {
-            Base::Init(scene_, pos_, radians_);
+            Base::Init(scene_, pos_, radians_, 5);
             radius = radius_;
             theta = theta_;
             return *this;
@@ -65,12 +105,15 @@ namespace Msgs {
             FillDirectionByRadians();
             auto& monsters = scene->monsters;
 
+            HitBlackListClear(cPierceDelay);
+
 #if 1
             // search monster by range
             scene->monsterSpace.ForeachByRange(gLooper.sgrdd, pos.x.ToInt(), pos.y.ToInt(), radius.ToInt(), [&](Monster* m) {
                 if (xx::Math::IsSectorCircleIntersect<XYp>(pos, radius, direction, theta, m->pos, m->radius)) {
-                    // todo: effect
-                    m->Remove();
+                    if (HitBlackListTryAdd(cPierceDelay, m)) {
+                        m->Hurt(this);
+                    }
                 }
             });
 #else
@@ -78,8 +121,9 @@ namespace Msgs {
             for (int32_t i = monsters.len - 1; i >= 0; --i) {
                 auto& m = monsters[i];
                 if (xx::Math::IsSectorCircleIntersect<XYp>(pos, radius, direction, theta, m->pos, m->radius)) {
-                    // todo: effect
-                    m->Remove();
+                    if (HitBlackListTryAdd(cPierceDelay, m)) {
+                        m->Hurt(this);
+                    }
                 }
             }
 #endif
@@ -117,7 +161,7 @@ namespace Msgs {
         }
 
         Bullet_Box& Bullet_Box::Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_) {
-            Base::Init(scene_, pos_, radians_);
+            Base::Init(scene_, pos_, radians_, 5);
             size = size_;
             return *this;
         }
@@ -131,22 +175,26 @@ namespace Msgs {
             FillDirectionByRadians();
             auto& monsters = scene->monsters;
 
+            HitBlackListClear(cPierceDelay);
+
             auto radius = size.x.ToInt();   // todo: + min(size.x, size.y) / 2 * 1.4 ?
 
 #if 1
             // search monster by range
             scene->monsterSpace.ForeachByRange(gLooper.sgrdd, pos.x.ToInt(), pos.y.ToInt(), radius, [&](Monster* m) {
                 if (xx::Math::IsBoxCircleIntersect<XYp>(pos, size, direction, m->pos, m->radius)) {
-                    // todo: effect
-                    m->Remove();
+                    if (HitBlackListTryAdd(cPierceDelay, m)) {
+                        m->Hurt(this);
+                    }
                 }
             });
 #else
             for (int32_t i = monsters.len - 1; i >= 0; --i) {
                 auto& m = monsters[i];
                 if (xx::Math::IsBoxCircleIntersect<XYp>(pos, size, direction, m->pos, m->radius)) {
-                    // todo: effect
-                    m->Remove();
+                    if (HitBlackListTryAdd(cPierceDelay, m)) {
+                        m->Hurt(this);
+                    }
                 }
             }
 #endif

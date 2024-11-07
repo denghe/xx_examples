@@ -5,7 +5,8 @@
 struct Peer;
 struct Client {
 	xx::Shared<Msgs::Global::Scene> scene;
-	int64_t nextGenTime{};
+	int64_t nextGenTime{}, genDelay{ int(Looper::fps / 2) };
+	bool lastMousePressed{};
 
 	int32_t clientId{};
 	xx::Weak<Peer> peer;

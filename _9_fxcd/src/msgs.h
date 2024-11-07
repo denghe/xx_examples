@@ -6,13 +6,54 @@ namespace Msgs {
 	void InitSerdeInfo();
 
 	namespace Global {	// id = 1 ~ 99
-		struct EffectText;
+		struct Scene;
+		struct EffectText {
+			constexpr static float cCharPixelWidth{ 9.f };
+			constexpr static float cScale{ 3.f };
+
+			constexpr static int64_t cMoveDurationSecondsFrames{ int64_t(0.5 * Looper::fps) };
+			constexpr static float cMoveSpeedMin{ 20 / gLooper.fps };
+			constexpr static float cMoveSpeedMax{ 50 / gLooper.fps };
+
+			constexpr static float cFadeOutDurationSeconds{ 0.2f };
+			constexpr static float cFadeOutStep = 1.f / (cFadeOutDurationSeconds / gLooper.frameDelay);
+
+			xx::Weak<Scene> scene;
+			std::array<char, 12> buf{};		// value to string cache
+			int32_t len{};					// buf's len
+
+			int32_t lineNumber{};
+			xx::RGBA8 color{};
+			XY pos{}, inc{};
+			int64_t timeout{};
+			float alpha{};
+
+			void Init(Scene* scene_, XY const& pos_, XY const& direction_, xx::RGBA8 color_, int32_t value_);
+
+			int32_t UpdateCore();
+			bool Update();
+
+			void Draw();
+		};
 	}
 }
+
 namespace xx {
 	template<>
 	struct IsPod<Msgs::Global::EffectText, void> : std::true_type {};
+
+	template<typename T>
+	struct DataFuncs<T, std::enable_if_t< std::is_base_of_v<Msgs::Global::EffectText, T> >> {
+		template<bool needReserve = true>
+		static inline void Write(Data& d, T const& in) {
+			d.Write(in.scene, in.buf, in.len, in.lineNumber, (float&)in.color, in.pos, in.inc, in.timeout, in.alpha);
+		}
+		static inline int Read(Data_r& d, T& out) {
+			return d.Read(out.scene, out.buf, out.len, out.lineNumber, (float&)out.color, out.pos, out.inc, out.timeout, out.alpha);
+		}
+	};
 }
+
 namespace Msgs {
 	namespace Global {
 
@@ -22,7 +63,7 @@ namespace Msgs {
 		struct Bullet_Base;
 
 		struct Scene : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 1 };
+			static constexpr uint16_t cTypeId{ 1 };	/////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -54,7 +95,8 @@ namespace Msgs {
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
 			xx::Listi32<xx::Shared<Bullet_Base>> bullets;
-			xx::Queue<EffectText> effectTexts;
+			xx::Queuei32<EffectText> effectTexts;
+			/* T */ bool disposing{};	// ~Scene() == true
 
 			void Init(int32_t sid);
 			/* C */ void InitForDraw();	// todo: recursive call all childs
@@ -63,10 +105,18 @@ namespace Msgs {
 			xx::Shared<Player> const& RefPlayer(int32_t clientId);
 			void RemovePlayer(int32_t clientId);
 			void PosLimitByMapSize(XYp& p);
+			void MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_);
+			~Scene();
 		};
 
+	}
+}
+
+namespace Msgs {
+	namespace Global {
+
 		struct Player : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 2 };
+			static constexpr uint16_t cTypeId{ 2 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -80,16 +130,20 @@ namespace Msgs {
 			/* C */ void Draw();
 		};
 
-		// todo: Monster Add HP ? 
+	}
+}
 
+namespace Msgs {
+	namespace Global {
+
+		// todo: change color
+
+		struct Bullet_Base;
 		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
-			static constexpr uint16_t cTypeId{ 3 };
+			static constexpr uint16_t cTypeId{ 3 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
-
-			static constexpr int32_t cNeighbourMaxCount{ 7 };
-			static constexpr int32_t cTimeout{ (int32_t)gLooper.fps >> 1 };
 
 			static constexpr FX64 cResRadius{ 32 };
 			static constexpr FX64 cFrameIndexStep{ FX64{0.1} / Scene::fps60ratio };
@@ -102,6 +156,7 @@ namespace Msgs {
 			FX64 radius{}, radians{}, frameIndex{};
 			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
+			int32_t hp{};
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
@@ -110,11 +165,18 @@ namespace Msgs {
 			/* C */ void Draw();
 			bool FillCrossInc(XYp const& pos_);
 			int32_t BlocksLimit(XYp& pos_);
-			void Remove();	// remove from scene.monsters & destroy
+			void Kill(/* todo: killer */);	// remove from scene.monsters & destroy
+			bool Hurt(Bullet_Base* bullet_);
 		};
 
+	}
+}
+
+namespace Msgs {
+	namespace Global {
+
 		struct Block : xx::SerdeBase, xx::SpaceABi32Item<Block> {
-			static constexpr uint16_t cTypeId{ 4 };
+			static constexpr uint16_t cTypeId{ 4 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -137,40 +199,14 @@ namespace Msgs {
 			void Draw();
 		};
 
-		struct EffectText : xx::SerdeBase {
-			constexpr static float cCharPixelWidth{ 9.f };
-			constexpr static float cScale{ 3.f };
+	}
+}
 
-			constexpr static int64_t cMoveDurationSecondsFrames{ int64_t(0.5 * Looper::fps) };
-			constexpr static float cMoveSpeedMin{ 20 / gLooper.fps };
-			constexpr static float cMoveSpeedMax{ 50 / gLooper.fps };
+namespace Msgs {
+	namespace Global {
 
-			constexpr static float cFadeOutDurationSeconds{ 0.2f };
-			constexpr static float cFadeOutStep = 1.f / (cFadeOutDurationSeconds / gLooper.frameDelay);
-
-			xx::Weak<Scene> scene;
-			std::array<char, 12> buf{};		// value to string cache
-			int32_t len{};					// buf's len
-
-			int32_t lineNumber{};
-			xx::RGBA8 color{};
-			XY pos{}, inc{};
-			int64_t timeout{};
-			float alpha{};
-
-			// pos: original position,  dist: determine move direction
-			void Init(Scene* scene_, XY const& pos_, XY const& vec_, xx::RGBA8 color_, int32_t value_);
-
-			int32_t UpdateCore();
-			bool Update();
-
-			void Draw();
-		};
-
-		// todo: Bullet -> Projectile ? Weapon -> Item / Skill ?
-
-		struct Bullet_Base : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 5 };
+		struct Projectile : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 5 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -181,14 +217,31 @@ namespace Msgs {
 			/* T */ XYp direction{};	// { cos(radians), sin(radians) }
 
 			void FillDirectionByRadians();
-			void Init(Scene* scene_, XYp const& pos_, FX64 radians_);
 			virtual int32_t Update() { assert(false); return 0; };
 			virtual void Draw() { assert(false); };
 		};
 
+		struct Bullet_Base : Projectile {
+			using Base = Projectile;
+			static constexpr uint16_t cTypeId{ 6 }; /////////////////////////////////////////////////////////////////////////////
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
+			static constexpr int32_t cPierceDelay{ uint32_t(Looper::fps) >> 3 };
+
+			int32_t damage{};
+			xx::Listi32<std::pair<xx::Weak<Monster>, int64_t>> hitBlackList;
+
+			void Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_);
+			void HitBlackListClear(int32_t pierceDelay_);
+			bool HitBlackListTryAdd(int32_t pierceDelay_, Monster* m);
+			// todo
+		};
+
 		struct Bullet_Sector : Bullet_Base {
 			using Base = Bullet_Base;
-			static constexpr uint16_t cTypeId{ 6 };
+			static constexpr uint16_t cTypeId{ 7 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ Bullet_Base::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -203,7 +256,7 @@ namespace Msgs {
 
 		struct Bullet_Box : Bullet_Base {
 			using Base = Bullet_Base;
-			static constexpr uint16_t cTypeId{ 7 };
+			static constexpr uint16_t cTypeId{ 8 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ Bullet_Base::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -218,20 +271,22 @@ namespace Msgs {
 		};
 
 	}
+}
 
+namespace Msgs {
 	namespace C2S {	// id == 100 ~ 199
 
 		// todo: list/array data length limit protect
 
 		struct Join : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 101 };
+			static constexpr uint16_t cTypeId{ 101 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 		};
 
 		struct Summon : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 102 };
+			static constexpr uint16_t cTypeId{ 102 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -240,12 +295,14 @@ namespace Msgs {
 		};
 
 	}
+}
 
+namespace Msgs {
 	namespace S2C {	// id == 200 ~ 299
 
 		// 1 to 1
 		struct Join_r : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 201 };
+			static constexpr uint16_t cTypeId{ 201 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -256,7 +313,7 @@ namespace Msgs {
 
 		// 1 to n ( after Join_r )
 		struct PlayerJoin : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 202 };
+			static constexpr uint16_t cTypeId{ 202 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -267,8 +324,8 @@ namespace Msgs {
 
 		// 1 to n ( after player disconnect )
 		struct PlayerLeave : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 203 };
-			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			static constexpr uint16_t cTypeId{ 203 }; /////////////////////////////////////////////////////////////////////////////
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId }; 
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
 
@@ -278,7 +335,7 @@ namespace Msgs {
 
 		// 1 to n
 		struct Summon : xx::SerdeBase {
-			static constexpr uint16_t cTypeId{ 204 };
+			static constexpr uint16_t cTypeId{ 204 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
