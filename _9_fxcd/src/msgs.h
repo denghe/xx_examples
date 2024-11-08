@@ -46,10 +46,12 @@ namespace xx {
 	struct DataFuncs<T, std::enable_if_t< std::is_base_of_v<Msgs::Global::EffectText, T> >> {
 		template<bool needReserve = true>
 		static inline void Write(Data& d, T const& in) {
-			d.Write(in.scene, in.buf, in.len, in.lineNumber, (float&)in.color, in.pos, in.inc, in.timeout, in.alpha);
+			xx::BufLenRef blr{ in.buf.data(), &in.len };
+			d.Write(in.scene, blr, in.lineNumber, (float&)in.color, in.pos, in.inc, in.timeout, in.alpha);
 		}
 		static inline int Read(Data_r& d, T& out) {
-			return d.Read(out.scene, out.buf, out.len, out.lineNumber, (float&)out.color, out.pos, out.inc, out.timeout, out.alpha);
+			xx::BufLenRef blr{ out.buf.data(), &out.len };
+			return d.Read(out.scene, blr , out.lineNumber, (float&)out.color, out.pos, out.inc, out.timeout, out.alpha);
 		}
 	};
 }
@@ -95,7 +97,7 @@ namespace Msgs {
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
 			xx::Listi32<xx::Shared<Bullet_Base>> bullets;
-			xx::Queuei32<EffectText> effectTexts;
+			xx::Queue<EffectText> effectTexts;
 			/* T */ bool disposing{};	// ~Scene() == true
 
 			void Init(int32_t sid);
