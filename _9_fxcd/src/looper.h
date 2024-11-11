@@ -4,7 +4,7 @@
 
 struct Server;
 struct Client;
-struct Looper : xx::Engine<Looper>, xx::GDesign<2560, 1440, 240> {
+struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 120> {
 
 	ResTpFrames res;
 	xx::Scale9SpriteConfig btnCfg;

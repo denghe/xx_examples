@@ -136,7 +136,7 @@ bottom1               2                    3
 				, 0, { 500, 50 });
 				break;
 			case 3: {
-				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
+				static constexpr int32_t n{ (Scene::mapEdgeMax.y - Scene::mapEdgeMin.y) / 2 }, step{ 20 }, step_div_2{ step / 2 };
 					for (int32_t x = -n; x < n; x += step) {
 						for (int32_t y = -n; y < n; y += step) {
 							xx::MakeShared<Bullet_Sector>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
@@ -146,7 +146,7 @@ bottom1               2                    3
 				break;
 			}
 			case 4: {
-				static constexpr int32_t n{ 500 }, step{ 20 }, step_div_2{ step / 2 };
+				static constexpr int32_t n{ (Scene::mapEdgeMax.y - Scene::mapEdgeMin.y) / 2 }, step{ 20 }, step_div_2{ step / 2 };
 					for (int32_t x = -n; x < n; x += step) {
 						for (int32_t y = -n; y < n; y += step) {
 							xx::MakeShared<Bullet_Box>()->Init(this, mapSize_2 + XYi{ x + step_div_2, y + step_div_2 }
@@ -160,6 +160,7 @@ bottom1               2                    3
 		}
 
 		void Scene::InitForDraw() {
+			// todo
 		}
 
 		void Scene::Update() {
@@ -172,12 +173,11 @@ bottom1               2                    3
 				}
 			}
 
+			// can concurrent
 			for (int32_t i = monsters.len - 1; i >= 0; --i) {
-				auto& m = monsters[i];
-				if (m->Update1()) {
-					monsters.SwapRemoveAt(i);
-				}
+				monsters[i]->Update1();
 			}
+
 			for (int32_t i = monsters.len - 1; i >= 0; --i) {
 				auto& m = monsters[i];
 				if (m->Update2()) {
@@ -194,8 +194,6 @@ bottom1               2                    3
 				}
 				effectTexts.PopMulti(n);
 			}
-
-			//xx::MakeShared<Msgs::Global::Monster>()->Init(this, {}, XYi{ 4060, 3818 }); 
 		}
 
 		void Scene::Draw() {
@@ -207,14 +205,16 @@ bottom1               2                    3
 				monsters[i]->Draw();
 			}
 
-#if 1
 			for (auto e = bullets.len, i = 0; i < e; ++i) {
 				bullets[i]->Draw();
 			}
-#endif
 
 			for (int32_t i = 0, e = effectTexts.Count(); i < e; ++i) {
 				effectTexts[i].Draw();
+			}
+
+			for (auto e = monsters.len, i = 0; i < e; ++i) {
+				monsters[i]->DrawBars();
 			}
 		}
 

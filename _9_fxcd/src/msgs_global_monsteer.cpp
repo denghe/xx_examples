@@ -10,7 +10,9 @@ namespace Msgs {
 				scene, owner
 				, pos, tarPos
 				, radius, radians, frameIndex
+				, changeColorToWhiteElapsedTime
 				, indexAtContainer
+
 				, hp
 			);
 		}
@@ -20,7 +22,9 @@ namespace Msgs {
 				scene, owner
 				, pos, tarPos
 				, radius, radians, frameIndex
+				, changeColorToWhiteElapsedTime
 				, indexAtContainer
+
 				, hp
 			);
 		}
@@ -56,13 +60,114 @@ namespace Msgs {
 			radians = scene_->rnd.NextRadians<FX64>();
 			frameIndex.SetZero();
 
-			hp = 10;
+			hp = scene_->rnd.Next<int32_t>(1, cMaxHP + 1);
 
 			_x = pos.x.ToInt();
 			_y = pos.y.ToInt();
 			_radius = radius.ToInt();
 			scene->monsterSpace.Add(this);
 			return this;
+		}
+
+		void Monster::Update1() {
+			// make move to tar's vect
+			auto d = tarPos - pos;
+			auto mag2 = d.x * d.x + d.y * d.y;
+			XYp v{};
+			if (mag2 > FX64_1) {
+				v = d * mag2.RSqrtFastest() * cMovementSpeed;
+			}
+
+			// combine move force
+			if (FillCrossInc(pos)) {
+				assert(inc.x < scene->maxDistance);
+				assert(inc.y < scene->maxDistance);
+				assert(inc.x * inc.x + inc.y * inc.y <= Msgs::Global::Scene::maxDistance);
+				newPos = pos + inc + v;
+			} else {
+				newPos = pos + v;
+			}
+
+			// map edge protect
+			scene->PosLimitByMapSize(newPos);
+
+			// block push
+			for (int i = 0; i < 3; ++i) {
+				if (auto r = BlocksLimit(newPos); r < 0) {
+					assert(false);
+					newPos = pos;
+					break;
+				} else if (r == 0) break;
+			}
+		}
+
+		int32_t Monster::Update2() {
+			if (newPos != pos) {
+				// frame animation step
+				frameIndex = frameIndex + cFrameIndexStep/* todo: * moveDistance? */;
+				while (frameIndex >= cFrameIndexMax) {
+					frameIndex = frameIndex - cFrameIndexMax;
+				}
+
+				pos = newPos;
+
+				// update space index
+				_x = pos.x.ToInt();
+				_y = pos.y.ToInt();
+				_radius = radius.ToInt();
+				scene->monsterSpace.Update(this);
+			}
+			return 0;
+		}
+
+		void Monster::Draw() {
+			static constexpr xx::RGBA8 colors[] = { xx::RGBA8_Yellow, xx::RGBA8_Green, xx::RGBA8_Blue, xx::RGBA8_Red };
+			xx::RGBA8 color;
+			if (owner) {
+				color = colors[owner->clientId & 0b11];
+			} else {
+				color = xx::RGBA8_White;
+			}
+
+			auto& frame = gRes.monster_[frameIndex.ToInt()];
+			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
+			q.pos = gLooper.camera.ToGLPos(pos.As<float>());
+			q.anchor = *frame->anchor;
+			q.scale = (radius / cResRadius).ToFloat() * gLooper.camera.scale;
+			q.radians = radians.ToFloat();
+			q.colorplus = scene->frameNumber > changeColorToWhiteElapsedTime ? cColorPlusDefault : cColorPlusWhite;
+			q.color = color;
+			q.texRect.data = frame->textureRect.data;
+		}
+
+		void Monster::DrawBars() {
+			auto& f = *gRes.quad;
+			auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 2);
+			auto p = pos.As<float>();
+			auto hpBgPos = gLooper.camera.ToGLPos(p + XY{ -32, -39 });
+			auto hpFgPos = gLooper.camera.ToGLPos(p + XY{ -31, -39 });
+			auto bgScale = gLooper.camera.scale * XY{ 1, 0.1 };
+			auto hpFgScale = gLooper.camera.scale * XY{ (float)hp / cMaxHP * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
+			{
+				auto& q = qs[0];
+				q.pos = hpBgPos;
+				q.anchor = { 0, 0.5f };
+				q.scale = bgScale;
+				q.radians = 0;
+				q.colorplus = 1;
+				q.color = xx::RGBA8_Black;
+				q.texRect.data = f.textureRect.data;
+			}
+			{
+				auto& q = qs[1];
+				q.pos = hpFgPos;
+				q.anchor = { 0, 0.5f };
+				q.scale = hpFgScale;
+				q.radians = 0;
+				q.colorplus = 1;
+				q.color = xx::RGBA8_Red;
+				q.texRect.data = f.textureRect.data;
+			}
 		}
 
 		bool Monster::FillCrossInc(XYp const& pos_) {
@@ -119,74 +224,6 @@ namespace Msgs {
 			return 0;
 		}
 
-		int32_t Monster::Update1() {
-			frameIndex = frameIndex + cFrameIndexStep;
-			if (frameIndex >= cFrameIndexMax) {
-				frameIndex = frameIndex - cFrameIndexMax;
-			}
-
-			// make move to tar's vect
-			auto d = tarPos - pos;
-			auto mag2 = d.x * d.x + d.y * d.y;
-			XYp v{};
-			if (mag2 > FX64_1) {
-				v = d * mag2.RSqrtFastest() * cMovementSpeed;
-			}
-
-			if (FillCrossInc(pos)) {
-				assert(inc.x < scene->maxDistance);
-				assert(inc.y < scene->maxDistance);
-				assert(inc.x * inc.x + inc.y * inc.y <= Msgs::Global::Scene::maxDistance);
-				newPos = pos + inc + v;
-			} else {
-				newPos = pos + v;
-			}
-
-			// map edge protect
-			scene->PosLimitByMapSize(newPos);
-
-			// block push
-			for (int i = 0; i < 3; ++i) {
-				if (auto r = BlocksLimit(newPos); r < 0)
-					return r;
-				else if (r == 0) break;
-			}
-
-			return 0;
-		}
-
-		int32_t Monster::Update2() {
-			if (newPos == pos) return 0;
-			pos = newPos;
-
-			// update space index
-			_x = pos.x.ToInt();
-			_y = pos.y.ToInt();
-			_radius = radius.ToInt();
-			scene->monsterSpace.Update(this);
-			return 0;
-		}
-
-		void Monster::Draw() {
-			static constexpr xx::RGBA8 colors[] = { xx::RGBA8_Yellow, xx::RGBA8_Red, xx::RGBA8_Green, xx::RGBA8_Blue };
-			xx::RGBA8 color;
-			if (owner) {
-				color = colors[owner->clientId & 0b11];
-			} else {
-				color = xx::RGBA8_White;
-			}
-
-			auto& frame = gRes.monster_[frameIndex.ToInt()];
-			auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame->tex->GetValue(), 1);
-			q.pos = gLooper.camera.ToGLPos(pos.As<float>());
-			q.anchor = *frame->anchor;
-			q.scale = (radius / cResRadius).ToFloat() * gLooper.camera.scale;
-			q.radians = radians.ToFloat();
-			q.colorplus = 1;
-			q.color = color;
-			q.texRect.data = frame->textureRect.data;
-		}
-
 		bool Monster::Hurt(Bullet_Base* bullet_) {
 			// todo: calculate damage
 			hp -= bullet_->damage;
@@ -197,7 +234,7 @@ namespace Msgs {
 				return true;
 			} else {
 				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Yellow, bullet_->damage);
-				//Add_Action_SetColor({ 255,88,88,255 }, 0.1);
+				changeColorToWhiteElapsedTime = scene->frameNumber + cColorPlusChangeDuration;
 				return false;
 			}
 		}

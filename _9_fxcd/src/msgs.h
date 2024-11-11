@@ -72,9 +72,9 @@ namespace Msgs {
 
 			// int max value == 0x7FFF FFFF. sqrt == 46340. / 96 ~= 482		/ 64 = 724
 			static constexpr FX64 maxDistance{ 46340 };
-			static constexpr int32_t numRows{ 23 };
-			static constexpr int32_t numCols{ 35 };
 			static constexpr int32_t cellSize{ 64 };
+			static constexpr int32_t numRows{ (int32_t)Looper::height / cellSize };
+			static constexpr int32_t numCols{ (int32_t)Looper::width / cellSize };
 			static constexpr int32_t cellSize_2{ cellSize / 2 };
 			static constexpr XYi mapSize{ numCols * cellSize, numRows * cellSize };
 			static constexpr XYi mapSize_2{ mapSize / 2 };
@@ -152,19 +152,30 @@ namespace Msgs {
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
 			static constexpr FX64 cMovementSpeed{ FX64{5} / Scene::fps60ratio };
 
+			static constexpr float cColorPlusDefault{ 1 };
+			static constexpr float cColorPlusWhite{ 100000 };
+			static constexpr int32_t cColorPlusChangeDuration{ int32_t(0.1 * Looper::fps) };
+
+			static constexpr int32_t cMaxHP{ 100 };
+
 			xx::Weak<Scene> scene;
 			xx::Weak<Player> owner;
+
 			XYp pos, tarPos;
 			FX64 radius{}, radians{}, frameIndex{};
+			int64_t changeColorToWhiteElapsedTime{};
 			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
+
 			int32_t hp{};
+
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
-			virtual int32_t Update1();	// non zero: kill
+			virtual void Update1();	// concurrent support
 			virtual int32_t Update2();	// non zero: kill
 			/* C */ void Draw();
+			/* C */ void DrawBars();
 			bool FillCrossInc(XYp const& pos_);
 			int32_t BlocksLimit(XYp& pos_);
 			void Kill(/* todo: killer */);	// remove from scene.monsters & destroy
