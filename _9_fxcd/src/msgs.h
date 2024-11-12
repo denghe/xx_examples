@@ -17,20 +17,19 @@ namespace Msgs {
 	}
 }
 
-
 #include "msgs_global_effect_text.h"
 #include "msgs_global_stat.h"
-#include "msgs_global_equipment.h"
-#include "msgs_global_config_monster.h"
-#include "msgs_global_scene.h"
-#include "msgs_global_block.h"
-#include "msgs_global_player.h"
-#include "msgs_global_monster.h"
+#include "msgs_global_equipment.h"				// 1
+#include "msgs_global_config_monster.h"			// 2
+#include "msgs_global_scene.h"					// 3
+#include "msgs_global_block.h"					// 4
+#include "msgs_global_player.h"					// 5
+#include "msgs_global_monster.h"				// 6
 // todo: monster.items
-#include "msgs_global_projectile.h"
-#include "msgs_global_bullet_base.h"
-#include "msgs_global_bullet_sector.h"
-#include "msgs_global_bullet_box.h"
+#include "msgs_global_projectile.h"				// 7
+#include "msgs_global_bullet_base.h"			// 8
+#include "msgs_global_bullet_sector.h"			// 9
+#include "msgs_global_bullet_box.h"				// 10
 #include "msgs_c2s.h"
 #include "msgs_s2c.h"
 

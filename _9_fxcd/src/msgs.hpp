@@ -5,6 +5,8 @@ namespace Msgs {
 	inline void InitSerdeInfo() {
 		gSerdeInfo.Init();
 
+		gSerdeInfo.Register<::Msgs::Global::Equipment>();
+		gSerdeInfo.Register<::Msgs::Global::Config_Monster>();
 		gSerdeInfo.Register<::Msgs::Global::Scene>();
 		gSerdeInfo.Register<::Msgs::Global::Player>();
 		gSerdeInfo.Register<::Msgs::Global::Monster>();

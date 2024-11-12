@@ -82,3 +82,5 @@ namespace Msgs {
 
 	}
 }
+
+// todo: serde template

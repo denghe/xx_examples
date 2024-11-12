@@ -3,7 +3,12 @@
 namespace Msgs {
 	namespace Global {
 
-		struct Config_Monster {
+		struct Config_Monster : xx::SerdeBase {
+			static constexpr uint16_t cTypeId{ 2 }; /////////////////////////////////////////////////////////////////////////////
+			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
+			/* S */ void WriteTo(xx::Data& d) const override;
+			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
+
 			Stat_t initHealth{ 10 };
 			Stat_t initVitality{ 10 };
 			Stat_t initStrength{ 10 };
@@ -35,78 +40,4 @@ namespace Msgs {
 		};
 
 	}
-}
-
-namespace xx {
-	template<>
-	struct IsPod<Msgs::Global::Config_Monster, void> : std::true_type {};
-
-	template<typename T>
-	struct DataFuncs<T, std::enable_if_t< std::is_base_of_v<Msgs::Global::Config_Monster, T> >> {
-		template<bool needReserve = true>
-		static inline void Write(Data& d, T const& in) {
-			d.Write<needReserve>(
-				in.initHealth,
-				in.initVitality,
-				in.initStrength,
-				in.initDexterity,
-				in.initDefense,
-				in.initWisdom,
-				in.initLucky,
-
-				in.levelToHealthRatio,
-				in.levelToVitalityRatio,
-				in.levelToStrengthRatio,
-				in.levelToDexterityRatio,
-				in.levelToDefenseRatio,
-				in.levelToWisdomRatio,
-				in.levelToLuckyRatio,
-
-				in.healthToLifeRatio,
-				in.healthToEnergyRatio,
-				in.vitalityToLifeRegenerationRatio,
-				in.vitalityToEnergyRegenerationRatio,
-				in.strengthToDamageScaleRatio,
-				in.defenseFactor,
-				in.evasionFactor,
-				in.baseMovementSpeed,
-				in.dexterityToMovementSpeedRatio,
-				in.wisdomToExperienceScaleRatio,
-				in.luckyToCritialChanceScaleRatio,
-				in.luckyToCritialBonusScaleRatio
-			);
-		}
-		static inline int Read(Data_r& d, T& out) {
-			return d.Read(
-				out.initHealth,
-				out.initVitality,
-				out.initStrength,
-				out.initDexterity,
-				out.initDefense,
-				out.initWisdom,
-				out.initLucky,
-
-				out.levelToHealthRatio,
-				out.levelToVitalityRatio,
-				out.levelToStrengthRatio,
-				out.levelToDexterityRatio,
-				out.levelToDefenseRatio,
-				out.levelToWisdomRatio,
-				out.levelToLuckyRatio,
-
-				out.healthToLifeRatio,
-				out.healthToEnergyRatio,
-				out.vitalityToLifeRegenerationRatio,
-				out.vitalityToEnergyRegenerationRatio,
-				out.strengthToDamageScaleRatio,
-				out.defenseFactor,
-				out.evasionFactor,
-				out.baseMovementSpeed,
-				out.dexterityToMovementSpeedRatio,
-				out.wisdomToExperienceScaleRatio,
-				out.luckyToCritialChanceScaleRatio,
-				out.luckyToCritialBonusScaleRatio
-			);
-		}
-	};
 }

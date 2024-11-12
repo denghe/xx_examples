@@ -5,7 +5,7 @@ namespace Msgs {
 
 		struct Bullet_Base : Projectile {
 			using Base = Projectile;
-			static constexpr uint16_t cTypeId{ 6 }; /////////////////////////////////////////////////////////////////////////////
+			static constexpr uint16_t cTypeId{ 8 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;

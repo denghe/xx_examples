@@ -4,7 +4,7 @@ namespace Msgs {
 	namespace Global {	// id = 1 ~ 99
 
 		struct Monster : xx::SerdeBase, xx::Spacei32Item<Monster> {
-			static constexpr uint16_t cTypeId{ 3 }; /////////////////////////////////////////////////////////////////////////////
+			static constexpr uint16_t cTypeId{ 6 }; /////////////////////////////////////////////////////////////////////////////
 			static constexpr uint16_t cParentTypeId{ xx::SerdeBase::cTypeId };
 			/* S */ void WriteTo(xx::Data& d) const override;
 			/* C */ int32_t ReadFrom(xx::Data_r& dr) override;
@@ -29,8 +29,15 @@ namespace Msgs {
 			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
 
-			int32_t hp{};
+			int32_t hp{};	// todo: remove when sp done
 
+			// todo
+			xx::Shared<Config_Monster> cfg;
+			xx::TinyList<xx::Shared<Equipment>> equipments;
+			Stat_t level{}, experience{};
+			Stat_t life{}, energy{};
+			/* T */ bool spDirty{ true };
+			StatPanel sp;
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);
