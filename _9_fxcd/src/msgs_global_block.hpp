@@ -1,31 +1,30 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
 	namespace Global {
 
-        void Block::WriteTo(xx::Data& d) const {
+        inline void Block::WriteTo(xx::Data& d) const {
             d.Write(
                 scene, pos, halfSize, (uint8_t&)wayout, isMapCorner, _aabb.from, _aabb.to
             );
         }
 
-        int32_t Block::ReadFrom(xx::Data_r& dr) {
+        inline  int32_t Block::ReadFrom(xx::Data_r& dr) {
             return dr.Read(
                 scene, pos, halfSize, (uint8_t&)wayout, isMapCorner, _aabb.from, _aabb.to
             );
         }
 
-        Block::~Block() {
+        inline Block::~Block() {
             if (_sgc) {
                 _sgc->Remove(this);
             }
         }
 
-        Block& Block::Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY) {
-            scene = xx::WeakFromThis(scene_);
+        inline Block& Block::Init(Scene* scene_, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY) {
+            assert(scene_->blocks.Empty() || scene_->blocks.Top().pointer != this);	// auto add check
             scene_->blocks.Emplace(xx::SharedFromThis(this));
+            scene = xx::WeakFromThis(scene_);
             _aabb.from.x = minX;
             _aabb.from.y = minY;
             _aabb.to.x = maxX;
@@ -37,13 +36,13 @@ namespace Msgs {
             return *this;
         }
 
-        Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& siz_) {
+        inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& siz_) {
             auto half = siz_ / 2;
             assert(half * 2 == siz_);
             return Init(scene_, pos_.x - half.x, pos_.y - half.y, pos_.x + half.x, pos_.y + half.y);
         }
 
-        void Block::FillWayout() {
+        inline void Block::FillWayout() {
             // search neighbor & set wayout bit
             auto& bs = scene->blockSpace;
             (uint8_t&)wayout = 0;
@@ -71,20 +70,20 @@ namespace Msgs {
             }
         }
 
-        void Block::AuthWayout(xx::Math::BlockWayout bw) {
+        inline  void Block::AuthWayout(xx::Math::BlockWayout bw) {
             assert((uint8_t&)bw == (uint8_t&)wayout);
         }
 
-        bool Block::IntersectCircle(XYi const& p, int32_t radius) {
+        inline bool Block::IntersectCircle(XYi const& p, int32_t radius) {
             return xx::Calc::Intersects::BoxCircle<int32_t>(pos.x, pos.y, halfSize.x, halfSize.y, p.x, p.y, radius);
         }
 
-        bool Block::PushOut(Monster* m, XYi& mp) {
+        inline bool Block::PushOut(Monster* m, XYi& mp) {
             assert(m);
             return xx::Math::MoveCircleIfIntersectsBox<int32_t>(wayout, pos.x, pos.y, halfSize.x, halfSize.y, mp.x, mp.y, m->_radius, isMapCorner);
         }
 
-        void Block::Draw() {
+        inline  void Block::Draw() {
             auto& frame = *gRes.quad;
             auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame.tex->GetValue(), 1);
             q.pos = gLooper.camera.ToGLPos(pos.As<float>());

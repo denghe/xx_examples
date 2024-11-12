@@ -1,11 +1,8 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
-	xx::SerdeInfo gSerdeInfo;
 
-	void InitSerdeInfo() {
+	inline void InitSerdeInfo() {
 		gSerdeInfo.Init();
 
 		gSerdeInfo.Register<::Msgs::Global::Scene>();

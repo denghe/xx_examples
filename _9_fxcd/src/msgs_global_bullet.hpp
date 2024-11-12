@@ -1,17 +1,15 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
 	namespace Global {
 
-        void Projectile::WriteTo(xx::Data& d) const {
+        inline void Projectile::WriteTo(xx::Data& d) const {
             d.Write(
                 scene, pos, radians
             );
         }
 
-        int32_t Projectile::ReadFrom(xx::Data_r& dr) {
+        inline int32_t Projectile::ReadFrom(xx::Data_r& dr) {
             if (auto r = dr.Read(
                 scene, pos, radians
             ); r) return r;
@@ -19,28 +17,28 @@ namespace Msgs {
             return 0;
         }
 
-        void Projectile::FillDirectionByRadians() {
+        inline void Projectile::FillDirectionByRadians() {
             direction.x = radians.CosFastest();
             direction.y = radians.SinFastest();
         }
 
         /*********************************************************************************************/
 
-        void Bullet_Base::WriteTo(xx::Data& d) const {
+        inline void Bullet_Base::WriteTo(xx::Data& d) const {
             Base::WriteTo(d);
             d.Write(
                 damage, hitBlackList
             );
         }
 
-        int32_t Bullet_Base::ReadFrom(xx::Data_r& dr) {
+        inline int32_t Bullet_Base::ReadFrom(xx::Data_r& dr) {
             if (auto r = Base::ReadFrom(dr); r) return r;
             return dr.Read(
                 damage, hitBlackList
             );
         }
 
-        void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_) {
+        inline void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_) {
             assert(scene_->bullets.Empty() || scene_->bullets.Top().pointer != this);	// auto add check
             scene_->bullets.Emplace(xx::SharedFromThis(this));
             scene = xx::WeakFromThis(scene_);
@@ -50,7 +48,7 @@ namespace Msgs {
             damage = damage_;
         }
 
-        void Bullet_Base::HitBlackListClear(int32_t pierceDelay_) {
+        inline void Bullet_Base::HitBlackListClear(int32_t pierceDelay_) {
             auto now = scene->frameNumber;
             auto newTime = now + pierceDelay_;
             for (auto i = hitBlackList.len - 1; i >= 0; --i) {
@@ -62,7 +60,7 @@ namespace Msgs {
             }
         }
 
-        bool Bullet_Base::HitBlackListTryAdd(int32_t pierceDelay_, Monster* m) {
+        inline bool Bullet_Base::HitBlackListTryAdd(int32_t pierceDelay_, Monster* m) {
             auto listLen = hitBlackList.len;
             for (auto i = 0; i < listLen; ++i) {
                 if (hitBlackList[i].first.GetPointer() == m) return false;
@@ -74,14 +72,14 @@ namespace Msgs {
 
         /*********************************************************************************************/
 
-        void Bullet_Sector::WriteTo(xx::Data& d) const {
+        inline void Bullet_Sector::WriteTo(xx::Data& d) const {
             Base::WriteTo(d);
             d.Write(
                 radius, theta
             );
         }
 
-        int32_t Bullet_Sector::ReadFrom(xx::Data_r& dr) {
+        inline int32_t Bullet_Sector::ReadFrom(xx::Data_r& dr) {
             if (auto r = Base::ReadFrom(dr); r) return r;
             return dr.Read(
                 radius, theta
@@ -89,14 +87,14 @@ namespace Msgs {
         }
 
         // todo: damage args
-        Bullet_Sector& Bullet_Sector::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_) {
+        inline Bullet_Sector& Bullet_Sector::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 radius_, FX64 theta_) {
             Base::Init(scene_, pos_, radians_, 5);
             radius = radius_;
             theta = theta_;
             return *this;
         }
 
-        int32_t Bullet_Sector::Update() {
+        inline int32_t Bullet_Sector::Update() {
             // rotate
             radians += cRotateStep;
             if (radians > FX64_PI) {
@@ -131,7 +129,7 @@ namespace Msgs {
             return 0;
         }
 
-        void Bullet_Sector::Draw() {
+        inline void Bullet_Sector::Draw() {
             auto p = gLooper.camera.ToGLPos(pos.As<float>());
             auto r = radius.ToFloat();
             auto u = radians.ToFloat();
@@ -146,27 +144,27 @@ namespace Msgs {
 
         /*********************************************************************************************/
 
-        void Bullet_Box::WriteTo(xx::Data& d) const {
+        inline void Bullet_Box::WriteTo(xx::Data& d) const {
             Base::WriteTo(d);
             d.Write(
                 size
             );
         }
 
-        int32_t Bullet_Box::ReadFrom(xx::Data_r& dr) {
+        inline int32_t Bullet_Box::ReadFrom(xx::Data_r& dr) {
             if (auto r = Base::ReadFrom(dr); r) return r;
             return dr.Read(
                 size
             );
         }
 
-        Bullet_Box& Bullet_Box::Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_) {
+        inline Bullet_Box& Bullet_Box::Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_) {
             Base::Init(scene_, pos_, radians_, 5);
             size = size_;
             return *this;
         }
 
-        int32_t Bullet_Box::Update() {
+        inline int32_t Bullet_Box::Update() {
             // rotate
             radians += cRotateStep;
             if (radians > FX64_PI) {
@@ -202,7 +200,7 @@ namespace Msgs {
             return 0;
         }
 
-        void Bullet_Box::Draw() {
+        inline void Bullet_Box::Draw() {
             auto p = gLooper.camera.ToGLPos(pos.As<float>());
             auto wh = size.As<float>();
             xx::LineStrip{}.FillBoxPoints({}, wh)

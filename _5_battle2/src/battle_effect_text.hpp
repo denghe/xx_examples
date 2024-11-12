@@ -54,7 +54,7 @@ namespace Battle {
 		}
 	}
 
-	XX_INLINE void EffectTextManager::Init(size_t cap) {
+	XX_INLINE void EffectTextManager::Init(int32_t cap) {
 		ens.Reserve(cap);
 	}
 
@@ -63,8 +63,8 @@ namespace Battle {
 	}
 
 	XX_INLINE bool EffectTextManager::Update() {
-		size_t n{};
-		for (size_t i = 0, e = ens.Count(); i < e; ++i) {
+		int32_t n{};
+		for (int32_t i = 0, e = ens.Count(); i < e; ++i) {
 			if (ens[i].Update()) {
 				++n;
 			}
@@ -74,7 +74,7 @@ namespace Battle {
 	}
 
 	XX_INLINE void EffectTextManager::Draw() {
-		for (size_t i = 0, e = ens.Count(); i < e; ++i) {
+		for (int32_t i = 0, e = ens.Count(); i < e; ++i) {
 			ens[i].Draw();
 		}
 	}

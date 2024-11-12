@@ -1,11 +1,9 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
 	namespace Global {
 
-		int32_t Monster::ReadFrom(xx::Data_r& dr) {
+		inline int32_t Monster::ReadFrom(xx::Data_r& dr) {
 			return dr.Read(
 				scene, owner
 				, pos, tarPos
@@ -17,7 +15,7 @@ namespace Msgs {
 			);
 		}
 
-		void Monster::WriteTo(xx::Data& d) const {
+		inline void Monster::WriteTo(xx::Data& d) const {
 			d.Write(
 				scene, owner
 				, pos, tarPos
@@ -29,7 +27,7 @@ namespace Msgs {
 			);
 		}
 
-		Monster::~Monster() {
+		inline Monster::~Monster() {
 			assert(scene);
 			assert(scene->disposing || indexAtContainer == -1);
 			if (_sgc) {
@@ -38,14 +36,14 @@ namespace Msgs {
 		}
 
 		// auto sync indexAtContainer. swap remove with last
-		void Monster::Kill() {
+		inline void Monster::Kill() {
 			auto bak = indexAtContainer;
 			scene->monsters.Top()->indexAtContainer = bak;
 			indexAtContainer = -1;
 			scene->monsters.SwapRemoveAt(bak);
 		}
 
-		Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
+		inline Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
 			assert(scene_->monsters.Empty() || scene_->monsters.Top().pointer != this);	// auto add check
 			indexAtContainer = scene_->monsters.len;
 			scene_->monsters.Emplace(xx::SharedFromThis(this));
@@ -69,7 +67,7 @@ namespace Msgs {
 			return this;
 		}
 
-		void Monster::Update1() {
+		inline void Monster::Update1() {
 			// make move to tar's vect
 			auto d = tarPos - pos;
 			auto mag2 = d.x * d.x + d.y * d.y;
@@ -101,7 +99,7 @@ namespace Msgs {
 			}
 		}
 
-		int32_t Monster::Update2() {
+		inline int32_t Monster::Update2() {
 			if (newPos != pos) {
 				// frame animation step
 				frameIndex = frameIndex + cFrameIndexStep/* todo: * moveDistance? */;
@@ -120,7 +118,7 @@ namespace Msgs {
 			return 0;
 		}
 
-		void Monster::Draw() {
+		inline void Monster::Draw() {
 			static constexpr xx::RGBA8 colors[] = { xx::RGBA8_Yellow, xx::RGBA8_Green, xx::RGBA8_Blue, xx::RGBA8_Red };
 			xx::RGBA8 color;
 			if (owner) {
@@ -140,7 +138,7 @@ namespace Msgs {
 			q.texRect.data = frame->textureRect.data;
 		}
 
-		void Monster::DrawBars() {
+		inline void Monster::DrawBars() {
 			auto& f = *gRes.quad;
 			auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), 2);
 			auto p = pos.As<float>();
@@ -170,7 +168,7 @@ namespace Msgs {
 			}
 		}
 
-		bool Monster::FillCrossInc(XYp const& pos_) {
+		inline bool Monster::FillCrossInc(XYp const& pos_) {
 			inc.Reset();
 
 			auto p = pos_.As<int32_t>();
@@ -198,7 +196,7 @@ namespace Msgs {
 			return true;
 		}
 
-		int32_t Monster::BlocksLimit(XYp& pos_) {
+		inline int32_t Monster::BlocksLimit(XYp& pos_) {
 			auto& sg = scene->blockSpace;
 			auto p = pos_.As<int32_t>();
 			xx::FromTo<XYi> aabb{ p - _radius, p + _radius };	// p to aabb
@@ -224,7 +222,7 @@ namespace Msgs {
 			return 0;
 		}
 
-		bool Monster::Hurt(Bullet_Base* bullet_) {
+		inline bool Monster::Hurt(Bullet_Base* bullet_) {
 			// todo: calculate damage
 			hp -= bullet_->damage;
 

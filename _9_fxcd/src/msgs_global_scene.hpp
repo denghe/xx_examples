@@ -1,11 +1,9 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
 	namespace Global {
 
-		int32_t Scene::ReadFrom(xx::Data_r& dr) {
+		inline int32_t Scene::ReadFrom(xx::Data_r& dr) {
 			if (auto r = dr.Read(frameNumber, rnd, monsters, players, blocks, bullets)) return r;
 
 			// serialize monsterSpace
@@ -47,7 +45,7 @@ namespace Msgs {
 			return 0;
 		}
 
-		void Scene::WriteTo(xx::Data& d) const {
+		inline void Scene::WriteTo(xx::Data& d) const {
 			d.Write(frameNumber, rnd, monsters, players, blocks, bullets);
 
 			// deserialize monsterSpace
@@ -74,7 +72,7 @@ namespace Msgs {
 			d.Write(effectTexts);
 		}
 
-		void Scene::Init(int32_t sid) {
+		inline void Scene::Init(int32_t sid) {
 			assert(gIsServer);
 			frameNumber = 1000;	// skip some cast delay
 
@@ -159,11 +157,11 @@ bottom1               2                    3
 			}
 		}
 
-		void Scene::InitForDraw() {
+		inline void Scene::InitForDraw() {
 			// todo
 		}
 
-		void Scene::Update() {
+		inline void Scene::Update() {
 			++frameNumber;
 
 			for (int32_t i = bullets.len - 1; i >= 0; --i) {
@@ -196,7 +194,7 @@ bottom1               2                    3
 			}
 		}
 
-		void Scene::Draw() {
+		inline void Scene::Draw() {
 			for (auto e = blocks.len, i = 0; i < e; ++i) {
 				blocks[i]->Draw();
 			}
@@ -218,14 +216,14 @@ bottom1               2                    3
 			}
 		}
 
-		xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {
+		inline xx::Shared<Player> const& Scene::RefPlayer(int32_t clientId) {
 			for (int32_t i = 0, e = players.len; i < e; ++i) {
 				if (players[i]->clientId == clientId) return players[i];
 			}
 			return (xx::Shared<Player>&)xx::Nil;
 		}
 
-		void Scene::RemovePlayer(int32_t clientId) {
+		inline void Scene::RemovePlayer(int32_t clientId) {
 			// find & remove player
 			xx::Weak<Msgs::Global::Player> p;
 			bool found{};
@@ -250,7 +248,7 @@ bottom1               2                    3
 #endif
 		}
 
-		void Scene::PosLimitByMapSize(XYp& p) {
+		inline void Scene::PosLimitByMapSize(XYp& p) {
 			// map edge protect
 			if (p.x < FX64_0)
 				p.x = FX64_0;
@@ -262,11 +260,11 @@ bottom1               2                    3
 				p.y = mapSizep.y;
 		}
 
-		void Scene::MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_) {
+		inline void Scene::MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_) {
 			effectTexts.Emplace().Init(this, pos_, dist_, color_, value_);
 		}
 
-		Scene::~Scene() {
+		inline Scene::~Scene() {
 			disposing = true;
 		}
 	}

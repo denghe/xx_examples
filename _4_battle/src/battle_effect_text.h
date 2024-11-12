@@ -40,7 +40,7 @@ namespace Battle {
 	struct EffectTextManager {
 		xx::Queue<EffectText> ens;
 
-		void Init(size_t cap);
+		void Init(int32_t cap);
 		void Add(XY const& pos_, XY const& vec_, xx::RGBA8 color_, int32_t value_);
 		bool Update();
 		void Draw();

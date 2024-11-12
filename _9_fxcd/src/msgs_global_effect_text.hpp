@@ -1,11 +1,9 @@
-﻿#include "pch.h"
-#include "looper.h"
-#include "msgs.h"
+﻿#pragma once
 
 namespace Msgs {
 	namespace Global {
 
-		void EffectText::Init(Scene* scene_, xx::XY const& pos_, xx::XY const& direction_, xx::RGBA8 color_, int32_t value_) {
+		inline void EffectText::Init(Scene* scene_, xx::XY const& pos_, xx::XY const& direction_, xx::RGBA8 color_, int32_t value_) {
 			scene = xx::WeakFromThis(scene_);
 			// calculate center point
 			pos = { pos_.x - cCharPixelWidth * cScale * len / 2, pos_.y };
@@ -17,7 +15,7 @@ namespace Msgs {
 			len = xx::ToStringEN(value_, buf.data());
 		}
 
-		int32_t EffectText::UpdateCore() {
+		inline int32_t EffectText::UpdateCore() {
 			COR_BEGIN
 			// move away
 			timeout = scene->frameNumber + cMoveDurationSecondsFrames;
@@ -33,12 +31,12 @@ namespace Msgs {
 			COR_END
 		}
 
-		bool EffectText::Update() {
+		inline bool EffectText::Update() {
 			lineNumber = UpdateCore();
 			return lineNumber == 0;		// will remove by caller
 		}
 
-		void EffectText::Draw() {
+		inline void EffectText::Draw() {
 			auto& fs = gRes.font_outline_;
 			auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(fs[0]->tex->GetValue(), len);
 			auto basePos = gLooper.camera.ToGLPos(pos);
