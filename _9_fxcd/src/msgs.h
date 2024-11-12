@@ -20,12 +20,13 @@ namespace Msgs {
 
 #include "msgs_global_effect_text.h"
 #include "msgs_global_stat.h"
+#include "msgs_global_equipment.h"
+#include "msgs_global_config_monster.h"
 #include "msgs_global_scene.h"
 #include "msgs_global_block.h"
 #include "msgs_global_player.h"
 #include "msgs_global_monster.h"
 // todo: monster.items
-// todo: Item/Skill? Gun?
 #include "msgs_global_projectile.h"
 #include "msgs_global_bullet_base.h"
 #include "msgs_global_bullet_sector.h"
@@ -36,17 +37,18 @@ namespace Msgs {
 
 #include "msgs.hpp"
 #include "msgs_global_effect_text.hpp"
-//#include "msgs_global_stat.hpp"
+#include "msgs_global_stat.hpp"
+#include "msgs_global_equipment.hpp"
+#include "msgs_global_config_monster.hpp"
 #include "msgs_global_scene.hpp"
 #include "msgs_global_block.hpp"
 #include "msgs_global_player.hpp"
 #include "msgs_global_monster.hpp"
 
-//#include "msgs_global_projectile.hpp"
-//#include "msgs_global_bullet_base.hpp"
-//#include "msgs_global_bullet_sector.hpp"
-//#include "msgs_global_bullet_box.hpp"
-#include "msgs_global_bullet.hpp"
+#include "msgs_global_projectile.hpp"
+#include "msgs_global_bullet_base.hpp"
+#include "msgs_global_bullet_sector.hpp"
+#include "msgs_global_bullet_box.hpp"
 
 #include "msgs_c2s.hpp"
 #include "msgs_s2c.hpp"

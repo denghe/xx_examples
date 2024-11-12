@@ -44,7 +44,7 @@ namespace xx {
 		template<bool needReserve = true>
 		static inline void Write(Data& d, T const& in) {
 			xx::BufLenRef blr{ in.buf.data(), &in.len };
-			d.Write(in.scene, blr, in.lineNumber, (float&)in.color, in.pos, in.inc, in.timeout, in.alpha);
+			d.Write<needReserve>(in.scene, blr, in.lineNumber, (float&)in.color, in.pos, in.inc, in.timeout, in.alpha);
 		}
 		static inline int Read(Data_r& d, T& out) {
 			xx::BufLenRef blr{ out.buf.data(), &out.len };

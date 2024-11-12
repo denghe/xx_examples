@@ -34,7 +34,7 @@ namespace Msgs {
 
 		using Stat_t = FX64;
 
-		struct StatItem {
+		struct alignas(8) StatItem {
 			StatTypes type{};
 			Stat_t value{};
 		};
@@ -48,14 +48,8 @@ namespace Msgs {
 			Stat_t wisdom{};							// + experience scale
 			Stat_t lucky{};								// + critical chance, critical bonus, improve drop rate
 
-			void Clear() {
-				memset(this, 0, sizeof(StatPanelBase));
-			}
-
-			XX_INLINE Stat_t& At(StatTypes t) const {
-				assert((uint32_t)t <= (uint32_t)StatTypes::__POINTS_END__);
-				return ((Stat_t*)this)[(uint32_t)t];
-			}
+			void Clear();
+			Stat_t& At(StatTypes t) const;
 		};
 
 		struct alignas(8) StatPanel : StatPanelBase {
@@ -71,14 +65,8 @@ namespace Msgs {
 			Stat_t criticalChance{};
 			Stat_t criticalBonus{};
 
-			void Clear() {
-				memset(this, 0, sizeof(StatPanel));
-			}
-
-			XX_INLINE Stat_t& At(StatTypes t) const {
-				assert((uint32_t)t <= (uint32_t)StatTypes::__RESULTS_END__);
-				return ((Stat_t*)this)[(uint32_t)t];
-			}
+			void Clear();
+			Stat_t& At(StatTypes t) const;
 		};
 
 		struct alignas(8) StatPanelExt : StatPanel {
@@ -88,14 +76,8 @@ namespace Msgs {
 			// ...
 			//Stat_t dummy[1000];
 
-			void Clear() {
-				memset(this, 0, sizeof(StatPanelExt));
-			}
-
-			XX_INLINE Stat_t& At(StatTypes t) const {
-				assert((uint32_t)t <= (uint32_t)StatTypes::__MAX_VALUE__);
-				return ((Stat_t*)this)[(uint32_t)t];
-			}
+			void Clear();
+			Stat_t& At(StatTypes t) const;
 		};
 
 	}
