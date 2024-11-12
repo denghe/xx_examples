@@ -8,9 +8,10 @@ namespace Msgs {
 		gSerdeInfo.Register<::Msgs::Global::Equipment>();
 		gSerdeInfo.Register<::Msgs::Global::Config_Monster>();
 		gSerdeInfo.Register<::Msgs::Global::Scene>();
+		gSerdeInfo.Register<::Msgs::Global::Block>();
 		gSerdeInfo.Register<::Msgs::Global::Player>();
 		gSerdeInfo.Register<::Msgs::Global::Monster>();
-		gSerdeInfo.Register<::Msgs::Global::Block>();
+		gSerdeInfo.Register<::Msgs::Global::Projectile>();
 		gSerdeInfo.Register<::Msgs::Global::Bullet_Base>();
 		gSerdeInfo.Register<::Msgs::Global::Bullet_Sector>();
 		gSerdeInfo.Register<::Msgs::Global::Bullet_Box>();
