@@ -13,7 +13,8 @@ namespace Msgs {
 			static constexpr FX64 cFrameIndexStep{ FX64{0.1} / Scene::fps60ratio };
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
 			static constexpr FX64 cMovementSpeed{ FX64{5} / Scene::fps60ratio };
-			//static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
+			static constexpr FX64 c1_MovementSpeed{ FX64_1 / cMovementSpeed };
+			static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 
 			static constexpr float cColorPlusDefault{ 1 };
 			static constexpr float cColorPlusWhite{ 100000 };
@@ -27,16 +28,16 @@ namespace Msgs {
 			XYp pos, tarPos;
 			FX64 radius{}, radians{}, frameIndex{};
 			int64_t changeColorToWhiteElapsedTime{};
-			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
 
-			// todo
 			xx::Shared<Config_Monster> cfg;
 			xx::TinyList<xx::Shared<Equipment>> equipments;
 			Stat_t level{}, experience{};
 			Stat_t life{}, energy{};
-			/* T */ bool spDirty{ true };
 			StatPanel sp;
+			void spSetDirty();
+			void spClearDirty();
+			bool spIsDirty() const;
 
 			virtual ~Monster();
 			Monster* Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos);

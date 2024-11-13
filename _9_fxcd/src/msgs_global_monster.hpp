@@ -6,10 +6,10 @@ namespace Msgs {
 		inline int32_t Monster::ReadFrom(xx::Data_r& dr) {
 			return dr.Read(
 				scene, owner
+				, indexAtContainer
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, changeColorToWhiteElapsedTime
-				, indexAtContainer
 
 				, cfg
 				, equipments
@@ -22,10 +22,10 @@ namespace Msgs {
 		inline void Monster::WriteTo(xx::Data& d) const {
 			d.Write(
 				scene, owner
+				, indexAtContainer
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, changeColorToWhiteElapsedTime
-				, indexAtContainer
 
 				, cfg
 				, equipments
@@ -70,6 +70,7 @@ namespace Msgs {
 			cfg = scene_->monsterDefaultConfig;
 			level = 1;
 			experience = 0;
+			spSetDirty();
 			UpdateSP();
 			//life = sp.life;
 			life = scene_->rnd.Next<int32_t>(1, sp.life.ToInt() + 1);
@@ -83,9 +84,21 @@ namespace Msgs {
 			return this;
 		}
 
+		XX_INLINE void Monster::spSetDirty() {
+			udByte1 = 1;
+		}
+
+		XX_INLINE void Monster::spClearDirty() {
+			udByte1 = 0;
+		}
+
+		XX_INLINE bool Monster::spIsDirty() const {
+			return udByte1;
+		}
+
 		inline void Monster::UpdateSP() {
-			if (spDirty) {
-				spDirty = false;
+			if (spIsDirty()) {
+				spClearDirty();
 				sp.Clear();
 				// calculate points by level
 				sp.health = cfg->initHealth + (this->level - 1) * cfg->levelToHealthRatio;
@@ -142,13 +155,13 @@ namespace Msgs {
 			// make move to tar's vect
 			auto d = tarPos - pos;
 			auto mag2 = d.x * d.x + d.y * d.y;
+			FX64 _1_mag{};
 			XYp v{};
 			if (mag2 > FX64_1) {
-				v = d * mag2.RSqrtFastest() * cMovementSpeed;
+				_1_mag = mag2.RSqrtFastest();
+				v = d * _1_mag * cMovementSpeed;
 			}
 			
-			// todo: anti shake when nearby target
-
 			// combine move force
 			if (FillCrossInc(pos)) {
 				assert(inc.x < scene->maxDistance);
@@ -156,7 +169,11 @@ namespace Msgs {
 				assert(inc.x * inc.x + inc.y * inc.y <= Msgs::Global::Scene::maxDistance);
 				newPos = pos + inc + v;
 			} else {
-				newPos = pos + v;
+				if (_1_mag.IsZero() || _1_mag > c1_MovementSpeed) {
+					newPos = tarPos;
+				} else {
+					newPos = pos + v;
+				}
 			}
 
 			// map edge protect
@@ -243,6 +260,7 @@ namespace Msgs {
 
 		inline bool Monster::FillCrossInc(XYp const& pos_) {
 			inc.Reset();
+			int32_t count{};
 
 			auto p = pos_.As<int32_t>();
 			scene->monsterSpace.Foreach9All<true>(p.x, p.y, [&](Monster* m)->bool {
@@ -262,11 +280,12 @@ namespace Msgs {
 						inc.x += r.CosFastest() * cMovementSpeed;
 						inc.y += r.SinFastest() * cMovementSpeed;
 					}
+					++count;
 				}
 				return false;
 			}, this);
 
-			return true;
+			return count > 0;
 		}
 
 		inline int32_t Monster::BlocksLimit(XYp& pos_) {

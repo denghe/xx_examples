@@ -636,7 +636,7 @@ var Y,
     S: () => Date.now(),
     T: () => performance.now(),
     W: () => !0,
-    qa: (a, b) => {
+    da: (a, b) => {
       function c(d) {
         R.get(a)(d, b) && requestAnimationFrame(c);
       }
@@ -665,18 +665,18 @@ var Y,
       }
       return !1;
     },
-    O: (a, b, c) => {
+    pa: (a, b, c) => {
       a = Xa(a);
       if (!a) return -4;
       a.width = b;
       a.height = c;
       return 0;
     },
-    ma: (a, b, c, d) => Ya(a, b, c, d, 2, "keydown"),
-    la: (a, b, c, d) => Ya(a, b, c, d, 3, "keyup"),
-    ka: (a, b, c, d) => Za(a, b, c, d, 5, "mousedown"),
-    Y: (a, b, c, d) => Za(a, b, c, d, 8, "mousemove"),
-    da: (a, b, c, d) => Za(a, b, c, d, 6, "mouseup"),
+    Y: (a, b, c, d) => Ya(a, b, c, d, 2, "keydown"),
+    O: (a, b, c, d) => Ya(a, b, c, d, 3, "keyup"),
+    M: (a, b, c, d) => Za(a, b, c, d, 5, "mousedown"),
+    qa: (a, b, c, d) => Za(a, b, c, d, 8, "mousemove"),
+    L: (a, b, c, d) => Za(a, b, c, d, 6, "mouseup"),
     V: function (a, b, c, d, g) {
       function k(x) {
         if (M) x();else if (!ja) try {
@@ -743,7 +743,7 @@ var Y,
       } else hb(a, e, E ? v : F ? r : H);
       return a;
     },
-    M: (a, b) => {
+    oa: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!D[b],
@@ -764,7 +764,7 @@ var Y,
       a = Xa(a);
       return !a || b.Xa ? 0 : rb(a, b);
     },
-    L: a => {
+    na: a => {
       var _sb;
       sb = nb[a];
       h.fb = Y = (_sb = sb) === null || _sb === void 0 ? void 0 : _sb.Ua;
@@ -790,7 +790,7 @@ var Y,
       G[d >> 2] = g;
       return 0;
     },
-    oa: a => Y.activeTexture(a),
+    la: a => Y.activeTexture(a),
     A: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -812,8 +812,8 @@ var Y,
     i: (a, b, c, d) => {
       c && b ? Y.bufferData(a, y, d, c, b) : Y.bufferData(a, b, d);
     },
-    C: a => Y.clear(a),
-    D: (a, b, c, d) => Y.clearColor(a, b, c, d),
+    D: a => Y.clear(a),
+    E: (a, b, c, d) => Y.clearColor(a, b, c, d),
     ea: a => {
       Y.compileShader(X[a]);
     },
@@ -838,7 +838,7 @@ var Y,
         g && (Y.deleteBuffer(g), g.name = 0, kb[d] = null, d == Y.Oa && (Y.Oa = 0), d == Y.Ja && (Y.Ja = 0));
       }
     },
-    E: (a, b) => {
+    F: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = D[b + 4 * c >> 2],
           g = lb[d];
@@ -872,13 +872,13 @@ var Y,
       }
     },
     K: a => Y.disable(a),
-    G: (a, b, c, d) => {
+    B: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    F: (a, b, c, d) => {
+    G: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    pa: a => Y.enable(a),
+    ma: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
@@ -894,7 +894,7 @@ var Y,
     l: (a, b) => {
       pb(a, b, "createTexture", W);
     },
-    B: (a, b) => {
+    C: (a, b) => {
       pb(a, b, "createVertexArray", mb);
     },
     h: (a, b) => Y.getAttribLocation(V[a], L(b)),
@@ -968,7 +968,7 @@ var Y,
       } else Y.texImage2D(a, b, c, d, g, k, f, n, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    na: (a, b) => {
+    ka: (a, b) => {
       Y.uniform1i(wb(a), b);
     },
     H: (a, b, c) => {

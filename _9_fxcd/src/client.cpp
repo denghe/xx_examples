@@ -139,6 +139,7 @@ LabPlay:
 			} else {
 				lastMousePressed = false;
 				genDelay = int(Looper::fps / 2);
+				nextGenTime = {};
 			}
 		}
 	}
