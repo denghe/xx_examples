@@ -11,6 +11,7 @@ namespace Msgs {
 		struct Player;
 		struct Monster;
 		struct Block;
+		struct Config_Monster;
 		struct Bullet_Base;
 		// ...
 
@@ -20,8 +21,8 @@ namespace Msgs {
 #include "msgs_global_effect_text.h"
 #include "msgs_global_stat.h"
 #include "msgs_global_equipment.h"				// 1
-#include "msgs_global_config_monster.h"			// 2
 #include "msgs_global_scene.h"					// 3
+#include "msgs_global_config_monster.h"			// 2
 #include "msgs_global_block.h"					// 4
 #include "msgs_global_player.h"					// 5
 #include "msgs_global_monster.h"				// 6

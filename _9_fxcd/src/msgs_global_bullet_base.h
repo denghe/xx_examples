@@ -12,10 +12,10 @@ namespace Msgs {
 
 			static constexpr int32_t cPierceDelay{ uint32_t(Looper::fps) >> 3 };
 
-			int32_t damage{};
+			FX64 damage{};
 			xx::Listi32<std::pair<xx::Weak<Monster>, int64_t>> hitBlackList;
 
-			void Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_);
+			void Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 damage_);
 			void HitBlackListClear(int32_t pierceDelay_);
 			bool HitBlackListTryAdd(int32_t pierceDelay_, Monster* m);
 			// todo

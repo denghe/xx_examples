@@ -17,7 +17,7 @@ namespace Msgs {
             );
         }
 
-        inline void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_, int32_t damage_) {
+        inline void Bullet_Base::Init(Scene* scene_, XYp const& pos_, FX64 radians_, FX64 damage_) {
             assert(scene_->bullets.Empty() || scene_->bullets.Top().pointer != this);	// auto add check
             scene_->bullets.Emplace(xx::SharedFromThis(this));
             scene = xx::WeakFromThis(scene_);

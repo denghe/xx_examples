@@ -20,8 +20,7 @@ int32_t main() {
 	gLooper.showFps = true;
 	gLooper.title = "xx_examples_8_netsim2";
 	gLooper.Init();
-	//gLooper.Run<true>();	// auto sleep
-	gLooper.Run();
+	gLooper.Run<false>();	// no sleep
 }
 #endif
 

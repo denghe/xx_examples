@@ -83,4 +83,105 @@ namespace Msgs {
 	}
 }
 
-// todo: serde template
+namespace xx {
+	template<> struct IsPod<Msgs::Global::StatItem, void> : std::true_type {};
+	template<> struct IsPod<Msgs::Global::StatPanelBase, void> : std::true_type {};
+	template<> struct IsPod<Msgs::Global::StatPanel, void> : std::true_type {};
+	template<> struct IsPod<Msgs::Global::StatPanelExt, void> : std::true_type {};
+
+	template<typename T>
+	struct DataFuncs<T, std::enable_if_t< std::is_same_v<Msgs::Global::StatItem, std::remove_cvref_t<T>> >> {
+		template<bool needReserve = true>
+		static inline void Write(Data& d, T const& in) {
+			d.Write<needReserve>(in.type, in.value);
+		}
+		static inline int Read(Data_r& d, T& out) {
+			return d.Read(out.type, out.value);
+		}
+	};
+
+	template<typename T>
+	struct DataFuncs<T, std::enable_if_t< std::is_same_v<Msgs::Global::StatPanelBase, std::remove_cvref_t<T>> >> {
+		template<bool needReserve = true>
+		static inline void Write(Data& d, T const& in) {
+			d.Write<needReserve>(
+				in.health,
+				in.vitality,
+				in.strength,
+				in.dexterity,
+				in.defense,
+				in.wisdom,
+				in.lucky
+			);
+		}
+		static inline int Read(Data_r& d, T& out) {
+			return d.Read(
+				out.health,
+				out.vitality,
+				out.strength,
+				out.dexterity,
+				out.defense,
+				out.wisdom,
+				out.lucky
+			);
+		}
+	};
+
+	template<typename T>
+	struct DataFuncs<T, std::enable_if_t< std::is_same_v<Msgs::Global::StatPanel, std::remove_cvref_t<T>> >> {
+		template<bool needReserve = true>
+		static inline void Write(Data& d, T const& in) {
+			d.Write<needReserve>((Msgs::Global::StatPanelBase&)in);
+			d.Write<needReserve>(
+				in.life,
+				in.lifeRegeneration,
+				in.energy,
+				in.energyRegeneration,
+				in.damageScale,
+				in.defenseScale,
+				in.evasion,
+				in.movementSpeed,
+				in.experienceScale,
+				in.criticalChance,
+				in.criticalBonus
+			);
+		}
+		static inline int Read(Data_r& d, T& out) {
+			if (auto r = d.Read((Msgs::Global::StatPanelBase&)out); r) return r;
+			return d.Read(
+				out.life,
+				out.lifeRegeneration,
+				out.energy,
+				out.energyRegeneration,
+				out.damageScale,
+				out.defenseScale,
+				out.evasion,
+				out.movementSpeed,
+				out.experienceScale,
+				out.criticalChance,
+				out.criticalBonus
+			);
+		}
+	};
+
+	template<typename T>
+	struct DataFuncs<T, std::enable_if_t< std::is_same_v<Msgs::Global::StatPanelExt, std::remove_cvref_t<T>> >> {
+		template<bool needReserve = true>
+		static inline void Write(Data& d, T const& in) {
+			d.Write<needReserve>((Msgs::Global::StatPanel&)in);
+			d.Write<needReserve>(
+				in.attackSpeed1,
+				in.attackSpeed2,
+				in.attackSpeed3
+			);
+		}
+		static inline int Read(Data_r& d, T& out) {
+			if (auto r = d.Read((Msgs::Global::StatPanel&)out); r) return r;
+			return d.Read(
+				out.attackSpeed1,
+				out.attackSpeed2,
+				out.attackSpeed3
+			);
+		}
+	};
+}

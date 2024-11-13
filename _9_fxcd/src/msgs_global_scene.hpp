@@ -4,7 +4,16 @@ namespace Msgs {
 	namespace Global {
 
 		inline int32_t Scene::ReadFrom(xx::Data_r& dr) {
-			if (auto r = dr.Read(frameNumber, rnd, monsters, players, blocks, bullets)) return r;
+			if (auto r = dr.Read(
+				frameNumber, 
+				rnd, 
+				monsterDefaultConfig,
+				monsters, 
+				players, 
+				blocks, 
+				bullets,
+				effectTexts
+			)) return r;
 
 			// serialize monsterSpace
 			auto& der = (xx::DataEx_r&)dr;
@@ -40,13 +49,20 @@ namespace Msgs {
 				blockSpace.Add(o);
 			}
 
-			if (auto r = dr.Read(effectTexts)) return r;
-
 			return 0;
 		}
 
 		inline void Scene::WriteTo(xx::Data& d) const {
-			d.Write(frameNumber, rnd, monsters, players, blocks, bullets);
+			d.Write(
+				frameNumber,
+				rnd,
+				monsterDefaultConfig,
+				monsters,
+				players,
+				blocks,
+				bullets,
+				effectTexts
+			);
 
 			// deserialize monsterSpace
 			auto& s = monsterSpace;
@@ -68,14 +84,13 @@ namespace Msgs {
 			}
 
 			// skip serialize blockSpace ( because blocks never change )
-
-			d.Write(effectTexts);
 		}
 
 		inline void Scene::Init(int32_t sid) {
 			assert(gIsServer);
 			frameNumber = 1000;	// skip some cast delay
 
+			monsterDefaultConfig.Emplace();
 			monsterSpace.Init(numRows, numCols, cellSize);
 			blockSpace.Init(numRows, numCols, cellSize);
 			effectTexts.Reserve(10000);

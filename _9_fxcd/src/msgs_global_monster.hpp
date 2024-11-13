@@ -11,7 +11,11 @@ namespace Msgs {
 				, changeColorToWhiteElapsedTime
 				, indexAtContainer
 
-				, hp
+				, cfg
+				, equipments
+				, level, experience
+				, life, energy
+				, sp
 			);
 		}
 
@@ -23,7 +27,11 @@ namespace Msgs {
 				, changeColorToWhiteElapsedTime
 				, indexAtContainer
 
-				, hp
+				, cfg
+				, equipments
+				, level, experience
+				, life, energy
+				, sp
 			);
 		}
 
@@ -58,7 +66,15 @@ namespace Msgs {
 			radians = scene_->rnd.NextRadians<FX64>();
 			frameIndex.SetZero();
 
-			hp = scene_->rnd.Next<int32_t>(1, cMaxHP + 1);
+			// todo: make Equipment( this, ...
+			cfg = scene_->monsterDefaultConfig;
+			level = 1;
+			experience = 0;
+			UpdateSP();
+			//life = sp.life;
+			life = scene_->rnd.Next<int32_t>(1, sp.life.ToInt() + 1);
+			energy = sp.energy;
+			// ...
 
 			_x = pos.x.ToInt();
 			_y = pos.y.ToInt();
@@ -67,7 +83,62 @@ namespace Msgs {
 			return this;
 		}
 
+		inline void Monster::UpdateSP() {
+			if (spDirty) {
+				spDirty = false;
+				sp.Clear();
+				// calculate points by level
+				sp.health = cfg->initHealth + (this->level - 1) * cfg->levelToHealthRatio;
+				sp.vitality = cfg->initVitality + (this->level - 1) * cfg->levelToVitalityRatio;
+				sp.strength = cfg->initStrength + (this->level - 1) * cfg->levelToStrengthRatio;
+				sp.dexterity = cfg->initDexterity + (this->level - 1) * cfg->levelToDexterityRatio;
+				sp.defense = cfg->initDefense + (this->level - 1) * cfg->levelToDefenseRatio;
+				sp.wisdom = cfg->initWisdom + (this->level - 1) * cfg->levelToWisdomRatio;
+				sp.lucky = cfg->initLucky + (this->level - 1) * cfg->levelToLuckyRatio;
+				// gather points & results from items
+				if (auto equipmentsCount = equipments.Count(); equipmentsCount > 0) {
+					for (int32_t ei = 0; ei < equipmentsCount; ++ei) {
+						auto& e = equipments[ei];
+						if (auto statsCount = e->stats.Count(); statsCount > 0) {
+							for (int32_t si = 0; si < statsCount; ++si) {
+								auto& s = e->stats[si];
+								sp.At(s.type) += s.value;
+							}
+						}
+					}
+				}
+				// calculate final results
+				sp.life += sp.health * cfg->healthToLifeRatio;
+				sp.energy += sp.health * cfg->healthToEnergyRatio;
+				sp.lifeRegeneration += sp.vitality * cfg->vitalityToLifeRegenerationRatio;
+				sp.energyRegeneration += sp.vitality * cfg->vitalityToEnergyRegenerationRatio;
+				sp.damageScale += sp.strength * cfg->strengthToDamageScaleRatio;
+				sp.defenseScale += cfg->defenseFactor / (cfg->defenseFactor + sp.defense);
+				sp.evasion += cfg->evasionFactor / (cfg->evasionFactor + sp.dexterity);
+				sp.movementSpeed += cfg->baseMovementSpeed + sp.dexterity * cfg->dexterityToMovementSpeedRatio;
+				sp.experienceScale += sp.wisdom * cfg->wisdomToExperienceScaleRatio;
+				sp.criticalChance += sp.lucky * cfg->luckyToCritialChanceScaleRatio;
+				sp.criticalBonus += sp.lucky * cfg->luckyToCritialBonusScaleRatio;
+				// handle value range
+				if (sp.criticalChance > 1) sp.criticalBonus += sp.criticalChance - 1;
+				if (sp.movementSpeed >= 1000) sp.movementSpeed = 1000;
+				if (sp.defenseScale >= 1) sp.defenseScale = 0.99999;
+				if (sp.evasion >= 1) sp.evasion = 0.99999;
+			}
+			// handle regenerations
+			if (life < sp.life) {
+				life += sp.lifeRegeneration;
+				if (life > sp.life) life = sp.life;
+			}
+			if (energy < sp.energy) {
+				energy += sp.energyRegeneration;
+				if (energy > sp.energy) energy = sp.energy;
+			}
+		}
+
 		inline void Monster::Update1() {
+			UpdateSP();
+
 			// make move to tar's vect
 			auto d = tarPos - pos;
 			auto mag2 = d.x * d.x + d.y * d.y;
@@ -75,6 +146,8 @@ namespace Msgs {
 			if (mag2 > FX64_1) {
 				v = d * mag2.RSqrtFastest() * cMovementSpeed;
 			}
+			
+			// todo: anti shake when nearby target
 
 			// combine move force
 			if (FillCrossInc(pos)) {
@@ -145,7 +218,7 @@ namespace Msgs {
 			auto hpBgPos = gLooper.camera.ToGLPos(p + XY{ -32, -39 });
 			auto hpFgPos = gLooper.camera.ToGLPos(p + XY{ -31, -39 });
 			auto bgScale = gLooper.camera.scale * XY{ 1, 0.1 };
-			auto hpFgScale = gLooper.camera.scale * XY{ (float)hp / cMaxHP * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
+			auto hpFgScale = gLooper.camera.scale * XY{ (float)life.ToInt() / sp.life.ToInt() * (62.f / 64.f), 0.1f * (4.4f / 6.4f) };
 			{
 				auto& q = qs[0];
 				q.pos = hpBgPos;
@@ -224,14 +297,14 @@ namespace Msgs {
 
 		inline bool Monster::Hurt(Bullet_Base* bullet_) {
 			// todo: calculate damage
-			hp -= bullet_->damage;
+			life -= bullet_->damage;
 
-			if (hp <= 0) {
-				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Red, bullet_->damage);
+			if (life <= 0) {
+				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Red, bullet_->damage.ToInt());
 				Kill();			// unsafe
 				return true;
 			} else {
-				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Yellow, bullet_->damage);
+				scene->MakeEffectText(pos.As<float>(), XY{ 0, -1 }, xx::RGBA8_Yellow, bullet_->damage.ToInt());
 				changeColorToWhiteElapsedTime = scene->frameNumber + cColorPlusChangeDuration;
 				return false;
 			}

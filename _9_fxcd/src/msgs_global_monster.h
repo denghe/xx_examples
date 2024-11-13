@@ -13,6 +13,7 @@ namespace Msgs {
 			static constexpr FX64 cFrameIndexStep{ FX64{0.1} / Scene::fps60ratio };
 			static constexpr FX64 cFrameIndexMax{ ResTpFrames::_countof_monster_ };
 			static constexpr FX64 cMovementSpeed{ FX64{5} / Scene::fps60ratio };
+			//static constexpr FX64 cMovementSpeedPow2{ cMovementSpeed * cMovementSpeed };
 
 			static constexpr float cColorPlusDefault{ 1 };
 			static constexpr float cColorPlusWhite{ 100000 };
@@ -28,8 +29,6 @@ namespace Msgs {
 			int64_t changeColorToWhiteElapsedTime{};
 			int32_t indexAtContainer{ -1 };
 			/* T */ XYp inc{}, newPos{};
-
-			int32_t hp{};	// todo: remove when sp done
 
 			// todo
 			xx::Shared<Config_Monster> cfg;
@@ -49,6 +48,7 @@ namespace Msgs {
 			int32_t BlocksLimit(XYp& pos_);
 			void Kill(/* todo: killer */);	// remove from scene.monsters & destroy
 			bool Hurt(Bullet_Base* bullet_);
+			void UpdateSP();
 		};
 
 	}

@@ -17,6 +17,7 @@ namespace Msgs {
             );
         }
 
+        // todo: damage args
         inline Bullet_Box& Bullet_Box::Init(Scene* scene_, XYp const& pos_, FX64 radians_, XYp const& size_) {
             Base::Init(scene_, pos_, radians_, 5);
             size = size_;

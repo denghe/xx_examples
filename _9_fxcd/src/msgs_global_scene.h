@@ -30,6 +30,7 @@ namespace Msgs {
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
+			xx::Shared<Config_Monster> monsterDefaultConfig;
 			xx::Spacei32<Monster> monsterSpace;
 			xx::Listi32<xx::Shared<Monster>> monsters;
 			xx::Listi32<xx::Shared<Player>> players;

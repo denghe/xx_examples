@@ -27,8 +27,8 @@ namespace Msgs {
 
 			Stat_t healthToLifeRatio{ 2 };
 			Stat_t healthToEnergyRatio{ 5 };
-			Stat_t vitalityToLifeRegenerationRatio{ 0.2 };
-			Stat_t vitalityToEnergyRegenerationRatio{ 0.5 };
+			Stat_t vitalityToLifeRegenerationRatio{ FX64{1} / Scene::fps };
+			Stat_t vitalityToEnergyRegenerationRatio{ FX64{2} / Scene::fps };
 			Stat_t strengthToDamageScaleRatio{ 0.1 };
 			Stat_t defenseFactor{ 100 };
 			Stat_t evasionFactor{ 100 };
