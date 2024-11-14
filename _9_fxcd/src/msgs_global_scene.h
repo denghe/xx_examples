@@ -30,17 +30,20 @@ namespace Msgs {
 
 			int64_t frameNumber{};
 			xx::Rnd rnd;
-			xx::Shared<Config_Monster> monsterDefaultConfig;
+			xx::Spacei32<Item> itemSpace;
 			xx::Spacei32<Monster> monsterSpace;
+			xx::Shared<Config_Monster> monsterDefaultConfig;
 			xx::Listi32<xx::Shared<Monster>> monsters;
 			xx::Listi32<xx::Shared<Player>> players;
 			xx::SpaceABi32<Block> blockSpace;
 			xx::Listi32<xx::Shared<Block>> blocks;
 			xx::Listi32<xx::Shared<Bullet_Base>> bullets;
+			xx::Listi32<xx::Shared<Item>> items;
 			xx::Queue<EffectText> effectTexts;
 			/* T */ bool disposing{};	// ~Scene() == true
 
 			void Init(int32_t sid);
+			~Scene();
 			/* C */ void InitForDraw();	// recursive call all childs
 			void Update();
 			/* C */ void Draw();
@@ -48,7 +51,9 @@ namespace Msgs {
 			void RemovePlayer(int32_t clientId);
 			void PosLimitByMapSize(XYp& p);
 			void MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_);
-			~Scene();
+
+			template<typename T>
+			static xx::Shared<Item> RemoveFromItem(T& items, int32_t index);	// todo
 		};
 
 	}

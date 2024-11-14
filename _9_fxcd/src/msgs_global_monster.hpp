@@ -12,7 +12,7 @@ namespace Msgs {
 				, changeColorToWhiteElapsedTime
 
 				, cfg
-				, equipments
+				, items
 				, level, experience
 				, life, energy
 				, sp
@@ -28,7 +28,7 @@ namespace Msgs {
 				, changeColorToWhiteElapsedTime
 
 				, cfg
-				, equipments
+				, items
 				, level, experience
 				, life, energy
 				, sp
@@ -66,7 +66,7 @@ namespace Msgs {
 			radians = scene_->rnd.NextRadians<FX64>();
 			frameIndex.SetZero();
 
-			// todo: make Equipment( this, ...
+			// todo: make Item( this, ...
 			cfg = scene_->monsterDefaultConfig;
 			level = 1;
 			experience = 0;
@@ -109,9 +109,9 @@ namespace Msgs {
 				sp.wisdom = cfg->initWisdom + (this->level - 1) * cfg->levelToWisdomRatio;
 				sp.lucky = cfg->initLucky + (this->level - 1) * cfg->levelToLuckyRatio;
 				// gather points & results from items
-				if (auto equipmentsCount = equipments.Count(); equipmentsCount > 0) {
-					for (int32_t ei = 0; ei < equipmentsCount; ++ei) {
-						auto& e = equipments[ei];
+				if (auto itemsCount = items.Count(); itemsCount > 0) {
+					for (int32_t ei = 0; ei < itemsCount; ++ei) {
+						auto& e = items[ei];
 						if (auto statsCount = e->stats.Count(); statsCount > 0) {
 							for (int32_t si = 0; si < statsCount; ++si) {
 								auto& s = e->stats[si];

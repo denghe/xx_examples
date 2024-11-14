@@ -31,7 +31,7 @@ namespace Msgs {
 			/* T */ XYp inc{}, newPos{};
 
 			xx::Shared<Config_Monster> cfg;
-			xx::TinyList<xx::Shared<Equipment>> equipments;
+			xx::TinyList<xx::Shared<Item>> items;
 			Stat_t level{}, experience{};
 			Stat_t life{}, energy{};
 			StatPanel sp;
