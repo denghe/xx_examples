@@ -45,16 +45,11 @@ namespace Msgs {
 
 		// auto sync indexAtContainer. swap remove with last
 		inline void Monster::Kill() {
-			auto bak = indexAtContainer;
-			scene->monsters.Top()->indexAtContainer = bak;
-			indexAtContainer = -1;
-			scene->monsters.SwapRemoveAt(bak);
+			xx::RemoveFrom(scene->monsters, indexAtContainer);
 		}
 
 		inline Monster* Monster::Init(Scene* scene_, xx::Shared<Player> const& owner_, xx::XYi const& bornPos) {
-			assert(scene_->monsters.Empty() || scene_->monsters.Top().pointer != this);	// auto add check
-			indexAtContainer = scene_->monsters.len;
-			scene_->monsters.Emplace(xx::SharedFromThis(this));
+			AddTo(scene_->monsters, xx::SharedFromThis(this));
 			scene = xx::WeakFromThis(scene_);
 			owner = owner_.ToWeak();
 

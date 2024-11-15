@@ -25,7 +25,7 @@ namespace Msgs {
 			// ...
 
 			void Init(Scene* scene_, Monster* owner_);						// owner_ == null mean on floor
-			void MoveTo(Monster* owner_);
+			void MoveTo(Monster* newOwner_);
 			virtual bool Cast(Monster* target) { return false; };			// return true: success
 		};
 

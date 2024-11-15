@@ -51,9 +51,6 @@ namespace Msgs {
 			void RemovePlayer(int32_t clientId);
 			void PosLimitByMapSize(XYp& p);
 			void MakeEffectText(xx::XY const& pos_, xx::XY const& dist_, xx::RGBA8 color_, int32_t value_);
-
-			template<typename T>
-			static xx::Shared<Item> RemoveFromItem(T& items, int32_t index);	// todo
 		};
 
 	}
