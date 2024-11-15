@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "looper.h"
+#include "msgs_global__enums.h"
 
 namespace Msgs {
 	inline xx::SerdeInfo gSerdeInfo;
@@ -14,44 +15,7 @@ namespace Msgs {
 		struct Bullet_Base;
 		// ...
 	}
-
-	enum class ItemEquipmentLocations : uint8_t {
-		Bag,
-		Helm,
-		Amulet,
-		Shoulder,
-		Armor,
-		Belt,
-		Pants,
-		Glove,
-		Boots,
-		Ring,
-		Weapon,
-		Shield,
-		Accessory,
-		// ...
-	};
-
-	enum class ItemQualities : uint8_t {
-		Normal,
-		Excellent,
-		Rare,
-		Epic,
-		Legendary,
-		Ancient,
-		Archaic
-		// ...
-	};
-
-	enum class ItemTypes : uint16_t {
-		Unknown,		// is not a item?
-		Sword1,
-		// ...
-	};
-
 }
-
-// todo: monster.items
 
 #include "msgs_global_effect_text.h"
 #include "msgs_global_stat.h"

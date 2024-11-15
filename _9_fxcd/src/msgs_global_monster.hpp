@@ -5,11 +5,13 @@ namespace Msgs {
 
 		inline int32_t Monster::ReadFrom(xx::Data_r& dr) {
 			return dr.Read(
-				scene, owner
-				, indexAtContainer
+				indexAtContainer
+				, scene, owner
+
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, changeColorToWhiteElapsedTime
+				/* , inc, newPos */
 
 				, cfg
 				, items
@@ -21,11 +23,13 @@ namespace Msgs {
 
 		inline void Monster::WriteTo(xx::Data& d) const {
 			d.Write(
-				scene, owner
-				, indexAtContainer
+				indexAtContainer
+				, scene, owner
+
 				, pos, tarPos
 				, radius, radians, frameIndex
 				, changeColorToWhiteElapsedTime
+				/* , inc, newPos */
 
 				, cfg
 				, items
