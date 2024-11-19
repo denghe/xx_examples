@@ -18,9 +18,10 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx_examples_8_netsim2";
+	gLooper.title = "xx_examples_9_fxcd";
 	gLooper.Init();
-	gLooper.Run<false>();	// no sleep
+	//gLooper.Run<false>();	// no sleep
+	gLooper.Run();
 }
 #endif
 
@@ -172,4 +173,6 @@ void Looper::Draw() {
 	gLooper.ctcDefault.Draw(XY{ 0, -gLooper.windowSize_2.y + 5 } + XY{ 2, 2 }, str, xx::RGBA8_White, { 0.5f, 0 });
 
 	DrawNode(ui);
+
+	//xx::Quad().SetFrame(ctcDefault.texs[0]).Draw();	// show font for issue
 }

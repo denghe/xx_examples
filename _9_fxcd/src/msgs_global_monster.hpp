@@ -98,44 +98,12 @@ namespace Msgs {
 		inline void Monster::UpdateSP() {
 			if (spIsDirty()) {
 				spClearDirty();
-				sp.Clear();
-				// calculate points by level
-				sp.health = cfg->initHealth + (this->level - 1) * cfg->levelToHealthRatio;
-				sp.vitality = cfg->initVitality + (this->level - 1) * cfg->levelToVitalityRatio;
-				sp.strength = cfg->initStrength + (this->level - 1) * cfg->levelToStrengthRatio;
-				sp.dexterity = cfg->initDexterity + (this->level - 1) * cfg->levelToDexterityRatio;
-				sp.defense = cfg->initDefense + (this->level - 1) * cfg->levelToDefenseRatio;
-				sp.wisdom = cfg->initWisdom + (this->level - 1) * cfg->levelToWisdomRatio;
-				sp.lucky = cfg->initLucky + (this->level - 1) * cfg->levelToLuckyRatio;
+				sp.CalculatePoints(cfg, level);
 				// gather points & results from items
-				if (auto itemsCount = items.Count(); itemsCount > 0) {
-					for (int32_t ei = 0; ei < itemsCount; ++ei) {
-						auto& e = items[ei];
-						if (auto statsCount = e->stats.Count(); statsCount > 0) {
-							for (int32_t si = 0; si < statsCount; ++si) {
-								auto& s = e->stats[si];
-								sp.At(s.type) += s.value;
-							}
-						}
-					}
+				for (auto c = items.Count(), i = 0; i < c; ++i) {
+					sp.CalculateStatList(items[i]->stats);
 				}
-				// calculate final results
-				sp.life += sp.health * cfg->healthToLifeRatio;
-				sp.energy += sp.health * cfg->healthToEnergyRatio;
-				sp.lifeRegeneration += sp.vitality * cfg->vitalityToLifeRegenerationRatio;
-				sp.energyRegeneration += sp.vitality * cfg->vitalityToEnergyRegenerationRatio;
-				sp.damageScale += sp.strength * cfg->strengthToDamageScaleRatio;
-				sp.defenseScale += cfg->defenseFactor / (cfg->defenseFactor + sp.defense);
-				sp.evasion += cfg->evasionFactor / (cfg->evasionFactor + sp.dexterity);
-				sp.movementSpeed += cfg->baseMovementSpeed + sp.dexterity * cfg->dexterityToMovementSpeedRatio;
-				sp.experienceScale += sp.wisdom * cfg->wisdomToExperienceScaleRatio;
-				sp.criticalChance += sp.lucky * cfg->luckyToCritialChanceScaleRatio;
-				sp.criticalBonus += sp.lucky * cfg->luckyToCritialBonusScaleRatio;
-				// handle value range
-				if (sp.criticalChance > 1) sp.criticalBonus += sp.criticalChance - 1;
-				if (sp.movementSpeed >= 1000) sp.movementSpeed = 1000;
-				if (sp.defenseScale >= 1) sp.defenseScale = 0.99999;
-				if (sp.evasion >= 1) sp.evasion = 0.99999;
+				sp.CalculateResults(cfg);
 			}
 			// handle regenerations
 			if (life < sp.life) {

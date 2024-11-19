@@ -12,7 +12,7 @@ namespace Msgs {
 			Stat_t initHealth{ 10 };
 			Stat_t initVitality{ 10 };
 			Stat_t initStrength{ 10 };
-			Stat_t initDexterity{ 10 };
+			Stat_t initAgility{ 10 };
 			Stat_t initDefense{ 10 };
 			Stat_t initWisdom{ 10 };
 			Stat_t initLucky{ 10 };
@@ -20,7 +20,7 @@ namespace Msgs {
 			Stat_t levelToHealthRatio{ 2 };
 			Stat_t levelToVitalityRatio{ 2 };
 			Stat_t levelToStrengthRatio{ 2 };
-			Stat_t levelToDexterityRatio{ 2 };
+			Stat_t levelToAgilityRatio{ 2 };
 			Stat_t levelToDefenseRatio{ 2 };
 			Stat_t levelToWisdomRatio{ 2 };
 			Stat_t levelToLuckyRatio{ 2 };
@@ -33,7 +33,7 @@ namespace Msgs {
 			Stat_t defenseFactor{ 100 };
 			Stat_t evasionFactor{ 100 };
 			Stat_t baseMovementSpeed{ 300 };
-			Stat_t dexterityToMovementSpeedRatio{ 0.1 };
+			Stat_t agilityToMovementSpeedRatio{ 0.1 };
 			Stat_t wisdomToExperienceScaleRatio{ 0.1 };
 			Stat_t luckyToCritialChanceScaleRatio{ 0.01 };
 			Stat_t luckyToCritialBonusScaleRatio{ 0.1 };

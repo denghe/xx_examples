@@ -7,7 +7,8 @@ namespace Msgs {
 			health,
 			vitality,
 			strength,
-			dexterity,
+			// intelligence,  // no need now
+			agility,
 			defense,
 			wisdom,
 			lucky, __POINTS_END__ = lucky,
@@ -43,15 +44,16 @@ namespace Msgs {
 			Stat_t health{};							// + life max, energy max
 			Stat_t vitality{};							// + life regeneration, energy regeneration
 			Stat_t strength{};							// + damage scale
-			Stat_t dexterity{};							// + evasion, movement speed
+			Stat_t agility{};							// + evasion, movement speed
 			Stat_t defense{};							// + damage reduce scale
-			Stat_t wisdom{};							// + experience scale
-			Stat_t lucky{};								// + critical chance, critical bonus, improve drop rate
+			Stat_t wisdom{};							// + experience scale, critical bonus
+			Stat_t lucky{};								// + critical chance, improve drop rate
 
 			void Clear();
 			Stat_t& At(StatTypes t) const;
 		};
 
+		struct Config_Monster;
 		struct alignas(8) StatPanel : StatPanelBase {
 			Stat_t life{};
 			Stat_t lifeRegeneration{};
@@ -66,9 +68,14 @@ namespace Msgs {
 			Stat_t criticalBonus{};
 
 			void Clear();
+			void CalculatePoints(Config_Monster* cfg, Stat_t level);		// step1
+			template<typename Container>
+			void CalculateStatList(Container const& stats);					// step2: for all items
+			void CalculateResults(Config_Monster* cfg);						// step3
 			Stat_t& At(StatTypes t) const;
 		};
 
+		// todo
 		struct alignas(8) StatPanelExt : StatPanel {
 			Stat_t attackSpeed1;
 			Stat_t attackSpeed2;
@@ -108,7 +115,7 @@ namespace xx {
 				in.health,
 				in.vitality,
 				in.strength,
-				in.dexterity,
+				in.agility,
 				in.defense,
 				in.wisdom,
 				in.lucky
@@ -119,7 +126,7 @@ namespace xx {
 				out.health,
 				out.vitality,
 				out.strength,
-				out.dexterity,
+				out.agility,
 				out.defense,
 				out.wisdom,
 				out.lucky
