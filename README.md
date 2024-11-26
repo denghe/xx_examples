@@ -32,8 +32,26 @@ https://github.com/emscripten-core/emsdk
 3. click "Pull"
 4. click "Submodule Update"
 
-#tips
+#tips1
 
 upgrade all submode to latest version:
 
 git submodule update --remote
+
+#tips2
+
+how to install SDL2 in emsdk:
+
+1. create a file. name = "o.cpp":
+```
+int main() { return 0; }
+```
+2. execute following command line:
+```
+em++ -sUSE_SDL=2 o.cpp -o o.html
+```
+
+will show following log:
+
+ports:INFO: retrieving port: sdl2 from https://github.com/libsdl-org/SDL/archive/release-??????????.zip
+.....
