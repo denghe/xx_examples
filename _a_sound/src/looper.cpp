@@ -27,6 +27,10 @@ xx::Task<> Looper::MainTask() {
 	// todo: async download ogg files & preload	( maybe generate res code? )
 	sound.Init();
 
+	auto [d, _] = LoadFileData("res/1.ogg");
+	auto as = sound.CreateAudioSource(d);
+
+
 	btnCfg.frame = res.button;
 	btnCfg.texScale = { 0.99, 0.99 };
 	btnCfg.center = { 2, 3, 2, 2 };
