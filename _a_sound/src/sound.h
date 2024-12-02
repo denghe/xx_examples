@@ -9,9 +9,12 @@
 #include "backend/xaudio2/xaudio2.h"
 #endif
 
+#include "xx_aligned.h"
+
 // todo: support xaudio2 & web audio api
 // todo: support ogg playback
 // todo: copy code from soloud
+// todo: refine( inline -> XX_INLINE  rename ... )
 
 namespace xx {
 	using AudioLength = double;
@@ -20,15 +23,8 @@ namespace xx {
 	struct AudioSourceInstance;
 	struct XAudio2Data;
 	struct VoiceCallback;
-
-	struct AlignedFloatBuffer {
-		float* data{};							// aligned for SSE
-		std::unique_ptr<char[]> rawData;
-		size_t numFloats{};
-
-		void Init(size_t numFloats_);
-		void Clear();
-	};
+	using AlignedFloatBuffer = AlignedBuffer<float, 16, true>;
+	using TinyAlignedFloatBuffer = AlignedBuffer<float, 16, false>;
 
 	struct Sound {
 		static constexpr int32_t numMaxChannels{ 8 };
@@ -39,10 +35,14 @@ namespace xx {
 
 		Shared<XAudio2Data> data;
 
-		float globalVolume{};
+		// todo: more members....
+		AlignedFloatBuffer mScratch;
 
 		int32_t Init();
 		Shared<AudioSource> CreateAudioSource(Span oggFileData);
+
+		void mix(float* aBuffer, unsigned int aSamples);
+		void mix_internal(unsigned int aSamples);
 	};
 
 	struct AudioSource {
@@ -95,17 +95,17 @@ namespace xx {
 
 namespace xx {
 
-
-	inline void AlignedFloatBuffer::Init(size_t numFloats_) {
-		numFloats = numFloats_;
-		rawData = std::make_unique_for_overwrite<char[]>(numFloats_ * sizeof(float) + 16);
-		data = (float*)(((size_t)rawData.get() + 15) & ~15);
+	inline void interlace_samples_float(const float* aSourceBuffer, float* aDestBuffer, unsigned int aSamples, unsigned int aChannels) {
+		// 111222 -> 121212
+		unsigned int i, j, c;
+		c = 0;
+		for (j = 0; j < aChannels; j++) {
+			for (i = j; i < aSamples * aChannels; i += aChannels) {
+				aDestBuffer[i] = aSourceBuffer[c];
+				c++;
+			}
+		}
 	}
-
-	inline void AlignedFloatBuffer::Clear() {
-		memset(data, 0, sizeof(float) * numFloats);
-	}
-
 
 	/********************************************************************************/
 
@@ -114,6 +114,7 @@ namespace xx {
 	}
 
 	inline AudioLength AudioSource::GetLength() {
+		// todo
 		return 0;
 	}
 
@@ -121,6 +122,7 @@ namespace xx {
 
 	inline AudioSourceInstance::AudioSourceInstance(AudioSource* parent_) {
 		parent = WeakFromThis(parent_);
+		// todo
 	}
 
 
@@ -128,6 +130,67 @@ namespace xx {
 
 	inline int32_t Sound::Init() {
 		if (FAILED(CoInitializeEx(0, COINIT_MULTITHREADED))) return __LINE__;
+
+		//mInsideAudioThreadMutex = false;
+		//mScratchSize = 0;
+		//mScratchNeeded = 0;
+		//mSamplerate = 0;
+		//mBufferSize = 0;
+		//mFlags = 0;
+		//mGlobalVolume = 0;
+		//mPlayIndex = 0;
+		//mBackendData = NULL;
+		//mAudioThreadMutex = NULL;
+		//mPostClipScaler = 0;
+		//mBackendCleanupFunc = NULL;
+		//mChannels = 2;
+		//mStreamTime = 0;
+		//mLastClockedTime = 0;
+		//mAudioSourceID = 1;
+		//mBackendString = 0;
+		//mBackendID = 0;
+		//mActiveVoiceDirty = true;
+		//mActiveVoiceCount = 0;
+		//int i;
+		//for (i = 0; i < VOICE_COUNT; i++)
+		//	mActiveVoice[i] = 0;
+		//for (i = 0; i < FILTERS_PER_STREAM; i++) {
+		//	mFilter[i] = NULL;
+		//	mFilterInstance[i] = NULL;
+		//}
+		//for (i = 0; i < 256; i++) {
+		//	mFFTData[i] = 0;
+		//	mVisualizationWaveData[i] = 0;
+		//	mWaveData[i] = 0;
+		//}
+		//for (i = 0; i < MAX_CHANNELS; i++) {
+		//	mVisualizationChannelVolume[i] = 0;
+		//}
+		//for (i = 0; i < VOICE_COUNT; i++) {
+		//	mVoice[i] = 0;
+		//}
+		//mVoiceGroup = 0;
+		//mVoiceGroupCount = 0;
+
+		//m3dPosition[0] = 0;
+		//m3dPosition[1] = 0;
+		//m3dPosition[2] = 0;
+		//m3dAt[0] = 0;
+		//m3dAt[1] = 0;
+		//m3dAt[2] = -1;
+		//m3dUp[0] = 0;
+		//m3dUp[1] = 1;
+		//m3dUp[2] = 0;
+		//m3dVelocity[0] = 0;
+		//m3dVelocity[1] = 0;
+		//m3dVelocity[2] = 0;
+		//m3dSoundSpeed = 343.3f;
+		//mMaxActiveVoices = 16;
+		//mHighestVoice = 0;
+		//mResampleData = NULL;
+		//mResampleDataOwner = NULL;
+		//for (i = 0; i < 3 * MAX_CHANNELS; i++)
+		//	m3dSpeakerPosition[i] = 0;
 
 		data.Emplace();
 		data->bufferEndEvent = CreateEvent(0, FALSE, FALSE, 0);
@@ -151,10 +214,28 @@ namespace xx {
 		}
 		data->samples = bufferSize;
 		data->sound = WeakFromThis(this);
-		//aSoloud->postinit_internal(aSamplerate, aBuffer * format.nChannels, aFlags, numChannels);
-		//data->thread = Thread::createThread(xaudio2Thread, data);
+		// aSoloud->postinit_internal(aSamplerate, aBuffer * format.nChannels, aFlags, numChannels);		// todo
+		data->thread = std::jthread{ [data = data.pointer] {
+			int bufferIndex = 0;
+			while (WAIT_OBJECT_0 != WaitForSingleObject(data->audioProcessingDoneEvent, 0)) {
+				XAUDIO2_VOICE_STATE state;
+				data->sourceVoice->GetState(&state);
+				while (state.BuffersQueued < XAudio2Data::numBuffers) {
+					data->sound->mix(data->buffer[bufferIndex].get(), data->samples);
+					XAUDIO2_BUFFER info = {0};
+					info.AudioBytes = data->bufferLengthBytes;
+					info.pAudioData = (const BYTE*)(data->buffer[bufferIndex].get());
+					data->sourceVoice->SubmitSourceBuffer(&info);
+					++bufferIndex;
+					if (bufferIndex >= XAudio2Data::numBuffers) {
+						bufferIndex = 0;
+					}
+					data->sourceVoice->GetState(&state);
+				}
+				WaitForSingleObject(data->bufferEndEvent, INFINITE);
+			}
+		} };
 		data->sourceVoice->Start();
-
 		return 0;
 	}
 
@@ -181,4 +262,158 @@ namespace xx {
 		return r;
 	}
 
+	inline void Sound::mix(float* aBuffer, unsigned int aSamples) {
+		mix_internal(aSamples);
+		interlace_samples_float(mScratch, aBuffer, aSamples, numChannels);
+	}
+
+	inline void Sound::mix_internal(unsigned int aSamples) {
+
+#ifdef _MCW_DN
+		{
+			static bool once = false;
+			if (!once) {
+				once = true;
+				if (!(mFlags & NO_FPU_REGISTER_CHANGE)) {
+					_controlfp(_DN_FLUSH, _MCW_DN);
+				}
+			}
+		}
+#endif
+
+		{
+			static bool once = false;
+			if (!once) {
+				once = true;
+				// Set denorm clear to zero (CTZ) and denorms are zero (DAZ) flags on.
+				// This causes all math to consider really tiny values as zero, which
+				// helps performance. I'd rather use constants from the sse headers,
+				// but for some reason the DAZ value is not defined there(!)
+				if (!(mFlags & NO_FPU_REGISTER_CHANGE)) {
+					_mm_setcsr(_mm_getcsr() | 0x8040);
+				}
+			}
+		}
+
+		float buffertime = aSamples / (float)mSamplerate;
+		float globalVolume[2];
+		mStreamTime += buffertime;
+		mLastClockedTime = 0;
+
+		globalVolume[0] = mGlobalVolume;
+		if (mGlobalVolumeFader.mActive) {
+			mGlobalVolume = mGlobalVolumeFader.get(mStreamTime);
+		}
+		globalVolume[1] = mGlobalVolume;
+
+		lockAudioMutex_internal();
+
+		// Process faders. May change scratch size.
+		int i;
+		for (i = 0; i < (signed)mHighestVoice; i++) {
+			if (mVoice[i] && !(mVoice[i]->mFlags & AudioSourceInstance::PAUSED)) {
+				float volume[2];
+
+				mVoice[i]->mActiveFader = 0;
+
+				if (mGlobalVolumeFader.mActive > 0) {
+					mVoice[i]->mActiveFader = 1;
+				}
+
+				mVoice[i]->mStreamTime += buffertime;
+				mVoice[i]->mStreamPosition += (double)buffertime * (double)mVoice[i]->mOverallRelativePlaySpeed;
+
+				// TODO: this is actually unstable, because mStreamTime depends on the relative
+				// play speed. 
+				if (mVoice[i]->mRelativePlaySpeedFader.mActive > 0) {
+					float speed = mVoice[i]->mRelativePlaySpeedFader.get(mVoice[i]->mStreamTime);
+					setVoiceRelativePlaySpeed_internal(i, speed);
+				}
+
+				volume[0] = mVoice[i]->mOverallVolume;
+				if (mVoice[i]->mVolumeFader.mActive > 0) {
+					mVoice[i]->mSetVolume = mVoice[i]->mVolumeFader.get(mVoice[i]->mStreamTime);
+					mVoice[i]->mActiveFader = 1;
+					updateVoiceVolume_internal(i);
+					mActiveVoiceDirty = true;
+				}
+				volume[1] = mVoice[i]->mOverallVolume;
+
+				if (mVoice[i]->mPanFader.mActive > 0) {
+					float pan = mVoice[i]->mPanFader.get(mVoice[i]->mStreamTime);
+					setVoicePan_internal(i, pan);
+					mVoice[i]->mActiveFader = 1;
+				}
+
+				if (mVoice[i]->mPauseScheduler.mActive) {
+					mVoice[i]->mPauseScheduler.get(mVoice[i]->mStreamTime);
+					if (mVoice[i]->mPauseScheduler.mActive == -1) {
+						mVoice[i]->mPauseScheduler.mActive = 0;
+						setVoicePause_internal(i, 1);
+					}
+				}
+
+				if (mVoice[i]->mStopScheduler.mActive) {
+					mVoice[i]->mStopScheduler.get(mVoice[i]->mStreamTime);
+					if (mVoice[i]->mStopScheduler.mActive == -1) {
+						mVoice[i]->mStopScheduler.mActive = 0;
+						stopVoice_internal(i);
+					}
+				}
+			}
+		}
+
+		if (mActiveVoiceDirty)
+			calcActiveVoices_internal();
+
+		// Resize scratch if needed.
+		if (mScratchSize < mScratchNeeded) {
+			mScratchSize = mScratchNeeded;
+			mScratch.init(mScratchSize * MAX_CHANNELS);
+		}
+
+		mixBus_internal(mOutputScratch.mData, aSamples, aSamples, mScratch.mData, 0, (float)mSamplerate, mChannels);
+
+		for (i = 0; i < FILTERS_PER_STREAM; i++) {
+			if (mFilterInstance[i]) {
+				mFilterInstance[i]->filter(mOutputScratch.mData, aSamples, mChannels, (float)mSamplerate, mStreamTime);
+			}
+		}
+
+		unlockAudioMutex_internal();
+
+		clip_internal(mOutputScratch, mScratch, aSamples, globalVolume[0], globalVolume[1]);
+
+		if (mFlags & ENABLE_VISUALIZATION) {
+			for (i = 0; i < MAX_CHANNELS; i++) {
+				mVisualizationChannelVolume[i] = 0;
+			}
+			if (aSamples > 255) {
+				for (i = 0; i < 256; i++) {
+					int j;
+					mVisualizationWaveData[i] = 0;
+					for (j = 0; j < (signed)mChannels; j++) {
+						float sample = mScratch.mData[i + j * aSamples];
+						float absvol = (float)fabs(sample);
+						if (mVisualizationChannelVolume[j] < absvol)
+							mVisualizationChannelVolume[j] = absvol;
+						mVisualizationWaveData[i] += sample;
+					}
+				}
+			} else {
+				// Very unlikely failsafe branch
+				for (i = 0; i < 256; i++) {
+					int j;
+					mVisualizationWaveData[i] = 0;
+					for (j = 0; j < (signed)mChannels; j++) {
+						float sample = mScratch.mData[(i % aSamples) + j * aSamples];
+						float absvol = (float)fabs(sample);
+						if (mVisualizationChannelVolume[j] < absvol)
+							mVisualizationChannelVolume[j] = absvol;
+						mVisualizationWaveData[i] += sample;
+					}
+				}
+			}
+		}
+	}
 }
