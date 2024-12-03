@@ -25,10 +25,14 @@ xx::Task<> Looper::MainTask() {
 	co_await res.AsyncLoad("res/");
 
 	// todo: async download ogg files & preload	( maybe generate res code? )
-	sound.Init();
 
-	auto [d, _] = LoadFileData("res/1.ogg");
-	auto as = sound.CreateAudioSource(d);
+	auto s_1 = sound.Load(LoadFileData<false>("res/1.ogg"));
+	auto s_2 = sound.Load(LoadFileData<false>("res/2.ogg"));
+	auto s_button1 = sound.Load(LoadFileData<false>("res/button1.ogg"));
+	auto s_gun1 = sound.Load(LoadFileData<false>("res/gun1.ogg"));
+	auto s_gun2 = sound.Load(LoadFileData<false>("res/gun2.ogg"));
+	auto s_gun3 = sound.Load(LoadFileData<false>("res/gun3.ogg"));
+
 
 
 	btnCfg.frame = res.button;
@@ -41,21 +45,38 @@ xx::Task<> Looper::MainTask() {
 	// todo: sound test buttons   play pause stop loop
 
 	float x{ -50 }, y{ 100 };
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play1", [&]() {
-		//id = sound.Play( ??? )  & store
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play 1.ogg", [this, s_1]() {
+		sound.Play(s_1);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"stop1", [&]() {
-		//sound.Stop( id )
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play 2.ogg", [this, s_2]() {
+		sound.Play(s_2);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play2", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play button1.ogg", [this, s_button1]() {
+		sound.Play(s_button1);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"stop2", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun1]() {
+		sound.Play(s_gun1);
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun2]() {
+		sound.Play(s_gun2);
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun3]() {
+		sound.Play(s_gun3);
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"stop all", [this]() {
+		sound.soloud.stopAll();
 	});
 
 	// ...

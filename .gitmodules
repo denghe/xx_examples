@@ -19,3 +19,6 @@
 [submodule "FixPointCS"]
 	path = FixPointCS
 	url = https://github.com/XMunkki/FixPointCS.git
+[submodule "soloud"]
+	path = soloud
+	url = https://github.com/denghe/soloud.git

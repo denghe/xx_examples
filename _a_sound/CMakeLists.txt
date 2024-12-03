@@ -24,6 +24,7 @@ include_directories(
 	../glfw/include
 	../3rd
 	../xx
+	../soloud/include
 )
 
 file(GLOB sources
@@ -38,11 +39,15 @@ if (MSVC)
 	list(APPEND sources "../xx/xx.natvis")
 endif()
 
+source_group("" FILES ${sources})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../ FILES ${sources})
+
 add_executable(${name} ${sources})
 
 
-source_group("" FILES ${sources})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../ FILES ${sources})
+add_subdirectory(../soloud soloud)
+target_link_libraries(${name} soloud)
+
 
 SET(BUILD_TESTING OFF CACHE BOOL "BUILD_TESTING" FORCE)
 SET(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE BOOL "USE_MSVC_RUNTIME_LIBRARY_DLL" FORCE)
