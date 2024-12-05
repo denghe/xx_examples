@@ -28,7 +28,7 @@ xx::Task<> Looper::MainTask() {
 
 	auto s_1 = sound.Load(LoadFileData<false>("res/1.ogg"));
 	auto s_2 = sound.Load(LoadFileData<false>("res/2.ogg"));
-	auto s_button1 = sound.Load(LoadFileData<false>("res/button1.ogg"));
+	auto s_button1 = sound.Load(LoadFileData<false>("res/button1.ogg"), true);
 	auto s_gun1 = sound.Load(LoadFileData<false>("res/gun1.ogg"));
 	auto s_gun2 = sound.Load(LoadFileData<false>("res/gun2.ogg"));
 	auto s_gun3 = sound.Load(LoadFileData<false>("res/gun3.ogg"));
@@ -44,7 +44,7 @@ xx::Task<> Looper::MainTask() {
 
 	// todo: sound test buttons   play pause stop loop
 
-	float x{ -50 }, y{ 100 };
+	float x{ -50 }, y{ 200 };
 	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play 1.ogg", [this, s_1]() {
 		sound.Play(s_1);
 	});
@@ -75,8 +75,18 @@ xx::Task<> Looper::MainTask() {
 	});
 
 	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"pause all", [this]() {
+		sound.SetPauseAll(true);
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"resume all", [this]() {
+		sound.SetPauseAll(false);
+	});
+
+	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"stop all", [this]() {
-		sound.soloud.stopAll();
+		sound.StopAll();
 	});
 
 	// ...
