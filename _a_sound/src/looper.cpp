@@ -26,12 +26,12 @@ xx::Task<> Looper::MainTask() {
 
 	// todo: async download ogg files & preload	( maybe generate res code? )
 
-	auto s_1 = sound.Load(LoadFileData<false>("res/1.ogg"));
-	auto s_2 = sound.Load(LoadFileData<false>("res/2.ogg"));
-	auto s_button1 = sound.Load(LoadFileData<false>("res/button1.ogg"), true);
-	auto s_gun1 = sound.Load(LoadFileData<false>("res/gun1.ogg"));
-	auto s_gun2 = sound.Load(LoadFileData<false>("res/gun2.ogg"));
-	auto s_gun3 = sound.Load(LoadFileData<false>("res/gun3.ogg"));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/1.ogg")));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/2.ogg")));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/button1.ogg"), true));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/gun1.ogg")));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/gun2.ogg")));
+	sss.Emplace(sound.Load(LoadFileData<false>("res/gun3.ogg")));
 
 
 
@@ -45,48 +45,57 @@ xx::Task<> Looper::MainTask() {
 	// todo: sound test buttons   play pause stop loop
 
 	float x{ -50 }, y{ 200 };
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play 1.ogg", [this, s_1]() {
-		sound.Play(s_1);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound2 play 1.ogg", [this]() {
+		sound2.Play(sss[0]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play 2.ogg", [this, s_2]() {
-		sound.Play(s_2);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 play 2.ogg", [this]() {
+		sound.Play(sss[1]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play button1.ogg", [this, s_button1]() {
-		sound.Play(s_button1);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 loop play button1.ogg", [this]() {
+		sound.Play(sss[2]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun1]() {
-		sound.Play(s_gun1);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 play gun1.ogg", [this]() {
+		sound.Play(sss[3]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun2]() {
-		sound.Play(s_gun2);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 play gun2.ogg", [this]() {
+		sound.Play(sss[4]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"play gun1.ogg", [this, s_gun3]() {
-		sound.Play(s_gun3);
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 play gun3.ogg", [this]() {
+		sound.Play(sss[5]);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"pause all", [this]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"random play gun? 1 minutes", [this]() {
+		soundTask = SoundTask();
+	});
+
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 pause all", [this]() {
+		paused = true;
 		sound.SetPauseAll(true);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"resume all", [this]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound1 resume all", [this]() {
+		paused = false;
 		sound.SetPauseAll(false);
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"stop all", [this]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy5m + XY{ x, y }, xy7a, btnCfg, U"sound* stop all", [this]() {
+		soundTask.reset();
 		sound.StopAll();
+		sound2.StopAll();
 	});
 
 	// ...
@@ -100,8 +109,23 @@ xx::Task<> Looper::MainTask() {
 	ok = true;
 }
 
+xx::Task<> Looper::SoundTask() {
+	for (auto et = time + 60; time < et;) {
+		//sound.Play(sss[rnd.Next(sss.Len() - 3) + 3]);
+		sound.Play(sss[rnd.Next(sss.Len())]);
+		co_yield 0;
+	}
+}
+
+
 void Looper::Draw() {
 	if (!ok) return;
-
+	if (!paused) {
+		if (soundTask.has_value()) {
+			if ((*soundTask)()) {
+				soundTask.reset();
+			}
+		}
+	}
 	DrawNode(ui);
 }
