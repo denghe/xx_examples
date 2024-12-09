@@ -8,7 +8,8 @@ endif()
 set(name 7)
 project(${name})
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -68,6 +69,12 @@ endif()
 
 if (WIN32)
 	target_link_libraries(${name} winmm)
+	
+	SET(MI_BUILD_TESTS OFF CACHE BOOL "MI_BUILD_TESTS" FORCE)
+	SET(MI_BUILD_SHARED OFF CACHE BOOL "MI_BUILD_SHARED" FORCE)
+	SET(MI_BUILD_OBJECT OFF CACHE BOOL "MI_BUILD_OBJECT" FORCE)
+	add_subdirectory(../mimalloc mimalloc)
+	target_link_libraries(${name} mimalloc-static)
 endif()
 
 if (EMSCRIPTEN)

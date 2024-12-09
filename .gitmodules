@@ -22,3 +22,6 @@
 [submodule "soloud"]
 	path = soloud
 	url = https://github.com/denghe/soloud.git
+[submodule "mimalloc"]
+	path = mimalloc
+	url = https://github.com/microsoft/mimalloc.git
