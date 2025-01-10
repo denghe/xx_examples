@@ -29,6 +29,8 @@ inline void Character::Update() {
 			moveDir = 1;
 		} else if (lastKey == xx::KeyboardKeys::D) {
 			moveDir = -1;
+		} else {
+			moveDir = 0;
 		}
 	} else if (gLooper.KeyDown(xx::KeyboardKeys::A)) {
 		lastKey = xx::KeyboardKeys::A;
