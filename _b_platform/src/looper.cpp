@@ -33,7 +33,7 @@ xx::Task<> Looper::MainTask() {
 
 	float x{}, y{};
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"reset", [&]() {
-		// todo
+		logic.Emplace()->Init();
 	});
 
 	//x += 60;
@@ -51,10 +51,19 @@ xx::Task<> Looper::MainTask() {
 	ok = true;
 }
 
+void Looper::Update() {
+	if (!ok) return;
+	if (logic) {
+		logic->Update();
+	}
+}
+
 void Looper::Draw() {
 	if (!ok) return;
-
-	// todo
-
+	if (logic) {
+		logic->Draw();
+	}
 	DrawNode(ui);
 }
+
+#include "logic.hpp"

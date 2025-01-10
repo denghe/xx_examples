@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "pch.h"
 #include "res_tp_frames.h"
+#include "logic.h"
 
 struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 
@@ -11,8 +12,9 @@ struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
 	xx::Camera camera;
 	bool ok{};										// true: loading finished
 
-	// todo
+	xx::Shared<Logic> logic;
 
+	void Update();
 	void Draw();
 };
 
