@@ -17,7 +17,7 @@ int32_t main() {
 	gLooper.showFps = true;
 	gLooper.title = "xx_examples_b_platform";
 	gLooper.Init();
-	gLooper.Run();
+	gLooper.Run<false>();
 }
 #endif
 
@@ -48,6 +48,7 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
+	scene.Emplace()->Init();
 	ok = true;
 }
 
@@ -64,6 +65,9 @@ void Looper::Draw() {
 		scene->Draw();
 	}
 	DrawNode(ui);
+
+	// draw tips
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "move: A / D        jump: SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 }
 
 #include "scene.hpp"

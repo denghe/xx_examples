@@ -1,9 +1,10 @@
 ﻿#pragma once
 #include "pch.h"
 #include "res_tp_frames.h"
+struct Cfg : xx::GDesign<1920, 1080, 60> {};
 #include "scene.h"
 
-struct Looper : xx::Engine<Looper>, xx::GDesign<1920, 1080, 60> {
+struct Looper : xx::Engine<Looper>, Cfg {
 
 	ResTpFrames res;
 	xx::Scale9SpriteConfig btnCfg;

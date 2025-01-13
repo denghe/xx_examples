@@ -11,52 +11,73 @@ inline void Character::Update() {
 	// left right move command check
 	int32_t moveDir;
 	if (gLooper.KeyDown(xx::KeyboardKeys::A) && gLooper.KeyDown(xx::KeyboardKeys::D)) {
-		if (lastKey == xx::KeyboardKeys::A) {
+		if (lastMoveDir == -1) {
 			moveDir = 1;
-		} else if (lastKey == xx::KeyboardKeys::D) {
+		} else if (lastMoveDir == 1) {
 			moveDir = -1;
 		} else {
 			moveDir = 0;
 		}
 	} else if (gLooper.KeyDown(xx::KeyboardKeys::A)) {
-		lastKey = xx::KeyboardKeys::A;
-		moveDir = -1;
+		lastMoveDir = moveDir = -1;
 	} else if (gLooper.KeyDown(xx::KeyboardKeys::D)) {
-		lastKey = xx::KeyboardKeys::D;
-		moveDir = 1;
+		lastMoveDir = moveDir = 1;
 	} else {
-		lastKey = xx::KeyboardKeys::Null;
-		moveDir = 0;
+		lastMoveDir = moveDir = 0;
 	}
 
 	// left right move
 	if (moveDir) {
 		pos.x += cMoveSpeed * moveDir;
 	}
-
-	// handle jump
 	lastY = pos.y;
-	if (!jumping && gLooper.KeyDown(xx::KeyboardKeys::Space)) {
-		ySpeed = -20;
-		jumping = true;
-	} else {
-		ySpeed += cGravity;
-		pos.y += ySpeed;
 
-		// handle block & platform
-		if (pos.y > lastY) {
-			auto maxX = pos.x + halfWidth;
-			auto minX = pos.x - halfWidth;
-			
-			for (auto& o : owner->platforms) {
-				if (lastY <= o.y && o.y <= pos.y) {
-					if (!(maxX <= o.x.from || minX >= o.x.to)) {
-						jumping = false;
-						ySpeed = 0;
-						pos.y = o.y;
-					}
+	// handle gravity
+	ySpeed += cGravity;
+	pos.y += ySpeed;
+	if (ySpeed > 0.f) {
+		++fallingCount;
+	}
+
+	// handle block & platform
+	if (pos.y > lastY) {
+		auto maxX = pos.x + halfWidth;
+		auto minX = pos.x - halfWidth;
+		for (auto& o : owner->platforms) {
+			if (lastY <= o.y && o.y <= pos.y) {
+				if (!(maxX <= o.x.from || minX >= o.x.to)) {
+					jumping = false;
+					lastJumping = false;
+					fallingCount = 0;
+					jumpingCount = 0;
+					ySpeed = 0;
+					pos.y = o.y;
+					break;
 				}
 			}
+		}
+	}
+
+	// handle jump
+	if (!jumping) {
+		if (gLooper.KeyDown(xx::KeyboardKeys::Space)) {
+			// first jump
+			if (fallingCount < cCoyoteTimespanNumFrames) {
+				ySpeed = -cJumpAccel;
+				jumping = true;
+				lastJumping = true;
+			}
+		}
+	} else {
+		if (gLooper.KeyDown(xx::KeyboardKeys::Space)) {
+			// big jump
+			if (lastJumping) {
+				if (++jumpingCount < cBigJumpTimespanNumFrames) {
+					ySpeed = -cJumpAccel;
+				}
+			}
+		} else {
+			lastJumping = false;
 		}
 	}
 }
@@ -115,14 +136,26 @@ inline void Scene::Init() {
 	// todo: make some blocks & platforms
 	{
 		auto& o = platforms.Emplace();
+		o.x.from = -64*5;
+		o.x.to = -64*3;
+		o.y = -64*2;
+	}
+	{
+		auto& o = platforms.Emplace();
+		o.x.from = 64;
+		o.x.to = 64*3;
+		o.y = 0;
+	}
+	{
+		auto& o = platforms.Emplace();
 		o.x.from = -64;
 		o.x.to = 64;
 		o.y = 64*2;
 	}
 	{
 		auto& o = platforms.Emplace();
-		o.x.from = -64*5;
-		o.x.to = 64*5;
+		o.x.from = -64*10;
+		o.x.to = 64*10;
 		o.y = 64*4;
 	}
 }
