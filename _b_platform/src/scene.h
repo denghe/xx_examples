@@ -1,26 +1,27 @@
 ﻿#pragma once
 
+struct Scene;
+
+// logic item base class
 struct Item {
-	static constexpr float cGravity{ 2 };
-	static constexpr float cBaseVelocity{ 1 };
-	static constexpr float cMaxVelocity{ 5 };
-
-	XY pos{}, size{1,1};
-	float ySpeed{};
-	// todo: more stat members
-
-	void Update();
-	void Draw();
+	Scene* owner{};
 };
 
+// player avatar
 struct Character : Item {
+	static constexpr float halfWidth{ 32.f };
+	static constexpr float cMoveSpeed{ 3 };
+	static constexpr float cGravity{ 1 };
+
+	XY pos{};
 	xx::KeyboardKeys lastKey{};
-	float jumpAccel{};
+	float lastY{}, ySpeed{};
 	bool jumping{};
 	// todo: double jump support
 
+	Character& Init(Scene* owner_);
 	void Update();
-	void Init();
+	void Draw();
 };
 
 // 4 way
@@ -36,10 +37,11 @@ struct Platform {
 	void Draw();
 };
 
-struct Logic {
+// scene
+struct Scene {
 	xx::Shared<Character> character;
 	xx::Listi32<Block> blocks;
-	xx::Listi32<Platform> platforms;
+	xx::Listi32<Platform> platforms;	// todo: space index
 
 	void Init();
 	void Update();

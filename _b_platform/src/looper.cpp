@@ -33,7 +33,7 @@ xx::Task<> Looper::MainTask() {
 
 	float x{}, y{};
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"reset", [&]() {
-		logic.Emplace()->Init();
+		scene.Emplace()->Init();
 	});
 
 	//x += 60;
@@ -53,17 +53,17 @@ xx::Task<> Looper::MainTask() {
 
 void Looper::Update() {
 	if (!ok) return;
-	if (logic) {
-		logic->Update();
+	if (scene) {
+		scene->Update();
 	}
 }
 
 void Looper::Draw() {
 	if (!ok) return;
-	if (logic) {
-		logic->Draw();
+	if (scene) {
+		scene->Draw();
 	}
 	DrawNode(ui);
 }
 
-#include "logic.hpp"
+#include "scene.hpp"
