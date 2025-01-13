@@ -43,13 +43,12 @@ inline void Character::Update() {
 	if (pos.y > lastY) {
 		auto maxX = pos.x + halfWidth;
 		auto minX = pos.x - halfWidth;
+		// todo: get platforms from space index find
 		for (auto& o : owner->platforms) {
 			if (lastY <= o.y && o.y <= pos.y) {
 				if (!(maxX <= o.x.from || minX >= o.x.to)) {
-					jumping = false;
-					lastJumping = false;
-					fallingCount = 0;
-					jumpingCount = 0;
+					jumping = lastJumping = false;
+					fallingCount = jumpingCount = 0;
 					ySpeed = 0;
 					pos.y = o.y;
 					break;
@@ -72,7 +71,8 @@ inline void Character::Update() {
 		if (gLooper.KeyDown(xx::KeyboardKeys::Space)) {
 			// big jump
 			if (lastJumping) {
-				if (++jumpingCount < cBigJumpTimespanNumFrames) {
+				++jumpingCount;
+				if (jumpingCount < cBigJumpTimespanNumFrames) {
 					ySpeed = -cJumpAccel;
 				}
 			}
