@@ -11,19 +11,19 @@ inline void Character::Update() {
 	// left right move command check
 	int32_t moveDir;
 	if (gLooper.KeyDown(xx::KeyboardKeys::A) && gLooper.KeyDown(xx::KeyboardKeys::D)) {
-		if (lastMoveDir == -1) {
+		if (lastXMoveDirection == -1) {
 			moveDir = 1;
-		} else if (lastMoveDir == 1) {
+		} else if (lastXMoveDirection == 1) {
 			moveDir = -1;
 		} else {
 			moveDir = 0;
 		}
 	} else if (gLooper.KeyDown(xx::KeyboardKeys::A)) {
-		lastMoveDir = moveDir = -1;
+		lastXMoveDirection = moveDir = -1;
 	} else if (gLooper.KeyDown(xx::KeyboardKeys::D)) {
-		lastMoveDir = moveDir = 1;
+		lastXMoveDirection = moveDir = 1;
 	} else {
-		lastMoveDir = moveDir = 0;
+		lastXMoveDirection = moveDir = 0;
 	}
 
 	// left right move
@@ -50,7 +50,7 @@ inline void Character::Update() {
 		for (auto& o : owner->platforms) {
 			if (lastY <= o.y && o.y <= pos.y) {
 				if (!(maxX <= o.x.from || minX >= o.x.to)) {
-					doubleJumped = jumping = false;
+					longJumpStoped = doubleJumped = jumping = false;
 					fallingFrameCount = bigJumpFrameCount = 0;
 					ySpeed = 0;
 					pos.y = o.y;
@@ -59,27 +59,30 @@ inline void Character::Update() {
 			}
 		}
 	}
-	 
+
 	// handle jump
 	auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
 	auto longJumpPressed = jumpPressed && lastJumpPressed;
 	auto firstJumpPressed = jumpPressed && !lastJumpPressed;
 	if (!jumping) {
-		if (firstJumpPressed && fallingFrameCount < cCoyoteTimespanNumFrames) {
+		if (firstJumpPressed && fallingFrameCount < cCoyoteNumFrames) {
 			ySpeed = -cJumpAccel;
 			jumping = true;
 		}
 	} else {
-		if (firstJumpPressed) {
-			if (!doubleJumped) {
-				doubleJumped = true;
-				bigJumpFrameCount = 0;
+		if (firstJumpPressed && !doubleJumped) {
+			doubleJumped = true;
+			longJumpStoped = false;
+			bigJumpFrameCount = 0;
+			ySpeed = -cJumpAccel;
+		} else if (longJumpPressed && !longJumpStoped) {
+			++bigJumpFrameCount;
+			if (bigJumpFrameCount < cBigJumpNumFrames) {
 				ySpeed = -cJumpAccel;
 			}
-		} else if (longJumpPressed) {
-			++bigJumpFrameCount;
-			if (bigJumpFrameCount < cBigJumpTimespanNumFrames) {
-				ySpeed = -cJumpAccel;
+		} else {
+			if constexpr (cEnableStrictJumpMode) {
+				longJumpStoped = true;
 			}
 		}
 	}
