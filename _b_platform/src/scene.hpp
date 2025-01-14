@@ -34,9 +34,12 @@ inline void Character::Update() {
 
 	// handle gravity
 	ySpeed += cGravity;
+	if (ySpeed > cMaxYSpeed) {
+		ySpeed = cMaxYSpeed;
+	}
 	pos.y += ySpeed;
 	if (ySpeed > 0.f) {
-		++fallingCount;
+		++fallingFrameCount;
 	}
 
 	// handle block & platform
@@ -47,8 +50,8 @@ inline void Character::Update() {
 		for (auto& o : owner->platforms) {
 			if (lastY <= o.y && o.y <= pos.y) {
 				if (!(maxX <= o.x.from || minX >= o.x.to)) {
-					jumping = lastJumping = false;
-					fallingCount = jumpingCount = 0;
+					doubleJumped = jumping = false;
+					fallingFrameCount = bigJumpFrameCount = 0;
 					ySpeed = 0;
 					pos.y = o.y;
 					break;
@@ -56,30 +59,31 @@ inline void Character::Update() {
 			}
 		}
 	}
-
+	 
 	// handle jump
+	auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
+	auto longJumpPressed = jumpPressed && lastJumpPressed;
+	auto firstJumpPressed = jumpPressed && !lastJumpPressed;
 	if (!jumping) {
-		if (gLooper.KeyDown(xx::KeyboardKeys::Space)) {
-			// first jump
-			if (fallingCount < cCoyoteTimespanNumFrames) {
-				ySpeed = -cJumpAccel;
-				jumping = true;
-				lastJumping = true;
-			}
+		if (firstJumpPressed && fallingFrameCount < cCoyoteTimespanNumFrames) {
+			ySpeed = -cJumpAccel;
+			jumping = true;
 		}
 	} else {
-		if (gLooper.KeyDown(xx::KeyboardKeys::Space)) {
-			// big jump
-			if (lastJumping) {
-				++jumpingCount;
-				if (jumpingCount < cBigJumpTimespanNumFrames) {
-					ySpeed = -cJumpAccel;
-				}
+		if (firstJumpPressed) {
+			if (!doubleJumped) {
+				doubleJumped = true;
+				bigJumpFrameCount = 0;
+				ySpeed = -cJumpAccel;
 			}
-		} else {
-			lastJumping = false;
+		} else if (longJumpPressed) {
+			++bigJumpFrameCount;
+			if (bigJumpFrameCount < cBigJumpTimespanNumFrames) {
+				ySpeed = -cJumpAccel;
+			}
 		}
 	}
+	lastJumpPressed = jumpPressed;
 }
 
 inline void Character::Draw() {

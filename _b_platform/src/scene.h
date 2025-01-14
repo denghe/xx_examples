@@ -10,8 +10,9 @@ struct Item {
 // player avatar
 struct Character : Item {
 	static constexpr float halfWidth{ 32.f };
-	static constexpr float cGravity{ 1 };
-	static constexpr float cMoveSpeed{ 6 };
+	static constexpr float cGravity{ 2 };
+	static constexpr float cMaxYSpeed{ 24 };
+	static constexpr float cMoveSpeed{ 8 };
 	static constexpr float cJumpAccel{ 16 };
 	static constexpr float cCoyoteTimespan{ 0.1f };
 	static constexpr int32_t cCoyoteTimespanNumFrames{ int32_t(cCoyoteTimespan / Cfg::frameDelay) };
@@ -21,9 +22,10 @@ struct Character : Item {
 	XY pos{};
 	int32_t lastMoveDir{};
 	float lastY{}, ySpeed{};
-	int32_t fallingCount{};		// for coyote time
-	int32_t jumpingCount{};
-	bool lastJumping{};
+	int32_t fallingFrameCount{};		// for coyote time
+	int32_t bigJumpFrameCount{};
+	bool doubleJumped{};
+	bool lastJumpPressed{};
 	bool jumping{};
 	// todo: double jump
 
@@ -44,6 +46,8 @@ struct Platform {
 	float y{};
 	void Draw();
 };
+
+// todo: moving platform? trap?
 
 // scene
 struct Scene {
