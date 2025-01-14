@@ -28,19 +28,20 @@ inline void Character::Update() {
 
 	// left right move
 	if (moveDir) {
-		pos.x += cMoveSpeed * moveDir;
+		pos.x += cXSpeed * moveDir;
 	}
 	lastY = pos.y;
 
 	// handle gravity
 	ySpeed += cGravity;
-	if (ySpeed > cMaxYSpeed) {
-		ySpeed = cMaxYSpeed;
+	if (ySpeed > cYSpeedMax) {
+		ySpeed = cYSpeedMax;
 	}
 	pos.y += ySpeed;
 	if (ySpeed > 0.f) {
 		++fallingFrameCount;
 	}
+	xx::CoutN(pos.y);	// watch full jump max height for easy config gravity & speed
 
 	// handle block & platform
 	if (pos.y > lastY) {
@@ -66,7 +67,7 @@ inline void Character::Update() {
 	auto firstJumpPressed = jumpPressed && !lastJumpPressed;
 	if (!jumping) {
 		if (firstJumpPressed && fallingFrameCount < cCoyoteNumFrames) {
-			ySpeed = -cJumpAccel;
+			ySpeed = cYSpeedInit;
 			jumping = true;
 		}
 	} else {
@@ -74,11 +75,11 @@ inline void Character::Update() {
 			doubleJumped = true;
 			longJumpStoped = false;
 			bigJumpFrameCount = 0;
-			ySpeed = -cJumpAccel;
+			ySpeed = cYSpeedInit;
 		} else if (longJumpPressed && !longJumpStoped) {
 			++bigJumpFrameCount;
 			if (bigJumpFrameCount < cBigJumpNumFrames) {
-				ySpeed = -cJumpAccel;
+				ySpeed = cYSpeedInit;
 			}
 		} else {
 			if constexpr (cEnableStrictJumpMode) {

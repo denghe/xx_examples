@@ -9,12 +9,12 @@ struct Item {
 
 // player avatar
 struct Character : Item {
-	// designed by 60 fps
 	static constexpr float halfWidth{ 32.f };
-	static constexpr float cGravity{ 2 };
-	static constexpr float cMaxYSpeed{ 24 };
-	static constexpr float cMoveSpeed{ 8 };
-	static constexpr float cJumpAccel{ 16 };
+	static_assert(Cfg::fps == 60.f || Cfg::fps == 120.f);
+	static constexpr float cGravity{ Cfg::fps == 120.f ? 0.4 : 1.2012 };
+	static constexpr float cYSpeedInit{ -650 / Cfg::fps };
+	static constexpr float cYSpeedMax{ 1000 / Cfg::fps };
+	static constexpr float cXSpeed{ 500 / Cfg::fps };
 	static constexpr float cCoyoteTimespan{ 0.1f };
 	static constexpr int32_t cCoyoteNumFrames{ int32_t(cCoyoteTimespan / Cfg::frameDelay) };
 	static constexpr float cBigJumpTimespan{ 0.2f };
