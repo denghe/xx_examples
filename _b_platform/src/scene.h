@@ -15,6 +15,7 @@ struct Character : Item {
 	static constexpr float cYSpeedInit{ -650 / Cfg::fps };
 	static constexpr float cYSpeedMax{ 1000 / Cfg::fps };
 	static constexpr float cXSpeed{ 500 / Cfg::fps };
+	static constexpr float cDownJumpYOffset{ 0.0001f };
 	static constexpr float cCoyoteTimespan{ 0.1f };
 	static constexpr int32_t cCoyoteNumFrames{ int32_t(cCoyoteTimespan / Cfg::frameDelay) };
 	static constexpr float cBigJumpTimespan{ 0.2f };

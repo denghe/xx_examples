@@ -67,7 +67,7 @@ void Looper::Draw() {
 	DrawNode(ui);
 
 	// draw tips
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "move: A / D        jump: SPACE", xx::RGBA8_Green, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 }
 
 #include "scene.hpp"

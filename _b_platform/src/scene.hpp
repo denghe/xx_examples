@@ -41,9 +41,9 @@ inline void Character::Update() {
 	if (ySpeed > 0.f) {
 		++fallingFrameCount;
 	}
-	xx::CoutN(pos.y);	// watch full jump max height for easy config gravity & speed
+	//xx::CoutN(pos.y);	// watch full jump max height for easy config gravity & speed
 
-	// handle block & platform
+	// handle platforms
 	if (pos.y > lastY) {
 		auto maxX = pos.x + halfWidth;
 		auto minX = pos.x - halfWidth;
@@ -63,12 +63,17 @@ inline void Character::Update() {
 
 	// handle jump
 	auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
-	auto longJumpPressed = jumpPressed && lastJumpPressed;
-	auto firstJumpPressed = jumpPressed && !lastJumpPressed;
+	auto downPressed = gLooper.KeyDown(xx::KeyboardKeys::S);
+	auto downJumpPressed = jumpPressed && downPressed;
+	auto longJumpPressed = jumpPressed && !downPressed && lastJumpPressed;
+	auto firstJumpPressed = jumpPressed && !downPressed && !lastJumpPressed;
 	if (!jumping) {
 		if (firstJumpPressed && fallingFrameCount < cCoyoteNumFrames) {
 			ySpeed = cYSpeedInit;
 			jumping = true;
+		}
+		if (downJumpPressed && ySpeed == 0) {
+			pos.y += cDownJumpYOffset;
 		}
 	} else {
 		if (firstJumpPressed && !doubleJumped) {
@@ -88,6 +93,8 @@ inline void Character::Update() {
 		}
 	}
 	lastJumpPressed = jumpPressed;
+
+	// todo: handle blocks
 }
 
 inline void Character::Draw() {
