@@ -2,7 +2,8 @@
 #include "pch.h"
 #include "res_tp_frames.h"
 struct Cfg : xx::GDesign<1920, 1080, 120> {};
-#include "scene.h"
+#include "scene_float.h"
+#include "scene_int.h"
 
 struct Looper : xx::Engine<Looper>, Cfg {
 
@@ -13,7 +14,8 @@ struct Looper : xx::Engine<Looper>, Cfg {
 	xx::Camera camera;
 	bool ok{};										// true: loading finished
 
-	xx::Shared<Scene> scene;
+	xx::Shared<FloatVersion::Scene> scene_float;
+	xx::Shared<IntVersion::Scene> scene_int;
 
 	void Update();
 	void Draw();
