@@ -22,9 +22,9 @@ namespace IntVersion {
 		static constexpr int32_t cBigJumpNumFrames{ int32_t(0.2f / Cfg::frameDelay) };
 		static constexpr bool cEnableStrictJumpMode{ true };
 
-		XYp _pos{};							// for update & draw
-		XYi pos{};							// for check
-		FX64 lastY{}, ySpeed{};
+		XYp _pos{};							// for update
+		XYi pos{};							// for check & draw
+		FX64 ySpeed{};
 		int32_t lastXMoveDirection{};		// -1: left  0: stoped  1: right
 		int32_t fallingFrameCount{};		// for coyote time
 		int32_t bigJumpFrameCount{};

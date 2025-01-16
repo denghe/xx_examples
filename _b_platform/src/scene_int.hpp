@@ -9,6 +9,7 @@ namespace IntVersion {
 	}
 
 	inline void Character::Update() {
+		auto bak = pos;
 
 		// left right move command check
 		int32_t moveDir;
@@ -35,9 +36,6 @@ namespace IntVersion {
 			_pos.x -= cXSpeed;
 		}
 
-		// backup
-		lastY = _pos.y;
-
 		// handle gravity
 		ySpeed += cGravity;
 		if (ySpeed > cYSpeedMax) {
@@ -48,16 +46,19 @@ namespace IntVersion {
 			++fallingFrameCount;
 		}
 
-		//xx::CoutN(pos.y);	// watch full jump max height for easy config gravity & speed
+		// watch full jump max height for easy config gravity & speed
+		//xx::CoutN(pos.y);
+
+		// store pos int version
 		pos = _pos.As<int32_t>();
 
 		// handle platforms
-		if (_pos.y > lastY) {
-			auto maxX = _pos.x + halfWidth;
-			auto minX = _pos.x - halfWidth;
+		if (pos.y > bak.y) {
+			auto maxX = pos.x + halfWidth;
+			auto minX = pos.x - halfWidth;
 			// todo: get platforms from space index find
 			for (auto& o : owner->platforms) {
-				if (lastY <= o.y && o.y <= pos.y) {
+				if (bak.y <= o.y && o.y <= pos.y) {
 					if (!(maxX <= o.x.from || minX >= o.x.to)) {
 						longJumpStoped = doubleJumped = jumping = false;
 						fallingFrameCount = bigJumpFrameCount = 0;
@@ -110,7 +111,7 @@ namespace IntVersion {
 	inline void Character::Draw() {
 		auto& frame = *gRes.quad;
 		auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame.tex->GetValue(), 1);
-		q.pos = gLooper.camera.ToGLPos(_pos.As<float>());
+		q.pos = gLooper.camera.ToGLPos(pos.As<float>());
 		q.anchor = { 0.5f, 0 };
 		q.scale = gLooper.camera.scale;
 		q.radians = 0;

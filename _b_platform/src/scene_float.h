@@ -24,7 +24,7 @@ namespace FloatVersion {
 
 		XY _pos{};							// for update & draw
 		XYi pos{};							// for check
-		float lastY{}, ySpeed{};
+		float ySpeed{};
 		int32_t lastXMoveDirection{};		// -1: left  0: stoped  1: right
 		int32_t fallingFrameCount{};		// for coyote time
 		int32_t bigJumpFrameCount{};

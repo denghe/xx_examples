@@ -9,6 +9,7 @@ namespace FloatVersion {
 	}
 
 	inline void Character::Update() {
+		auto bak = pos;
 
 		// left right move command check
 		int32_t moveDir;
@@ -35,9 +36,6 @@ namespace FloatVersion {
 
 
 
-		// backup
-		lastY = _pos.y;
-
 		// handle gravity
 		ySpeed += cGravity;
 		if (ySpeed > cYSpeedMax) {
@@ -48,16 +46,19 @@ namespace FloatVersion {
 			++fallingFrameCount;
 		}
 
-		//xx::CoutN(pos.y);	// watch full jump max height for easy config gravity & speed
+		// watch full jump max height for easy config gravity & speed
+		//xx::CoutN(pos.y);
+
+		// store pos int version
 		pos = _pos.As<int32_t>();
 
 		// handle platforms
-		if (_pos.y > lastY) {
-			auto maxX = _pos.x + halfWidth;
-			auto minX = _pos.x - halfWidth;
+		if (pos.y > bak.y) {
+			auto maxX = pos.x + halfWidth;
+			auto minX = pos.x - halfWidth;
 			// todo: get platforms from space index find
 			for (auto& o : owner->platforms) {
-				if (lastY <= o.y && o.y <= pos.y) {
+				if (bak.y <= o.y && o.y <= pos.y) {
 					if (!(maxX <= o.x.from || minX >= o.x.to)) {
 						longJumpStoped = doubleJumped = jumping = false;
 						fallingFrameCount = bigJumpFrameCount = 0;
