@@ -54,14 +54,14 @@ namespace FloatVersion {
 	// todo: moving platform? trap?
 
 	// scene
-	struct Scene {
+	struct Scene : xx::SceneBase {
 		xx::Shared<Character> character;
 		xx::Listi32<Block> blocks;
 		xx::Listi32<Platform> platforms;	// todo: space index
 
-		void Init();
-		void Update();
-		void Draw();
+		void Init() override;
+		void Update() override;
+		void Draw() override;
 	};
 
 }

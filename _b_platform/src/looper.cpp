@@ -33,14 +33,12 @@ xx::Task<> Looper::MainTask() {
 
 	float x{}, y{};
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play float version", [&]() {
-		scene_int.Reset();
-		scene_float.Emplace()->Init();
+		scene.Emplace<FloatVersion::Scene>()->Init();
 	});
 
 	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play int version", [&]() {
-		scene_float.Reset();
-		scene_int.Emplace()->Init();
+		scene.Emplace<IntVersion::Scene>()->Init();
 	});
 
 	// ...
@@ -51,28 +49,13 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
-	scene_int.Emplace()->Init();
-	ok = true;
-}
-
-void Looper::Update() {
-	if (!ok) return;
-	if (scene_int) {
-		scene_int->Update();
-	}
-	if (scene_float) {
-		scene_float->Update();
-	}
+	scene.Emplace<IntVersion::Scene>()->Init();
 }
 
 void Looper::Draw() {
-	if (!ok) return;
-	if (scene_int) {
-		scene_int->Draw();
-	}
-	if (scene_float) {
-		scene_float->Draw();
-	}
+	if (!scene) return;
+
+	scene->Draw();
 	DrawNode(ui);
 
 	// draw tips
@@ -81,3 +64,4 @@ void Looper::Draw() {
 
 #include "scene_float.hpp"
 #include "scene_int.hpp"
+#include "scene_cd.hpp"
