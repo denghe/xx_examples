@@ -58,13 +58,10 @@ xx::Task<> Looper::MainTask() {
 }
 
 void Looper::Draw() {
-	if (!scene) return;
-
-	scene->Draw();
-	DrawNode(ui);
-
-	// draw tips
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
+	if (scene) {
+		scene->Draw();
+		DrawNode(ui);
+	}
 }
 
 #include "scene_float.hpp"

@@ -194,6 +194,7 @@ namespace FloatVersion {
 		for (auto& o : blocks) o.Draw();
 		for (auto& o : platforms) o.Draw();
 		character->Draw();
+		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(float)  move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 	}
 
 }

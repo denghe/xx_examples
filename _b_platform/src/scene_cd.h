@@ -7,13 +7,11 @@ namespace CollisionDetection {
 	struct Item {
 		static constexpr XYi cResSize{ 64, 64 };
 
-		Scene* owner{};
-		XYi pos{}, size{};
-		xx::FromTo<XYi> aabb{};
+		Scene* scene{};
+		XYi pos{}, size{};		// pos: lef top pos
 		xx::RGBA8 color{ xx::RGBA8_White };
 
-		void Init(Scene* owner_, XYi const& pos_, XYi const& size_);
-		void SyncAABB();
+		void Init(Scene* scene_, XYi const& pos_, XYi const& size_);
 		void Draw();
 	};
 
@@ -21,14 +19,18 @@ namespace CollisionDetection {
 		XYi mouseOffset{};
 		bool dragging{}, lastMBState{};
 
-		Character& Init(Scene* owner_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
+		Character& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
 		void Update();
 
 		void HandleCollision();
+		bool HasCross(XYi const& tarPos_) const;
 	};
 
 	struct Block : Item {
-		Block& Init(Scene* owner_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
+		Block& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
+		bool IsCross(XYi const& cPos, XYi const& cSize) const;
+		bool IsCross(Character const& c) const;
+		XYi PushOut(Character const& c) const;
 	};
 
 	struct Scene : xx::SceneBase {
