@@ -41,6 +41,11 @@ xx::Task<> Looper::MainTask() {
 		scene.Emplace<IntVersion::Scene>()->Init();
 	});
 
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"collision detection test", [&]() {
+		scene.Emplace<CollisionDetection::Scene>()->Init();
+	});
+
 	// ...
 
 	clearColor = { 33, 33, 33, 255 };
