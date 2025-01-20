@@ -31,14 +31,21 @@ xx::Task<> Looper::MainTask() {
 
 	ui.Emplace()->Init();
 
-	float x{}, y{};
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play float version", [&]() {
-		scene.Emplace<FloatVersion::Scene>()->Init();
-	});
+	float x{}, y{ 50 };
+
+	//y -= 50;
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play float version", [&]() {
+	//	scene.Emplace<FloatVersion::Scene>()->Init();
+	//});
+
+	//y -= 50;
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play int version", [&]() {
+	//	scene.Emplace<IntVersion::Scene>()->Init();
+	//});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play int version", [&]() {
-		scene.Emplace<IntVersion::Scene>()->Init();
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play", [&]() {
+		scene.Emplace<IntVersion2::Scene>()->Init();
 	});
 
 	y -= 50;
@@ -54,7 +61,7 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
-	scene.Emplace<IntVersion::Scene>()->Init();
+	scene.Emplace<IntVersion2::Scene>()->Init();
 }
 
 void Looper::Draw() {
@@ -64,6 +71,7 @@ void Looper::Draw() {
 	}
 }
 
-#include "scene_float.hpp"
-#include "scene_int.hpp"
+//#include "scene_float.hpp"
+//#include "scene_int.hpp"
+#include "scene_int2.hpp"
 #include "scene_cd.hpp"
