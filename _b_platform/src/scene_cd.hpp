@@ -73,7 +73,8 @@ namespace CollisionDetection {
 		}
 		if (hasCross && !posChanged) {
 			// todo: 1 vs 3+
-			// scan all cross path + distance & combine
+			// scan all cross path + distance & combine?
+			// set neighbor output path config?
 		}
 	}
 
@@ -89,7 +90,7 @@ namespace CollisionDetection {
 
 	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
 		Item::Init(scene_, pos_, size_);
-		color = xx::RGBA8_Blue;
+		color = xx::RGBA8_Red;
 		return *this;
 	}
 
@@ -126,12 +127,14 @@ namespace CollisionDetection {
 	inline XYi Block::PushOut(Character const& c) const {
 		// calculate 4 way distance & choose min val
 		auto bPosRB = pos + size;	// RB: right bottom
+		auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
 		auto cPosRB = c.pos + c.size;
+		auto cCenter = c.pos + XYi{ c.size.x >> 1, c.size.y >> 1 };
 		int32_t dLeft, dRight, dUp, dDown;
-		if (c.pos.x >= pos.x) {
+		if (cCenter.x >= bCenter.x) {
 			dLeft = c.pos.x - pos.x + c.size.x;
 			dRight = bPosRB.x - c.pos.x;
-			if (c.pos.y >= pos.y) {
+			if (cCenter.y >= bCenter.y) {
 				dUp = c.pos.y - pos.y + c.size.y;
 				dDown = bPosRB.y - c.pos.y;
 			} 
@@ -143,7 +146,7 @@ namespace CollisionDetection {
 		else {
 			dLeft = cPosRB.x - pos.x;
 			dRight = pos.x - c.pos.x + c.size.x;
-			if (c.pos.y >= pos.y) {
+			if (cCenter.y >= bCenter.y) {
 				dUp = c.pos.y - pos.y + c.size.y;
 				dDown = bPosRB.y - c.pos.y;
 			}
@@ -260,6 +263,9 @@ namespace CollisionDetection {
 		blocks.Emplace().Init(this, { 0, 0 }, { 128, 128 });
 		blocks.Emplace().Init(this, { -180, 0 }, { 128, 128 });
 		blocks.Emplace().Init(this, { -180, 180 }, { 128, 128 });
+
+		blocks.Emplace().Init(this, { 300, 0 }, { 210, 10 });
+		blocks.Emplace().Init(this, { 400, 10 }, { 10, 200 });
 	}
 
 	inline void Scene::Update() {
