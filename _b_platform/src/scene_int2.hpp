@@ -115,7 +115,7 @@ namespace IntVersion2 {
 		}
 		if (hasCross) {
 			_pos = pos;
-			if ((uint32_t&)pushOutWays & (uint32_t)PushOutWays::Up) {
+			if (fallingFrameCount && ((uint32_t&)pushOutWays & (uint32_t)PushOutWays::Up) > 0) {
 				longJumpStoped = doubleJumped = jumping = false;
 				fallingFrameCount = bigJumpFrameCount = 0;
 				ySpeed = 0;
