@@ -49,7 +49,7 @@ xx::Task<> Looper::MainTask() {
 	});
 
 	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"collision detection test", [&]() {
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout test", [&]() {
 		scene.Emplace<CollisionDetection::Scene>()->Init();
 	});
 

@@ -286,7 +286,7 @@ namespace CollisionDetection {
 	inline void Scene::Draw() {
 		for (auto& o : blocks) o.Draw();
 		character->Draw();
-		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(collision)  move: mouse drag( white box )", xx::RGBA8_Green, { 0.5f, 1 });
+		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(pushout test)  move: mouse drag( white box )", xx::RGBA8_Green, { 0.5f, 1 });
 	}
 
 }

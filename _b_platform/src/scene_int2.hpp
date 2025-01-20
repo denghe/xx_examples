@@ -20,6 +20,22 @@ namespace IntVersion2 {
 		q.texRect.data = frame.textureRect.data;
 	}
 
+	XX_INLINE void Item::AssignChildrenPosOffset(XYp const& offset) {
+		for(auto i = children.len - 1; i >= 0; --i) {
+			if (auto& w = children[i]) {	// alive
+				auto cPosRB = w->pos + w->size;
+				if (cPosRB.y == pos.y) {	// stand on y
+					if (!(cPosRB.x <= pos.x || pos.x >= w->pos.x + w->size.x)) {	// stand on x
+						w->_pos += offset;					// assign offset
+						w->pos = w->_pos.As<int32_t>();
+						continue;
+					}
+				}
+			}
+			children.SwapRemoveAt(i);
+		}
+	}
+
 	/***************************************************************************************/
 	/***************************************************************************************/
 
@@ -83,13 +99,18 @@ namespace IntVersion2 {
 		if (pos.y > bak.y) {
 			auto bakRB = bak + size;
 			auto posRB = pos + size;
-			for (auto& o : scene->platforms) {							// todo: space index optimize
+			for (auto& o : scene->platforms) {										// todo: space index optimize
 				if (bakRB.y <= o.pos.y && o.pos.y <= posRB.y) {
-					if (!(posRB.x <= o.pos.x || pos.x >= o.pos.x + o.size.x)) {
+					if (!(posRB.x <= o.pos.x || pos.x >= o.pos.x + o.size.x)) {		// stand on the platform
 						longJumpStoped = doubleJumped = jumping = false;
 						fallingFrameCount = bigJumpFrameCount = 0;
 						ySpeed = 0;
 						_pos.y = pos.y = o.pos.y - size.y;
+
+						auto w = xx::WeakFromThis(this);
+						if (o.children.Find(w) == -1) {
+							o.children.Add(std::move(w));							// attach
+						}
 						break;
 					}
 				}
@@ -347,19 +368,29 @@ namespace IntVersion2 {
 
 	inline void Platform::Update() {
 		static constexpr FX64 moveDistance{ 50 };
-		static constexpr FX64 moveSpeed{ 0.2 };
+		static constexpr FX64 moveSpeed{ 2 };
 
 		switch (lineNumber) { case 0:
-			xOriginal = pos.x;
+			xOriginal = _pos.x;
 			for (xOffset = FX64_0; xOffset <= moveDistance; xOffset += moveSpeed) {
-				pos.x = (xOriginal + xOffset).ToInt();
+				{
+					auto bak = _pos;
+					_pos.x = xOriginal + xOffset;
+					pos = _pos.As<int32_t>();
+					AssignChildrenPosOffset(_pos - bak);
+				}
 				lineNumber = 1; return; case 1:;
 			}
 
 			lineNumber = 2; return; case 2:;
 
 			for (xOffset = moveDistance; xOffset >= FX64_0; xOffset -= moveSpeed) {
-				pos.x = (xOriginal + xOffset).ToInt();
+				{
+					auto bak = _pos;
+					_pos.x = xOriginal + xOffset;
+					pos = _pos.As<int32_t>();
+					AssignChildrenPosOffset(_pos - bak);
+				}
 				lineNumber = 3; return; case 3:;
 			}
 
@@ -395,7 +426,7 @@ namespace IntVersion2 {
 		for (auto& o : blocks) o.Draw();
 		for (auto& o : platforms) o.Draw();
 		character->Draw();
-		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
+		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(play)  move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 	}
 
 }

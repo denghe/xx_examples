@@ -14,6 +14,7 @@ namespace IntVersion2 {
 		xx::Math::BlockWayout blockWayout{};
 		xx::Listi32<xx::Weak<Item>> children;
 
+		void AssignChildrenPosOffset(XYp const& offset);
 		void Init(Scene* scene_, XYi const& pos_, XYi const& size_);
 		void Draw();
 	};
