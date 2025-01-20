@@ -59,24 +59,23 @@ namespace CollisionDetection {
 	}
 
 	inline void Character::HandleCollision() {
-		bool posChanged{}, hasCross{};
+		auto bak = pos;
+		bool hasCross{};
+		int32_t count{};
 	LabBegin:
-		for (auto& o : scene->blocks) {				// todo: optimize
+		for (auto& o : scene->blocks) {				// todo: optimize, sort by nearly
 			if (o.IsCross(*this)) {
 				hasCross = true;
 				auto [newPos, isForceOpen] = o.PushOut(*this);
 				if (pos != newPos) {
 					pos = newPos;
-					posChanged = true;
-					if (isForceOpen) goto LabBegin;
+					if (isForceOpen && ++count < 4) goto LabBegin;
 					break;
 				}
 			}
 		}
-		if (hasCross && !posChanged) {
-			// todo: 1 vs 3+
-			// scan all cross path + distance & combine?
-			// set neighbor output path config?
+		if (hasCross && bak == pos) {
+			// todo: log?
 		}
 	}
 
@@ -270,11 +269,14 @@ namespace CollisionDetection {
 
 		blocks.Emplace().Init(this, { 300, 0 }, { 210, 10 }, { false, false, true, false });
 		blocks.Emplace().Init(this, { 400, 10 }, { 10, 200 });
+		blocks.Emplace().Init(this, { 300, 210 }, { 210, 10 }, { true, false, false, false });
 
 		blocks.Emplace().Init(this, { 0, -400 }, { 10, 200 }, { false, true, false, false });
 		blocks.Emplace().Init(this, { 30, -400 }, { 10, 200 }, { false, false, false, true });
 
-		blocks.Emplace().Init(this, { -400, 0 }, { 22, 22 });
+		blocks.Emplace().Init(this, { -400, 300 }, { 22, 22 });
+
+		blocks.Emplace().Init(this, { -700, -300 }, { 333, 333 });
 	}
 
 	inline void Scene::Update() {
