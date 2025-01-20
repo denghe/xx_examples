@@ -60,13 +60,15 @@ namespace CollisionDetection {
 
 	inline void Character::HandleCollision() {
 		bool posChanged{}, hasCross{};
+	LabBegin:
 		for (auto& o : scene->blocks) {				// todo: optimize
 			if (o.IsCross(*this)) {
 				hasCross = true;
-				auto newPos = o.PushOut(*this);
+				auto [newPos, isForceOpen] = o.PushOut(*this);
 				if (pos != newPos) {
 					pos = newPos;
 					posChanged = true;
+					if (isForceOpen) goto LabBegin;
 					break;
 				}
 			}
@@ -78,9 +80,9 @@ namespace CollisionDetection {
 		}
 	}
 
-	inline bool Character::HasCross(XYi const& tarPos_) const {
+	inline bool Character::HasCross(XYi const& newPos_) const {
 		for (auto& o : scene->blocks) {				// todo: optimize
-			if (o.IsCross(tarPos_, size)) return true;
+			if (o.IsCross(newPos_, size)) return true;
 		}
 		return false;
 	}
@@ -88,8 +90,9 @@ namespace CollisionDetection {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
+	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::Math::BlockWayout blockWayout_) {
 		Item::Init(scene_, pos_, size_);
+		blockWayout = blockWayout_;
 		color = xx::RGBA8_Red;
 		return *this;
 	}
@@ -124,7 +127,7 @@ namespace CollisionDetection {
 		return IsCross(c.pos, c.size);
 	}
 
-	inline XYi Block::PushOut(Character const& c) const {
+	inline std::pair<XYi, bool> Block::PushOut(Character const& c) const {
 		// calculate 4 way distance & choose min val
 		auto bPosRB = pos + size;	// RB: right bottom
 		auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
@@ -145,7 +148,7 @@ namespace CollisionDetection {
 		}
 		else {
 			dLeft = cPosRB.x - pos.x;
-			dRight = pos.x - c.pos.x + c.size.x;
+			dRight = bPosRB.x - c.pos.x;
 			if (cCenter.y >= bCenter.y) {
 				dUp = c.pos.y - pos.y + c.size.y;
 				dDown = bPosRB.y - c.pos.y;
@@ -158,101 +161,101 @@ namespace CollisionDetection {
 		XYi newPos;
 		if (dRight <= dLeft && dRight <= dUp && dRight <= dDown) {
 			newPos = { c.pos.x + dRight, c.pos.y };
-			if (!c.HasCross(newPos)) return newPos;
+			if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 			if (dLeft <= dUp && dLeft <= dDown) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 				if (dUp <= dDown) {
 					newPos = { c.pos.x, c.pos.y - dUp };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 				}
 				else {
 					newPos = { c.pos.x, c.pos.y + dDown };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 				}
 			}
 			else if (dUp <= dDown) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 			}
 			else {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 			}
 		}
 		else if (dLeft <= dRight && dLeft <= dUp && dLeft <= dDown) {
 			newPos = { c.pos.x - dLeft, c.pos.y };
-			if (!c.HasCross(newPos)) return newPos;
+			if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 			if (dRight <= dUp && dRight <= dDown) {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 				if (dUp <= dDown) {
 					newPos = { c.pos.x, c.pos.y - dUp };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 				}
 				else {
 					newPos = { c.pos.x, c.pos.y + dDown };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 				}
 			}
 			else if (dUp <= dDown) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 			}
 			else {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 			}
 		}
 		else if (dUp <= dLeft && dUp <= dRight && dUp <= dDown) {
 			newPos = { c.pos.x, c.pos.y - dUp };
-			if (!c.HasCross(newPos)) return newPos;
+			if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 			if (dDown <= dLeft && dDown <= dRight) {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 				if (dLeft <= dRight) {
 					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 				}
 				else {
 					newPos = { c.pos.x + dRight, c.pos.y };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 				}
 			}
 			else if (dLeft <= dRight) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 			}
 			else {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 			}
 		}
 		else if (dDown <= dLeft && dDown <= dRight && dDown <= dUp) {
 			newPos = { c.pos.x, c.pos.y + dDown };
-			if (!c.HasCross(newPos)) return newPos;
+			if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
 			if (dUp <= dLeft && dUp <= dRight) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
 				if (dLeft <= dRight) {
 					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 				}
 				else {
 					newPos = { c.pos.x + dRight, c.pos.y };
-					if (!c.HasCross(newPos)) return newPos;
+					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 				}
 			}
 			else if (dLeft <= dRight) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
 			}
 			else {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (!c.HasCross(newPos)) return newPos;
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
 			}
 		}
-		return c.pos;
+		return { c.pos, false };
 	}
 
 	/***************************************************************************************/
@@ -260,12 +263,18 @@ namespace CollisionDetection {
 
 	inline void Scene::Init() {
 		character.Emplace()->Init(this, { -128, -128 }, { 128, 128 });
+
 		blocks.Emplace().Init(this, { 0, 0 }, { 128, 128 });
-		blocks.Emplace().Init(this, { -180, 0 }, { 128, 128 });
+		blocks.Emplace().Init(this, { -180, 0 }, { 128, 128 }, { false, true, true, false });
 		blocks.Emplace().Init(this, { -180, 180 }, { 128, 128 });
 
-		blocks.Emplace().Init(this, { 300, 0 }, { 210, 10 });
+		blocks.Emplace().Init(this, { 300, 0 }, { 210, 10 }, { false, false, true, false });
 		blocks.Emplace().Init(this, { 400, 10 }, { 10, 200 });
+
+		blocks.Emplace().Init(this, { 0, -400 }, { 10, 200 }, { false, true, false, false });
+		blocks.Emplace().Init(this, { 30, -400 }, { 10, 200 }, { false, false, false, true });
+
+		blocks.Emplace().Init(this, { -400, 0 }, { 22, 22 });
 	}
 
 	inline void Scene::Update() {
