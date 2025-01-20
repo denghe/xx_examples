@@ -4,7 +4,7 @@ namespace IntVersion2 {
 
 	XX_INLINE void Item::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
 		scene = scene_;
-		pos = pos_;
+		_pos = pos = pos_;
 		size = size_;
 	}
 
@@ -99,24 +99,27 @@ namespace IntVersion2 {
 		// handle blocks
 		bool hasCross{};
 		int32_t count{};
+		PushOutWays pushOutWays{};
 	LabBegin:
 		for (auto& o : scene->blocks) {				// todo: optimize, sort by nearly
 			if (o.IsCross(*this)) {
 				hasCross = true;
-				auto [newPos, isForceOpen] = o.PushOut(*this);
+				auto [newPos, pushOutWay, isWayout] = o.PushOut(*this);
 				if (pos != newPos) {
 					pos = newPos;
-					if (isForceOpen && ++count < 4) goto LabBegin;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+					if (isWayout && ++count < 4) goto LabBegin;
 					break;
 				}
 			}
 		}
 		if (hasCross) {
-			longJumpStoped = doubleJumped = jumping = false;
-			fallingFrameCount = bigJumpFrameCount = 0;
-			ySpeed = 0;
-			_pos.x = pos.x;
-			_pos.y = pos.y;
+			_pos = pos;
+			if ((uint32_t&)pushOutWays & (uint32_t)PushOutWays::Up) {
+				longJumpStoped = doubleJumped = jumping = false;
+				fallingFrameCount = bigJumpFrameCount = 0;
+				ySpeed = 0;
+			}
 		}
 
 		// handle jump
@@ -198,7 +201,7 @@ namespace IntVersion2 {
 		return IsCross(c.pos, c.size);
 	}
 
-	inline std::pair<XYi, bool> Block::PushOut(Character const& c) const {
+	std::tuple<XYi, PushOutWays, bool> Block::PushOut(Character const& c) const {
 		// calculate 4 way distance & choose min val
 		auto bPosRB = pos + size;	// RB: right bottom
 		auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
@@ -232,101 +235,101 @@ namespace IntVersion2 {
 		XYi newPos;
 		if (dRight <= dLeft && dRight <= dUp && dRight <= dDown) {
 			newPos = { c.pos.x + dRight, c.pos.y };
-			if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+			if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 			if (dLeft <= dUp && dLeft <= dDown) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 				if (dUp <= dDown) {
 					newPos = { c.pos.x, c.pos.y - dUp };
-					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 				}
 				else {
 					newPos = { c.pos.x, c.pos.y + dDown };
-					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 				}
 			}
 			else if (dUp <= dDown) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 			}
 			else {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 			}
 		}
 		else if (dLeft <= dRight && dLeft <= dUp && dLeft <= dDown) {
 			newPos = { c.pos.x - dLeft, c.pos.y };
-			if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+			if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 			if (dRight <= dUp && dRight <= dDown) {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 				if (dUp <= dDown) {
 					newPos = { c.pos.x, c.pos.y - dUp };
-					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 				}
 				else {
 					newPos = { c.pos.x, c.pos.y + dDown };
-					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 				}
 			}
 			else if (dUp <= dDown) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 			}
 			else {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 			}
 		}
 		else if (dUp <= dLeft && dUp <= dRight && dUp <= dDown) {
 			newPos = { c.pos.x, c.pos.y - dUp };
-			if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+			if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 			if (dDown <= dLeft && dDown <= dRight) {
 				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 				if (dLeft <= dRight) {
 					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 				}
 				else {
 					newPos = { c.pos.x + dRight, c.pos.y };
-					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 				}
 			}
 			else if (dLeft <= dRight) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 			}
 			else {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 			}
 		}
 		else if (dDown <= dLeft && dDown <= dRight && dDown <= dUp) {
 			newPos = { c.pos.x, c.pos.y + dDown };
-			if (blockWayout.down || !c.HasCross(newPos)) return { newPos, blockWayout.down };
+			if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
 			if (dUp <= dLeft && dUp <= dRight) {
 				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, blockWayout.up };
+				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
 				if (dLeft <= dRight) {
 					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 				}
 				else {
 					newPos = { c.pos.x + dRight, c.pos.y };
-					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 				}
 			}
 			else if (dLeft <= dRight) {
 				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, blockWayout.left };
+				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
 			}
 			else {
 				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, blockWayout.right };
+				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
 			}
 		}
-		return { c.pos, false };
+		return { c.pos, PushOutWays::Unknown, false };
 	}
 
 	inline void Block::Update() {
@@ -379,7 +382,7 @@ namespace IntVersion2 {
 		blocks.Emplace().Init(this, { -64 * 11, 64 }, { 64, 64 * 3 });
 		blocks.Emplace().Init(this, { 64 * 10, 64 }, { 64, 64 * 3 });
 
-		blocks.Emplace().Init(this, { -64 * 5, 64 + 32 }, { 64 * 4, 64 });
+		blocks.Emplace().Init(this, { -64 * 5 - 32, 64 + 32 }, { 64 * 4, 64 });
 	}
 
 	inline void Scene::Update() {
