@@ -112,7 +112,12 @@ namespace IntVersion2 {
 				}
 			}
 		}
-		// if (hasCross && bak == pos) // todo: log?
+		if (hasCross) {
+			longJumpStoped = doubleJumped = jumping = false;
+			fallingFrameCount = bigJumpFrameCount = 0;
+			ySpeed = 0;
+			_pos.y = pos.y;
+		}
 
 		// handle jump
 		auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
