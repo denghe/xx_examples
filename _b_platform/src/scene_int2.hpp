@@ -106,7 +106,6 @@ namespace IntVersion2 {
 				auto [newPos, isForceOpen] = o.PushOut(*this);
 				if (pos != newPos) {
 					pos = newPos;
-					_pos = pos;
 					if (isForceOpen && ++count < 4) goto LabBegin;
 					break;
 				}
@@ -116,6 +115,7 @@ namespace IntVersion2 {
 			longJumpStoped = doubleJumped = jumping = false;
 			fallingFrameCount = bigJumpFrameCount = 0;
 			ySpeed = 0;
+			_pos.x = pos.x;
 			_pos.y = pos.y;
 		}
 
