@@ -15,7 +15,7 @@ namespace IntVersion2 {
 		xx::Listi32<xx::Weak<Item>> children;
 
 		void AssignChildrenPosOffset(XYp const& offset);
-		void Init(Scene* scene_, XYi const& pos_, XYi const& size_);
+		void Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_);
 		void Draw();
 	};
 
@@ -58,10 +58,12 @@ namespace IntVersion2 {
 	};
 
 	struct Platform : Item {
-		int32_t lineNumber{};
+		int32_t lineNumber{}, i{};
 		FX64 xOriginal{}, xOffset{};
+
 		Platform& Init(Scene* scene_, XYi const& pos_ = {}, int32_t len_ = cResSize.x);
-		void Update();			// todo: sync children
+		void Update();
+		void AssignOffset();
 	};
 
 	struct Scene : xx::SceneBase {

@@ -2,10 +2,11 @@
 
 namespace IntVersion2 {
 
-	XX_INLINE void Item::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
+	XX_INLINE void Item::Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_) {
 		scene = scene_;
 		_pos = pos = pos_;
 		size = size_;
+		color = color_;
 	}
 
 	inline void Item::Draw() {
@@ -40,8 +41,7 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 
 	inline Character& Character::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
-		Item::Init(scene_, pos_, size_);
-		color = xx::RGBA8_White;
+		Item::Init(scene_, pos_, size_, xx::RGBA8_White);
 		return *this;
 	}
 
@@ -192,9 +192,8 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 
 	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::Math::BlockWayout blockWayout_) {
-		Item::Init(scene_, pos_, size_);
+		Item::Init(scene_, pos_, size_, xx::RGBA8_Red);
 		blockWayout = blockWayout_;
-		color = xx::RGBA8_Red;
 		return *this;
 	}
 
@@ -361,42 +360,42 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 
 	inline Platform& Platform::Init(Scene* scene_, XYi const& pos_, int32_t len_) {
-		Item::Init(scene_, pos_, {len_, 1});
-		color = xx::RGBA8_Yellow;
+		Item::Init(scene_, pos_, { len_, 1 }, xx::RGBA8_Yellow);
+		xOriginal = _pos.x;
 		return *this;
 	}
 
 	inline void Platform::Update() {
-		static constexpr FX64 moveDistance{ 50 };
-		static constexpr FX64 moveSpeed{ 2 };
+		static constexpr FX64 moveDistance{ 100 };
+		static constexpr FX64 moveSpeed{ 5 };
+		static constexpr int32_t idleNumFrames{ int32_t(0.5f / Cfg::frameDelay) };
 
-		switch (lineNumber) { case 0:
-			xOriginal = _pos.x;
-			for (xOffset = FX64_0; xOffset <= moveDistance; xOffset += moveSpeed) {
-				{
-					auto bak = _pos;
-					_pos.x = xOriginal + xOffset;
-					pos = _pos.As<int32_t>();
-					AssignChildrenPosOffset(_pos - bak);
-				}
-				lineNumber = 1; return; case 1:;
-			}
+		// loop: move 100p + sleep 0.5s + move back + sleep 0.5s
 
-			lineNumber = 2; return; case 2:;
-
-			for (xOffset = moveDistance; xOffset >= FX64_0; xOffset -= moveSpeed) {
-				{
-					auto bak = _pos;
-					_pos.x = xOriginal + xOffset;
-					pos = _pos.As<int32_t>();
-					AssignChildrenPosOffset(_pos - bak);
-				}
-				lineNumber = 3; return; case 3:;
-			}
-
-			lineNumber = 4; return; case 4:;
-			lineNumber = 0; return;
+		XX_BEGIN;
+		for (xOffset = FX64_0; xOffset <= moveDistance; xOffset += moveSpeed) {
+			AssignOffset();
+			XX_YIELD;
 		}
+		for (i = 0; i < idleNumFrames; ++i) {
+			XX_YIELD;
+		}
+		for (xOffset = moveDistance; xOffset >= FX64_0; xOffset -= moveSpeed) {
+			AssignOffset();
+			XX_YIELD;
+		}
+		for (i = 0; i < idleNumFrames; ++i) {
+			XX_YIELD;
+		}
+		XX_YIELD_TO_BEGIN
+		XX_END;
+	}
+
+	XX_INLINE void Platform::AssignOffset() {
+		auto bak = _pos;
+		_pos.x = xOriginal + xOffset;
+		pos = _pos.As<int32_t>();
+		AssignChildrenPosOffset(_pos - bak);
 	}
 
 	/***************************************************************************************/
@@ -420,6 +419,13 @@ namespace IntVersion2 {
 		for (auto& o : blocks) o.Update();
 		for (auto& o : platforms) o.Update();
 		character->Update();
+
+		//// performance test
+		//auto secs = xx::NowEpochSeconds();
+		//for (int i = 0; i < 100000000; ++i) {
+		//	platforms[0].Update();
+		//}
+		//xx::CoutN(xx::NowEpochSeconds(secs));
 	}
 
 	inline void Scene::Draw() {
