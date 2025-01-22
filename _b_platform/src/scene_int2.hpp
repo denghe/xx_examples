@@ -402,17 +402,63 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 
 	inline void Scene::Init() {
-		character.Emplace()->Init(this);
 
-		platforms.Emplace().Init(this, { -64 * 5, -64 * 2 }, 64 * 2);
-		platforms.Emplace().Init(this, { 64, 0 }, 64 * 3);
-		platforms.Emplace().Init(this, { -64, 64 * 2 }, 64 * 1);
-		platforms.Emplace().Init(this, { -64 * 10, 64 * 4 }, 64 * 20);
+		static constexpr std::string_view mapText{ R"(
+####################
+#                  #
+#        O         #
+#                  #
+##                 #
+# #  ---   ---     #
+#  #               #
+#   #              #
+#    #             #
+####################
+)" };
+		xx::CoutN(mapText.size());
+		int32_t maxX{}, x{}, y{}, len{ 1 }, cx{}, cy{};
+		char curr{};
+		for( int i = 0; i < mapText.size(); ++i) {
+			auto c = mapText[i];
+			if (c == curr) {
+				++len;
+				continue;
+			} else if (curr) {
+				if (curr == '#') {
+					blocks.Emplace().Init(this, { 64 * x, 64 * y }, { 64 * len, 64 });
+				} else if (curr == '-') {
+					platforms.Emplace().Init(this, { 64 * x, 64 * y }, 64 * len);
+				}
+				curr = {};
+				x += len;
+				len = 1;
+			}
+			if (c == '\n') {
+				if (maxX < x) maxX = x;
+				x = 0;
+				++y;
+				continue;
+			}
+			else if (c == ' ') {
+				++x;
+				continue;
+			}
+			else if (c == 'O') {
+				cx = x;
+				cy = y;
+				++x;
+				continue;
+			}
+			if (c == '#' || c == '-') {
+				curr = c;
+				continue;
+			}
+		}
 
-		blocks.Emplace().Init(this, { -64 * 11, 64 }, { 64, 64 * 3 });
-		blocks.Emplace().Init(this, { 64 * 10, 64 }, { 64, 64 * 3 });
+		character.Emplace()->Init(this, { 64 * cx, 64 * cy });
 
-		blocks.Emplace().Init(this, { -64 * 5 - 32, 64 + 32 }, { 64 * 4, 64 });
+		gLooper.camera.SetOriginal({ 64 * maxX / 2, 64 * y / 2 });
+
 	}
 
 	inline void Scene::Update() {
