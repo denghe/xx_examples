@@ -60,15 +60,53 @@ namespace CollisionDetection2 {
 	}
 
 	inline void Character::HandleCollision() {
-		//for (auto& o : scene->blocks.items) {
-		//	if (o->IsCross(pos, size)) {
-		//		auto [x, dx] = o->PushOut<true>({ pos.x, lastPos.y }, size);
-		//		auto [y, dy] = o->PushOut<false>({ lastPos.x, pos.y }, size);
-		//		pos.x = x;
-		//		pos.y = y;
-		//		break;
-		//	}
-		//}
+		auto& bs = scene->blocks;
+		if (pos.x < 0 || pos.x >= bs.gridSize.x || pos.y < 0 || pos.y >= bs.gridSize.y) return;
+		auto posBR = pos + size;
+		if (posBR.x < 0 || posBR.x >= bs.gridSize.x || posBR.y < 0 || posBR.y >= bs.gridSize.y) return;
+		auto criFrom = scene->blocks.PosToColRowIndex(pos);
+		auto criTo = scene->blocks.PosToColRowIndex(posBR);
+		assert(criFrom.x - criTo.x <= 1 && criFrom.y - criTo.y <= 1);
+		// bb
+		// bf
+		if (criFrom == criTo) {
+			if (auto bc = bs.At(criFrom - 1); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At({ criFrom.x - 1, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At({ criFrom.x, criFrom.y - 1 }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+		}
+		// fc
+		// ct
+		else {
+			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At({ criTo.x, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At({ criFrom.x, criTo.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+			if (auto bc = bs.At(criTo); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, way] = bc->PushOut(pos, size);
+				pos = newPos;
+			}
+		}
 	}
 
 	inline bool Character::HasCross(XYi const& newPos_) const {
@@ -107,44 +145,71 @@ namespace CollisionDetection2 {
 		return false;
 	}
 
-	//template<int32_t isPushX>
-	//inline std::pair<int32_t, PushOutWays> Block::PushOut(XYi const& cPos, XYi const& cSize) const {
-	//	// calculate 4 way distance & choose min val
-	//	auto bPosRB = pos + size;	// RB: right bottom
-	//	auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
-	//	auto cPosRB = cPos + cSize;
-	//	auto cCenter = cPos + XYi{ cSize.x >> 1, cSize.y >> 1 };
-	//	int32_t dLeft, dRight, dUp, dDown;
-	//	if constexpr (isPushX) {
-	//		if (cCenter.x >= bCenter.x) {
-	//			dLeft = cPos.x - pos.x + cSize.x;
-	//			dRight = bPosRB.x - cPos.x;
-	//		} else {
-	//			dLeft = cPosRB.x - pos.x;
-	//			dRight = bPosRB.x - cPos.x;
-	//		}
-	//		if (dRight <= dLeft) {
-	//			return { cPos.x + dRight, PushOutWays::Right };
-	//		} else {
-	//			return { cPos.x - dLeft, PushOutWays::Left };
-	//		}
-	//	}
-	//	else {
-	//		if (cCenter.y >= bCenter.y) {
-	//			dUp = cPos.y - pos.y + cSize.y;
-	//			dDown = bPosRB.y - cPos.y;
-	//		}
-	//		else {
-	//			dUp = cPosRB.y - pos.y;
-	//			dDown = pos.y - cPos.y + cSize.y;
-	//		}
-	//		if (dUp <= dDown) {
-	//			return { cPos.y - dUp, PushOutWays::Up };
-	//		} else {
-	//			return { cPos.y + dDown, PushOutWays::Down };
-	//		}
-	//	}
-	//}
+	inline void Block::FillWayout() {
+		// search neighbor & set wayout bit
+		auto& bs = scene->blocks;
+		auto cri = bs.PosToColRowIndex(pos);
+		if (cri.y == 0) wayout.up = false;
+		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
+		if (cri.y + 1 == bs.numRows) wayout.down = false;
+		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
+		if (cri.x == 0) wayout.left = false;
+		else wayout.left = !bs.At({ cri.x - 1, cri.y });
+		if (cri.x + 1 == bs.numCols) wayout.right = false;
+		else wayout.right = !bs.At({ cri.x + 1, cri.y });
+	}
+
+	inline std::pair<XYi, PushOutWays> Block::PushOut(XYi const& cPos, XYi const& cSize) const {
+		// calculate 4 way distance & choose min val
+		auto bPosRB = pos + size;	// RB: right bottom
+		auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
+		auto cPosRB = cPos + cSize;
+		auto cCenter = cPos + XYi{ cSize.x >> 1, cSize.y >> 1 };
+		int32_t dLeft, dRight, dUp, dDown;
+		if (cCenter.x >= bCenter.x) {
+			if (wayout.left) dLeft = cPos.x - pos.x + cSize.x;
+			else dLeft = 0x7FFFFFFF;
+			if (wayout.right) dRight = bPosRB.x - cPos.x;
+			else dRight = 0x7FFFFFFF;
+			if (cCenter.y >= bCenter.y) {
+				if (wayout.up) dUp = cPos.y - pos.y + cSize.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = bPosRB.y - cPos.y;
+				else dDown = 0x7FFFFFFF;
+			} else {
+				if (wayout.up) dUp = cPosRB.y - pos.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = pos.y - cPos.y + cSize.y;
+				else dDown = 0x7FFFFFFF;
+			}
+		} else {
+			if (wayout.left) dLeft = cPosRB.x - pos.x;
+			else dLeft = 0x7FFFFFFF;
+			if (wayout.right) dRight = bPosRB.x - cPos.x;
+			else dRight = 0x7FFFFFFF;
+			if (cCenter.y >= bCenter.y) {
+				if (wayout.up) dUp = cPos.y - pos.y + cSize.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = bPosRB.y - cPos.y;
+				else dDown = 0x7FFFFFFF;
+			} else {
+				if (wayout.up) dUp = cPosRB.y - pos.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = pos.y - cPos.y + cSize.y;
+				else dDown = 0x7FFFFFFF;
+			}
+		}
+		if (dLeft == 0x7FFFFFFF && dRight == 0x7FFFFFFF && dUp == 0x7FFFFFFF && dDown == 0x7FFFFFFF)
+			return { cPos, PushOutWays::Unknown };
+		if (dRight <= dLeft && dRight <= dUp && dRight <= dDown) 
+			return { { cPos.x + dRight, cPos.y }, PushOutWays::Right };
+		else if (dLeft <= dRight && dLeft <= dUp && dLeft <= dDown) 
+			return { { cPos.x - dLeft, cPos.y }, PushOutWays::Left };
+		else if (dUp <= dLeft && dUp <= dRight && dUp <= dDown) 
+			return { { cPos.x, cPos.y - dUp }, PushOutWays::Up };
+		else 
+			return { { cPos.x, cPos.y + dDown }, PushOutWays::Down };
+	}
 
 	/***************************************************************************************/
 	/***************************************************************************************/
@@ -193,12 +258,14 @@ namespace CollisionDetection2 {
 				cy = y;
 			}
 			else if (c == '#' || c == '-') {
-				blocks.Add(xx::MakeShared<Block>())->Init(this, { 64 * x, 64 * y }, { 64, 64 });
+				auto block = xx::MakeShared<Block>();
+				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
+				blocks.Add(std::move(block));
 			}
 			++x;
 		}
 
-		// todo: fill wayout?
+		for (auto& o : blocks.items) o->FillWayout();
 
 		character.Emplace()->Init(this, { 64 * cx, 64 * cy }, { 32, 48 });
 
