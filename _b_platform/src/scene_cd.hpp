@@ -277,6 +277,8 @@ namespace CollisionDetection {
 		blocks.Emplace().Init(this, { -400, 300 }, { 22, 22 });
 
 		blocks.Emplace().Init(this, { -700, -300 }, { 333, 333 });
+
+		gLooper.camera.SetOriginal({});
 	}
 
 	inline void Scene::Update() {
