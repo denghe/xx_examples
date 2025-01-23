@@ -22,7 +22,7 @@ namespace CollisionDetection2 {
 
 		Character& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
 		void Update();
-
+		void PosAreaLimit();
 		void HandleCollision();
 	};
 

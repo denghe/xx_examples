@@ -285,14 +285,34 @@ namespace IntVersion2 {
 		// search neighbor & set wayout bit
 		auto& bs = scene->blocks;
 		auto cri = bs.PosToColRowIndex(pos);
-		if (cri.y == 0) wayout.up = false;
+		bool atEdge{};
+
+		if (cri.y == 0) {
+			wayout.up = false; atEdge = true;
+		}
 		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
-		if (cri.y + 1 == bs.numRows) wayout.down = false;
+
+		if (cri.y + 1 == bs.numRows) {
+			wayout.down = false; atEdge = true;
+		}
 		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
-		if (cri.x == 0) wayout.left = false;
+
+		if (cri.x == 0) {
+			wayout.left = false; atEdge = true;
+		}
 		else wayout.left = !bs.At({ cri.x - 1, cri.y });
-		if (cri.x + 1 == bs.numCols) wayout.right = false;
+
+		if (cri.x + 1 == bs.numCols) {
+			wayout.right = false;
+		}
 		else wayout.right = !bs.At({ cri.x + 1, cri.y });
+
+		if (atEdge && !(uint8_t&)wayout) {
+			if (cri.y != 0) wayout.up = true;
+			if (cri.y + 1 != bs.numRows) wayout.down = true;
+			if (cri.x != 0) wayout.left = true;
+			if (cri.x + 1 != bs.numCols) wayout.right = true;
+		}
 	}
 
 	inline std::pair<XYi, PushOutWays> Block::PushOut(XYi const& cPos, XYi const& cSize) const {
@@ -361,8 +381,8 @@ namespace IntVersion2 {
 	}
 
 	inline void Platform::Update() {
-		static constexpr FX64 moveDistance{ 100 };
-		static constexpr FX64 moveSpeed{ 5 };
+		static constexpr FX64 moveDistance{ 64 * 3 };
+		static constexpr FX64 moveSpeed{ 4 };
 		static constexpr int32_t idleNumFrames{ int32_t(0.5f / Cfg::frameDelay) };
 
 		// loop: move 100p + sleep 0.5s + move back + sleep 0.5s
@@ -407,10 +427,10 @@ namespace IntVersion2 {
 #                  #
 #        O         #
 #                  #
-##                 #
+##      #     #    #
 # #  ---   ---     #
 #  #               #
-#   #---           #
+#   #--------------#
 #    #             #
 ####################
 )" };
@@ -426,11 +446,11 @@ namespace IntVersion2 {
 				++x;
 			}
 		}
-		blocks.Init(y, maxX, { 64, 64 });
+		blocks.Init(y - 1, maxX, { 64, 64 });
 
 		// fill map contents
 		x = 0;
-		y = -1;	// ignore first row
+		y = -1;
 		int32_t cx{}, cy{};
 		for (int i = 0; i < mapText.size(); ++i) {
 			switch (auto c = mapText[i]) {

@@ -47,6 +47,9 @@ namespace CollisionDetection2 {
 					if (dragging) {
 						dragging = false;			// clear flag
 						color = xx::RGBA8_White;
+
+						PosAreaLimit();
+						HandleCollision();
 						HandleCollision();
 					}
 				}
@@ -59,13 +62,19 @@ namespace CollisionDetection2 {
 		}
 	}
 
+	inline void Character::PosAreaLimit() {
+		auto& bs = scene->blocks;
+		if (pos.x < 0) pos.x = 0;
+		if (pos.y < 0) pos.y = 0;
+		auto posBR = pos + size;
+		if (posBR.x >= bs.gridSize.x) pos.x = bs.gridSize.x - size.x - 1;
+		if (posBR.y >= bs.gridSize.y) pos.y = bs.gridSize.y - size.y - 1;
+	}
+
 	inline void Character::HandleCollision() {
 		auto& bs = scene->blocks;
-		if (pos.x < 0 || pos.x >= bs.gridSize.x || pos.y < 0 || pos.y >= bs.gridSize.y) return;
-		auto posBR = pos + size;
-		if (posBR.x < 0 || posBR.x >= bs.gridSize.x || posBR.y < 0 || posBR.y >= bs.gridSize.y) return;
 		auto criFrom = scene->blocks.PosToColRowIndex(pos);
-		auto criTo = scene->blocks.PosToColRowIndex(posBR);
+		auto criTo = scene->blocks.PosToColRowIndex(pos + size);
 		assert(criFrom.x - criTo.x <= 1 && criFrom.y - criTo.y <= 1);
 		// bb
 		// bf
@@ -142,14 +151,30 @@ namespace CollisionDetection2 {
 		// search neighbor & set wayout bit
 		auto& bs = scene->blocks;
 		auto cri = bs.PosToColRowIndex(pos);
-		if (cri.y == 0) wayout.up = false;
-		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
-		if (cri.y + 1 == bs.numRows) wayout.down = false;
-		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
-		if (cri.x == 0) wayout.left = false;
-		else wayout.left = !bs.At({ cri.x - 1, cri.y });
-		if (cri.x + 1 == bs.numCols) wayout.right = false;
-		else wayout.right = !bs.At({ cri.x + 1, cri.y });
+		bool atEdge{};
+
+		if (cri.y == 0) {
+			wayout.up = false; atEdge = true;
+		} else wayout.up = !bs.At({ cri.x, cri.y - 1 });
+
+		if (cri.y + 1 == bs.numRows) {
+			wayout.down = false; atEdge = true;
+		} else wayout.down = !bs.At({ cri.x, cri.y + 1 });
+
+		if (cri.x == 0) {
+			wayout.left = false; atEdge = true;
+		} else wayout.left = !bs.At({ cri.x - 1, cri.y });
+
+		if (cri.x + 1 == bs.numCols) {
+			wayout.right = false;
+		} else wayout.right = !bs.At({ cri.x + 1, cri.y });
+
+		if (atEdge && !(uint8_t&)wayout) {
+			if (cri.y != 0) wayout.up = true;
+			if (cri.y + 1 != bs.numRows) wayout.down = true;
+			if (cri.x != 0) wayout.left = true;
+			if (cri.x + 1 != bs.numCols) wayout.right = true;
+		}
 	}
 
 	inline std::pair<XYi, PushOutWays> Block::PushOut(XYi const& cPos, XYi const& cSize) const {
@@ -234,26 +259,29 @@ namespace CollisionDetection2 {
 			}
 		}
 
-		blocks.Init(y, maxX, { 64, 64 });
+		blocks.Init(y - 1, maxX, { 64, 64 });
 
+		// fill map contents
 		x = 0;
 		y = -1;
 		int32_t cx{}, cy{};
 		for (int i = 0; i < mapText.size(); ++i) {
-			auto c = mapText[i];
-			if (c == '\n') {
+			switch (auto c = mapText[i]) {
+			case '\n':
 				x = 0;
 				++y;
 				continue;
-			}
-			if (c == 'O') {
+			case 'O':
 				cx = x;
 				cy = y;
-			}
-			else if (c == '#' || c == '-') {
+				break;
+			case '#':
+			case '-': {
 				auto block = xx::MakeShared<Block>();
 				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
 				blocks.Add(std::move(block));
+				break;
+			}
 			}
 			++x;
 		}
