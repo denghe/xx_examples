@@ -237,7 +237,7 @@ namespace CollisionDetection2 {
 		blocks.Init(y, maxX, { 64, 64 });
 
 		x = 0;
-		y = 0;
+		y = -1;
 		int32_t cx{}, cy{};
 		for (int i = 0; i < mapText.size(); ++i) {
 			auto c = mapText[i];

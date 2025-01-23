@@ -410,7 +410,7 @@ namespace IntVersion2 {
 ##                 #
 # #  ---   ---     #
 #  #               #
-#   #              #
+#   #---           #
 #    #             #
 ####################
 )" };
@@ -430,7 +430,7 @@ namespace IntVersion2 {
 
 		// fill map contents
 		x = 0;
-		y = 0;
+		y = -1;	// ignore first row
 		int32_t cx{}, cy{};
 		for (int i = 0; i < mapText.size(); ++i) {
 			switch (auto c = mapText[i]) {
