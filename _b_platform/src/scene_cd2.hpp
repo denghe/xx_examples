@@ -109,13 +109,6 @@ namespace CollisionDetection2 {
 		}
 	}
 
-	inline bool Character::HasCross(XYi const& newPos_) const {
-		for (auto& o : scene->blocks.items) {
-			if (o->IsCross(newPos_, size)) return true;
-		}
-		return false;
-	}
-
 	/***************************************************************************************/
 	/***************************************************************************************/
 

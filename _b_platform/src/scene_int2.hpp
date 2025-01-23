@@ -21,22 +21,6 @@ namespace IntVersion2 {
 		q.texRect.data = frame.textureRect.data;
 	}
 
-	XX_INLINE void Item::AssignChildrenPosOffset(XYp const& offset) {
-		for(auto i = children.len - 1; i >= 0; --i) {
-			if (auto& w = children[i]) {	// alive
-				auto cPosRB = w->pos + w->size;
-				if (cPosRB.y == pos.y) {	// stand on y
-					if (!(cPosRB.x <= pos.x || pos.x >= w->pos.x + w->size.x)) {	// stand on x
-						w->_pos += offset;					// assign offset
-						w->pos = w->_pos.As<int32_t>();
-						continue;
-					}
-				}
-			}
-			children.SwapRemoveAt(i);
-		}
-	}
-
 	/***************************************************************************************/
 	/***************************************************************************************/
 
@@ -95,46 +79,115 @@ namespace IntVersion2 {
 		// store pos int version
 		pos = _pos.As<int32_t>();
 
-		// handle platforms
+		// handle platforms( maybe cross 2 platforms )
 		if (pos.y > bak.y) {
 			auto bakRB = bak + size;
 			auto posRB = pos + size;
-			for (auto& o : scene->platforms) {										// todo: space index optimize
-				if (bakRB.y <= o.pos.y && o.pos.y <= posRB.y) {
-					if (!(posRB.x <= o.pos.x || pos.x >= o.pos.x + o.size.x)) {		// stand on the platform
-						longJumpStoped = doubleJumped = jumping = false;
-						fallingFrameCount = bigJumpFrameCount = 0;
-						ySpeed = 0;
-						_pos.y = pos.y = o.pos.y - size.y;
-
-						auto w = xx::WeakFromThis(this);
-						if (o.children.Find(w) == -1) {
-							o.children.Add(std::move(w));							// attach
-						}
-						break;
+			std::array<xx::Weak<Platform>, 2> ps;
+			int32_t psi{};
+			for (auto& o : scene->platforms) {
+				if (bakRB.y <= o->pos.y && o->pos.y <= posRB.y) {
+					if (!(posRB.x <= o->pos.x || pos.x >= o->pos.x + o->size.x)) {		// stand on the platform
+						ps[psi++] = o;
 					}
 				}
+			}
+			if (psi) {
+				longJumpStoped = doubleJumped = jumping = false;
+				fallingFrameCount = bigJumpFrameCount = 0;
+				ySpeed = 0;
+				_pos.y = pos.y = ps[0]->pos.y - size.y;
+			}
+			if (psi == 1) {
+				AttachPlatform(std::move(ps[0]));
+			} else if (psi == 2) {
+				assert(ps[0]->pos.x < ps[1]->pos.x);
+				// compare distance
+				if (ps[0]->pos.x + ps[0]->size.x - pos.x > pos.x + size.x - ps[1]->pos.x + ps[0]->size.x) {
+					AttachPlatform(std::move(ps[0]));
+				} else {
+					AttachPlatform(std::move(ps[1]));
+				}
+			} else {
+				assert(psi == 0);
+				AttachPlatform({});
 			}
 		}
 
 		// handle blocks
-		bool hasCross{};
-		int32_t count{};
 		PushOutWays pushOutWays{};
-	LabBegin:
-		for (auto& o : scene->blocks) {				// todo: optimize, sort by nearly
-			if (o.IsCross(*this)) {
-				hasCross = true;
-				auto [newPos, pushOutWay, isWayout] = o.PushOut(*this);
-				if (pos != newPos) {
+		auto& bs = scene->blocks;
+		//if (pos.x < 0 || pos.x >= bs.gridSize.x || pos.y < 0 || pos.y >= bs.gridSize.y) return;
+		auto posBR = pos + size;
+		//if (posBR.x < 0 || posBR.x >= bs.gridSize.x || posBR.y < 0 || posBR.y >= bs.gridSize.y) return;
+		auto criFrom = scene->blocks.PosToColRowIndex(pos);
+		auto criTo = scene->blocks.PosToColRowIndex(posBR);
+		assert(criFrom.x - criTo.x <= 1 && criFrom.y - criTo.y <= 1);
+		// bb
+		// bf
+		if (criFrom == criTo) {
+			if (auto bc = bs.At(criFrom - 1); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
-					if (isWayout && ++count < 4) goto LabBegin;
-					break;
+				}
+			}
+			if (auto bc = bs.At({ criFrom.x - 1, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+			if (auto bc = bs.At({ criFrom.x, criFrom.y - 1 }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
 		}
-		if (hasCross) {
+		// fc
+		// ct
+		else {
+			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+			if (auto bc = bs.At({ criTo.x, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+			if (auto bc = bs.At({ criFrom.x, criTo.y }); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+			if (auto bc = bs.At(criTo); bc && (bc->IsCross(pos, size))) {
+				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
+				if (pushOutWay != PushOutWays::Unknown) {
+					pos = newPos;
+					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
+				}
+			}
+		}
+		if ((uint32_t)pushOutWays) {
 			_pos = pos;
 			if (fallingFrameCount && ((uint32_t&)pushOutWays & (uint32_t)PushOutWays::Up) > 0) {
 				longJumpStoped = doubleJumped = jumping = false;
@@ -142,6 +195,7 @@ namespace IntVersion2 {
 				ySpeed = 0;
 			}
 		}
+
 
 		// handle jump
 		auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
@@ -181,19 +235,29 @@ namespace IntVersion2 {
 		lastJumpPressed = jumpPressed;
 	}
 
-	inline bool Character::HasCross(XYi const& newPos_) const {
-		for (auto& o : scene->blocks) {				// todo: optimize
-			if (o.IsCross(newPos_, size)) return true;
+	inline void Character::AttachPlatform(xx::Weak<Platform> platform) {
+		if (attachedPlatform == platform) return;
+		if (attachedPlatform) {
+			auto& acs = attachedPlatform->attachedCharacters;
+			acs.Back()->attachedPlatformIndex = attachedPlatformIndex;
+			acs.SwapRemoveAt(attachedPlatformIndex);
+			attachedPlatformIndex = -1;
+			attachedPlatform.Reset();
 		}
-		return false;
+		if (platform) {
+			auto w = xx::WeakFromThis(this);
+			assert(platform->attachedCharacters.Find(w) == -1);
+			attachedPlatformIndex = platform->attachedCharacters.len;
+			platform->attachedCharacters.Add(std::move(w));
+			attachedPlatform = std::move(platform);
+		}
 	}
 
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::Math::BlockWayout blockWayout_) {
+	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
 		Item::Init(scene_, pos_, size_, xx::RGBA8_Red);
-		blockWayout = blockWayout_;
 		return *this;
 	}
 
@@ -217,139 +281,70 @@ namespace IntVersion2 {
 		return false;
 	}
 
-	XX_INLINE bool Block::IsCross(Character const& c) const {
-		return IsCross(c.pos, c.size);
+	inline void Block::FillWayout() {
+		// search neighbor & set wayout bit
+		auto& bs = scene->blocks;
+		auto cri = bs.PosToColRowIndex(pos);
+		if (cri.y == 0) wayout.up = false;
+		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
+		if (cri.y + 1 == bs.numRows) wayout.down = false;
+		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
+		if (cri.x == 0) wayout.left = false;
+		else wayout.left = !bs.At({ cri.x - 1, cri.y });
+		if (cri.x + 1 == bs.numCols) wayout.right = false;
+		else wayout.right = !bs.At({ cri.x + 1, cri.y });
 	}
 
-	std::tuple<XYi, PushOutWays, bool> Block::PushOut(Character const& c) const {
+	inline std::pair<XYi, PushOutWays> Block::PushOut(XYi const& cPos, XYi const& cSize) const {
 		// calculate 4 way distance & choose min val
 		auto bPosRB = pos + size;	// RB: right bottom
 		auto bCenter = pos + XYi{ size.x >> 1, size.y >> 1 };
-		auto cPosRB = c.pos + c.size;
-		auto cCenter = c.pos + XYi{ c.size.x >> 1, c.size.y >> 1 };
+		auto cPosRB = cPos + cSize;
+		auto cCenter = cPos + XYi{ cSize.x >> 1, cSize.y >> 1 };
 		int32_t dLeft, dRight, dUp, dDown;
 		if (cCenter.x >= bCenter.x) {
-			dLeft = c.pos.x - pos.x + c.size.x;
-			dRight = bPosRB.x - c.pos.x;
+			if (wayout.left) dLeft = cPos.x - pos.x + cSize.x;
+			else dLeft = 0x7FFFFFFF;
+			if (wayout.right) dRight = bPosRB.x - cPos.x;
+			else dRight = 0x7FFFFFFF;
 			if (cCenter.y >= bCenter.y) {
-				dUp = c.pos.y - pos.y + c.size.y;
-				dDown = bPosRB.y - c.pos.y;
-			} 
-			else {
-				dUp = cPosRB.y - pos.y;
-				dDown = pos.y - c.pos.y + c.size.y;
+				if (wayout.up) dUp = cPos.y - pos.y + cSize.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = bPosRB.y - cPos.y;
+				else dDown = 0x7FFFFFFF;
+			} else {
+				if (wayout.up) dUp = cPosRB.y - pos.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = pos.y - cPos.y + cSize.y;
+				else dDown = 0x7FFFFFFF;
 			}
-		}
-		else {
-			dLeft = cPosRB.x - pos.x;
-			dRight = bPosRB.x - c.pos.x;
+		} else {
+			if (wayout.left) dLeft = cPosRB.x - pos.x;
+			else dLeft = 0x7FFFFFFF;
+			if (wayout.right) dRight = bPosRB.x - cPos.x;
+			else dRight = 0x7FFFFFFF;
 			if (cCenter.y >= bCenter.y) {
-				dUp = c.pos.y - pos.y + c.size.y;
-				dDown = bPosRB.y - c.pos.y;
-			}
-			else {
-				dUp = cPosRB.y - pos.y;
-				dDown = pos.y - c.pos.y + c.size.y;
-			}
-		}
-		XYi newPos;
-		if (dRight <= dLeft && dRight <= dUp && dRight <= dDown) {
-			newPos = { c.pos.x + dRight, c.pos.y };
-			if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-			if (dLeft <= dUp && dLeft <= dDown) {
-				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-				if (dUp <= dDown) {
-					newPos = { c.pos.x, c.pos.y - dUp };
-					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-				}
-				else {
-					newPos = { c.pos.x, c.pos.y + dDown };
-					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
-				}
-			}
-			else if (dUp <= dDown) {
-				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-			}
-			else {
-				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
+				if (wayout.up) dUp = cPos.y - pos.y + cSize.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = bPosRB.y - cPos.y;
+				else dDown = 0x7FFFFFFF;
+			} else {
+				if (wayout.up) dUp = cPosRB.y - pos.y;
+				else dUp = 0x7FFFFFFF;
+				if (wayout.down) dDown = pos.y - cPos.y + cSize.y;
+				else dDown = 0x7FFFFFFF;
 			}
 		}
-		else if (dLeft <= dRight && dLeft <= dUp && dLeft <= dDown) {
-			newPos = { c.pos.x - dLeft, c.pos.y };
-			if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-			if (dRight <= dUp && dRight <= dDown) {
-				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-				if (dUp <= dDown) {
-					newPos = { c.pos.x, c.pos.y - dUp };
-					if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-				}
-				else {
-					newPos = { c.pos.x, c.pos.y + dDown };
-					if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
-				}
-			}
-			else if (dUp <= dDown) {
-				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-			}
-			else {
-				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
-			}
-		}
-		else if (dUp <= dLeft && dUp <= dRight && dUp <= dDown) {
-			newPos = { c.pos.x, c.pos.y - dUp };
-			if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-			if (dDown <= dLeft && dDown <= dRight) {
-				newPos = { c.pos.x, c.pos.y + dDown };
-				if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
-				if (dLeft <= dRight) {
-					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-				}
-				else {
-					newPos = { c.pos.x + dRight, c.pos.y };
-					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-				}
-			}
-			else if (dLeft <= dRight) {
-				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-			}
-			else {
-				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-			}
-		}
-		else if (dDown <= dLeft && dDown <= dRight && dDown <= dUp) {
-			newPos = { c.pos.x, c.pos.y + dDown };
-			if (blockWayout.down || !c.HasCross(newPos)) return { newPos, PushOutWays::Down, blockWayout.down };
-			if (dUp <= dLeft && dUp <= dRight) {
-				newPos = { c.pos.x, c.pos.y - dUp };
-				if (blockWayout.up || !c.HasCross(newPos)) return { newPos, PushOutWays::Up, blockWayout.up };
-				if (dLeft <= dRight) {
-					newPos = { c.pos.x - dLeft, c.pos.y };
-					if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-				}
-				else {
-					newPos = { c.pos.x + dRight, c.pos.y };
-					if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-				}
-			}
-			else if (dLeft <= dRight) {
-				newPos = { c.pos.x - dLeft, c.pos.y };
-				if (blockWayout.left || !c.HasCross(newPos)) return { newPos, PushOutWays::Left, blockWayout.left };
-			}
-			else {
-				newPos = { c.pos.x + dRight, c.pos.y };
-				if (blockWayout.right || !c.HasCross(newPos)) return { newPos, PushOutWays::Right, blockWayout.right };
-			}
-		}
-		return { c.pos, PushOutWays::Unknown, false };
+		if (dLeft == 0x7FFFFFFF && dRight == 0x7FFFFFFF && dUp == 0x7FFFFFFF && dDown == 0x7FFFFFFF)
+			return { cPos, PushOutWays::Unknown };
+		if (dRight <= dLeft && dRight <= dUp && dRight <= dDown)
+			return { { cPos.x + dRight, cPos.y }, PushOutWays::Right };
+		else if (dLeft <= dRight && dLeft <= dUp && dLeft <= dDown)
+			return { { cPos.x - dLeft, cPos.y }, PushOutWays::Left };
+		else if (dUp <= dLeft && dUp <= dRight && dUp <= dDown)
+			return { { cPos.x, cPos.y - dUp }, PushOutWays::Up };
+		else
+			return { { cPos.x, cPos.y + dDown }, PushOutWays::Down };
 	}
 
 	inline void Block::Update() {
@@ -395,7 +390,11 @@ namespace IntVersion2 {
 		auto bak = _pos;
 		_pos.x = xOriginal + xOffset;
 		pos = _pos.As<int32_t>();
-		AssignChildrenPosOffset(_pos - bak);
+		auto offset = _pos - bak;
+		for (auto& c : attachedCharacters) {
+			c->_pos += offset;
+			c->pos = c->_pos.As<int32_t>();
+		}
 	}
 
 	/***************************************************************************************/
@@ -415,45 +414,49 @@ namespace IntVersion2 {
 #    #             #
 ####################
 )" };
-		xx::CoutN(mapText.size());
-		int32_t maxX{}, x{}, y{}, len{ 1 }, cx{}, cy{};
-		char curr{};
-		for( int i = 0; i < mapText.size(); ++i) {
+		// detect map max size
+		int32_t maxX{}, x{}, y{};
+		for (int i = 0; i < mapText.size(); ++i) {
 			auto c = mapText[i];
-			if (c == curr) {
-				++len;
-				continue;
-			} else if (curr) {
-				if (curr == '#') {
-					blocks.Emplace().Init(this, { 64 * x, 64 * y }, { 64 * len, 64 });
-				} else if (curr == '-') {
-					platforms.Emplace().Init(this, { 64 * x, 64 * y }, 64 * len);
-				}
-				curr = {};
-				x += len;
-				len = 1;
-			}
 			if (c == '\n') {
 				if (maxX < x) maxX = x;
 				x = 0;
 				++y;
-				continue;
-			}
-			else if (c == ' ') {
+			} else {
 				++x;
-				continue;
-			}
-			else if (c == 'O') {
-				cx = x;
-				cy = y;
-				++x;
-				continue;
-			}
-			if (c == '#' || c == '-') {
-				curr = c;
-				continue;
 			}
 		}
+		blocks.Init(y, maxX, { 64, 64 });
+
+		// fill map contents
+		x = 0;
+		y = 0;
+		int32_t cx{}, cy{};
+		for (int i = 0; i < mapText.size(); ++i) {
+			switch (auto c = mapText[i]) {
+			case '\n':
+				x = 0;
+				++y;
+				continue;
+			case 'O':
+				cx = x;
+				cy = y;
+				break;
+			case '#': {
+				auto block = xx::MakeShared<Block>();
+				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
+				blocks.Add(std::move(block));
+				break;
+			}
+			case '-': {
+				platforms.Emplace().Emplace()->Init(this, { 64 * x, 64 * y }, 64);
+				break;
+			}
+			}
+			++x;
+		}
+
+		for (auto& o : blocks.items) o->FillWayout();
 
 		character.Emplace()->Init(this, { 64 * cx, 64 * cy });
 
@@ -462,8 +465,8 @@ namespace IntVersion2 {
 	}
 
 	inline void Scene::Update() {
-		for (auto& o : blocks) o.Update();
-		for (auto& o : platforms) o.Update();
+		for (auto& o : blocks.items) o->Update();
+		for (auto& o : platforms) o->Update();
 		character->Update();
 
 		//// performance test
@@ -475,8 +478,8 @@ namespace IntVersion2 {
 	}
 
 	inline void Scene::Draw() {
-		for (auto& o : blocks) o.Draw();
-		for (auto& o : platforms) o.Draw();
+		for (auto& o : blocks.items) o->Draw();
+		for (auto& o : platforms) o->Draw();
 		character->Draw();
 		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(play)  move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 	}

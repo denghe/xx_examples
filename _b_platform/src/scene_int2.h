@@ -1,8 +1,10 @@
 ﻿#pragma once
+#include "xx_space_box.h"
 
 namespace IntVersion2 {
 
 	struct Scene;
+	struct Platform;
 
 	struct Item {
 		static constexpr XYi cResSize{ 64, 64 };
@@ -11,10 +13,8 @@ namespace IntVersion2 {
 		XYi pos{}, size{};							// pos: left-top for store & calc		size.y == 1: platform
 		XYp _pos{};									// for update & offset change
 		xx::RGBA8 color{ xx::RGBA8_White };
-		xx::Math::BlockWayout blockWayout{};
-		xx::Listi32<xx::Weak<Item>> children;
+		xx::Math::BlockWayout wayout{};
 
-		void AssignChildrenPosOffset(XYp const& offset);
 		void Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_);
 		void Draw();
 	};
@@ -31,6 +31,8 @@ namespace IntVersion2 {
 		static constexpr bool cEnableStrictJumpMode{ true };
 
 		FX64 ySpeed{};
+		xx::Weak<Platform> attachedPlatform;
+		int32_t attachedPlatformIndex{ -1 };
 		int32_t lastXMoveDirection{};		// -1: left  0: stoped  1: right
 		int32_t fallingFrameCount{};		// for coyote time
 		int32_t bigJumpFrameCount{};
@@ -41,8 +43,7 @@ namespace IntVersion2 {
 
 		Character& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
 		void Update();
-
-		bool HasCross(XYi const& newPos_) const;
+		void AttachPlatform(xx::Weak<Platform> platform);
 	};
 
 	enum class PushOutWays : uint32_t {
@@ -50,14 +51,19 @@ namespace IntVersion2 {
 	};
 
 	struct Block : Item {
-		Block& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize, xx::Math::BlockWayout blockWayout_ = {});
+		//Block* prev{}, * next{};						// for space index
+		int32_t indexAtItems{ -1 }, indexAtCells{ -1 };	// for space index
+
+		Block& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
-		bool IsCross(Character const& c) const;
-		std::tuple<XYi, PushOutWays, bool> PushOut(Character const& c) const;	// bool: is wayout
+		void FillWayout();
+		std::pair<XYi, PushOutWays> PushOut(XYi const& cPos, XYi const& cSize) const;
 		void Update();
 	};
 
 	struct Platform : Item {
+		xx::Listi32<xx::Weak<Character>> attachedCharacters;
+
 		int32_t lineNumber{}, i{};
 		FX64 xOriginal{}, xOffset{};
 
@@ -68,8 +74,8 @@ namespace IntVersion2 {
 
 	struct Scene : xx::SceneBase {
 		xx::Shared<Character> character;
-		xx::Listi32<Block> blocks;
-		xx::Listi32<Platform> platforms;	// todo: space index
+		xx::SpaceIndexBox<Block, false> blocks;
+		xx::Listi32<xx::Shared<Platform>> platforms;	// todo: space index
 
 		void Init() override;
 		void Update() override;
