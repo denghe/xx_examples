@@ -188,6 +188,9 @@ namespace IntVersion2 {
 			}
 		}
 		if ((uint32_t)pushOutWays) {
+
+			// todo: ensure attach platform
+
 			_pos = pos;
 			if (fallingFrameCount && ((uint32_t&)pushOutWays & (uint32_t)PushOutWays::Up) > 0) {
 				longJumpStoped = doubleJumped = jumping = false;
@@ -195,7 +198,6 @@ namespace IntVersion2 {
 				ySpeed = 0;
 			}
 		}
-
 
 		// handle jump
 		auto jumpPressed = gLooper.KeyDown(xx::KeyboardKeys::Space);
@@ -207,6 +209,7 @@ namespace IntVersion2 {
 			if (firstJumpPressed && fallingFrameCount < cCoyoteNumFrames) {
 				ySpeed = cYSpeedInit;
 				jumping = true;
+				AttachPlatform({});
 			}
 			if (downJumpPressed && ySpeed == 0) {
 				_pos.y += cDownJumpYOffset;
@@ -429,9 +432,9 @@ namespace IntVersion2 {
 #                  #
 ##      #     #    #
 # #  ---   ---     #
-#  #               #
-#   #--------------#
-#    #             #
+#  #            #  #
+#   #----------### #
+#    #        #    #
 ####################
 )" };
 		// detect map max size
@@ -451,7 +454,6 @@ namespace IntVersion2 {
 		// fill map contents
 		x = 0;
 		y = -1;
-		int32_t cx{}, cy{};
 		for (int i = 0; i < mapText.size(); ++i) {
 			switch (auto c = mapText[i]) {
 			case '\n':
@@ -459,8 +461,7 @@ namespace IntVersion2 {
 				++y;
 				continue;
 			case 'O':
-				cx = x;
-				cy = y;
+				character.Emplace()->Init(this, { 64 * x, 64 * y }, {32, 48});
 				break;
 			case '#': {
 				auto block = xx::MakeShared<Block>();
@@ -478,7 +479,6 @@ namespace IntVersion2 {
 
 		for (auto& o : blocks.items) o->FillWayout();
 
-		character.Emplace()->Init(this, { 64 * cx, 64 * cy });
 
 		gLooper.camera.SetOriginal({ 64 * maxX / 2, 64 * y / 2 });
 
