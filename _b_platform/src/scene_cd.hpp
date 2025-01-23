@@ -30,7 +30,7 @@ namespace CollisionDetection {
 	}
 
 	inline void Character::Update() {
-		auto mp = XYi{ 1, -1 } * (gLooper.mouse.pos / gLooper.camera.scale);	// get mouse logic pos
+		auto mp = gLooper.camera.ToLogicPos(gLooper.mouse.pos);	// get mouse logic pos
 		auto mb = gLooper.mouse.PressedMBLeft();	// get mouse left button state
 
 		if (!gLooper.mouseEventHandler) {			// mouse not in ui area

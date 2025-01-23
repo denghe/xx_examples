@@ -53,6 +53,11 @@ xx::Task<> Looper::MainTask() {
 		scene.Emplace<CollisionDetection::Scene>()->Init();
 	});
 
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout2 test", [&]() {
+		scene.Emplace<CollisionDetection2::Scene>()->Init();
+	});
+
 	// ...
 
 	clearColor = { 33, 33, 33, 255 };
@@ -75,3 +80,4 @@ void Looper::Draw() {
 //#include "scene_int.hpp"
 #include "scene_int2.hpp"
 #include "scene_cd.hpp"
+#include "scene_cd2.hpp"
