@@ -21,6 +21,13 @@ namespace IntVersion2 {
 		q.texRect.data = frame.textureRect.data;
 	}
 
+	inline Item::~Item() {
+	}
+
+	inline bool Item::Update() {
+		return false;
+	}
+
 	/***************************************************************************************/
 	/***************************************************************************************/
 
@@ -29,8 +36,9 @@ namespace IntVersion2 {
 		return *this;
 	}
 
-	inline void Character::Update() {
+	inline bool Character::Update() {
 		auto bak = pos;
+		auto bakRB = bak + size;
 
 		// left right move command check
 		int32_t moveDir;
@@ -63,12 +71,16 @@ namespace IntVersion2 {
 			_pos.x -= cXSpeed;
 		}
 
-		// handle gravity
-		ySpeed += cGravity;
-		if (ySpeed > cYSpeedMax) {
-			ySpeed = cYSpeedMax;
+		if (!attachedPlatform) {
+			// handle gravity
+			ySpeed += cGravity;
+			if (ySpeed > cYSpeedMax) {
+				ySpeed = cYSpeedMax;
+			}
+			_pos.y += ySpeed;
 		}
-		_pos.y += ySpeed;
+		pos = _pos.As<int32_t>();
+
 		if (ySpeed > FX64_0) {
 			++fallingFrameCount;
 		}
@@ -76,17 +88,19 @@ namespace IntVersion2 {
 		// watch full jump max height for easy config gravity & speed
 		//xx::CoutN(pos.y);
 
-		// store pos int version
-		pos = _pos.As<int32_t>();
-
-		// handle platforms( maybe cross 2 platforms )
-		if (pos.y > bak.y) {
-			auto bakRB = bak + size;
+		if (attachedPlatform) {
+			auto a = attachedPlatform.pointer();
+			_pos.y = pos.y = a->pos.y - size.y;		// force sync pos
+			AttachPlatform({});						// detach
+			goto LabCheckPlatform;
+		}
+		if (ySpeed > FX64_0) {
+		LabCheckPlatform:							// handle platforms( maybe cross 2 platforms )
 			auto posRB = pos + size;
 			std::array<xx::Weak<Platform>, 2> ps;
 			int32_t psi{};
 			for (auto& o : scene->platforms) {
-				if (bakRB.y <= o->pos.y && o->pos.y <= posRB.y) {
+				if (bakRB.y <= o->pos.y && o->pos.y <= posRB.y) {						// y cross
 					if (!(posRB.x <= o->pos.x || pos.x >= o->pos.x + o->size.x)) {		// stand on the platform
 						ps[psi++] = o;
 					}
@@ -101,9 +115,13 @@ namespace IntVersion2 {
 			if (psi == 1) {
 				AttachPlatform(std::move(ps[0]));
 			} else if (psi == 2) {
-				assert(ps[0]->pos.x < ps[1]->pos.x);
-				// compare distance
-				if (ps[0]->pos.x + ps[0]->size.x - pos.x > pos.x + size.x - ps[1]->pos.x + ps[0]->size.x) {
+				auto a = ps[0].pointer();
+				auto b = ps[1].pointer();
+				assert(a->pos.x < b->pos.x);
+				auto ad = a->pos.x + a->size.x - pos.x;
+				auto bd = pos.x + size.x - b->pos.x;
+				assert(ad >= 0 && bd >= 0);
+				if (ad >= bd) {									// compare intersect len
 					AttachPlatform(std::move(ps[0]));
 				} else {
 					AttachPlatform(std::move(ps[1]));
@@ -113,6 +131,7 @@ namespace IntVersion2 {
 				AttachPlatform({});
 			}
 		}
+
 
 		// handle blocks
 		PushOutWays pushOutWays{};
@@ -236,6 +255,8 @@ namespace IntVersion2 {
 			}
 		}
 		lastJumpPressed = jumpPressed;
+
+		return false;
 	}
 
 	inline void Character::AttachPlatform(xx::Weak<Platform> platform) {
@@ -370,54 +391,49 @@ namespace IntVersion2 {
 			return { { cPos.x, cPos.y + dDown }, PushOutWays::Down };
 	}
 
-	inline void Block::Update() {
-		// todo
-	}
-
 	/***************************************************************************************/
 	/***************************************************************************************/
 
 	inline Platform& Platform::Init(Scene* scene_, XYi const& pos_, int32_t len_) {
 		Item::Init(scene_, pos_, { len_, 1 }, xx::RGBA8_Yellow);
-		xOriginal = _pos.x;
 		return *this;
 	}
 
-	inline void Platform::Update() {
-		static constexpr FX64 moveDistance{ 64 * 3 };
-		static constexpr FX64 moveSpeed{ 4 };
-		static constexpr int32_t idleNumFrames{ int32_t(0.5f / Cfg::frameDelay) };
-
-		// loop: move 100p + sleep 0.5s + move back + sleep 0.5s
-
-		XX_BEGIN;
-		for (xOffset = FX64_0; xOffset <= moveDistance; xOffset += moveSpeed) {
-			AssignOffset();
-			XX_YIELD;
-		}
-		for (i = 0; i < idleNumFrames; ++i) {
-			XX_YIELD;
-		}
-		for (xOffset = moveDistance; xOffset >= FX64_0; xOffset -= moveSpeed) {
-			AssignOffset();
-			XX_YIELD;
-		}
-		for (i = 0; i < idleNumFrames; ++i) {
-			XX_YIELD;
-		}
-		XX_YIELD_TO_BEGIN
-		XX_END;
-	}
-
-	XX_INLINE void Platform::AssignOffset() {
-		auto bak = _pos;
-		_pos.x = xOriginal + xOffset;
+	XX_INLINE void Platform::AssignOffset(XYp const& offset) {
+		_pos += offset;
 		pos = _pos.As<int32_t>();
-		auto offset = _pos - bak;
 		for (auto& c : attachedCharacters) {
 			c->_pos += offset;
 			c->pos = c->_pos.As<int32_t>();
 		}
+	}
+
+	inline Platform_Slide& Platform_Slide::Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
+		, int32_t len_, int32_t moveDurationMS_, int32_t idleDurationMS_) {
+		Item::Init(scene_, posFrom_, { len_, 1 }, xx::RGBA8_Green);
+		posFrom = posFrom_;
+		posTo = posTo_;
+		moveFrames = (FX64{ moveDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
+		posInc = XYp{ posTo - posFrom } / moveFrames;
+		idleFrames = (FX64{ idleDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
+		return *this;
+	}
+
+	inline bool Platform_Slide::Update() {
+		XX_BEGIN;
+		while (true) {
+			for (i = 0; i < moveFrames; ++i) {
+				AssignOffset(posInc);
+				XX_YIELD_F;
+			}
+			for (i = 0; i < idleFrames; ++i) {
+				XX_YIELD_F;
+			}
+			posInc = -posInc;
+		}
+		XX_YIELD_F_TO_BEGIN
+		XX_END;
+		return false;
 	}
 
 	/***************************************************************************************/
@@ -427,11 +443,11 @@ namespace IntVersion2 {
 
 		static constexpr std::string_view mapText{ R"(
 ####################
-#                  #
 #        O         #
+#      //vv\\      #
 #                  #
-##      #     #    #
-# #  ---   ---     #
+##                 #
+# #   >>>    <<<   #
 #  #            #  #
 #   #----------### #
 #    #        #    #
@@ -470,7 +486,58 @@ namespace IntVersion2 {
 				break;
 			}
 			case '-': {
+				// todo: combine
 				platforms.Emplace().Emplace()->Init(this, { 64 * x, 64 * y }, 64);
+				break;
+			}
+			case '>': {
+				// todo: combine
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x + 64 * 2, 64 * y }
+					, 64
+					, 500
+					, 1000);
+				break;
+			}
+			case '<': {
+				// todo: combine
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x - 64 * 2, 64 * y }
+					, 64
+					, 500
+					, 1000);
+				break;
+			}
+			case 'v': {
+				// todo: combine
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x, 64 * y + 64 * 2 }
+					, 64
+					, 240
+					, 10);
+				break;
+			}
+			case '/': {
+				// todo: combine
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x - 64 * 2, 64 * y + 64 * 2 }
+					, 64
+					, 60
+					, 10);
+				break;
+			}
+			case '\\': {
+				// todo: combine
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x + 64 * 2, 64 * y + 64 * 2 }
+					, 64
+					, 120
+					, 10);
 				break;
 			}
 			}
@@ -488,6 +555,8 @@ namespace IntVersion2 {
 		for (auto& o : blocks.items) o->Update();
 		for (auto& o : platforms) o->Update();
 		character->Update();
+
+		//gLooper.camera.SetOriginal(character->pos);
 
 		//// performance test
 		//auto secs = xx::NowEpochSeconds();

@@ -15,7 +15,9 @@ namespace IntVersion2 {
 		xx::RGBA8 color{ xx::RGBA8_White };
 		xx::Math::BlockWayout wayout{};
 
+		virtual ~Item();
 		void Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_);
+		virtual bool Update();
 		void Draw();
 	};
 
@@ -42,7 +44,7 @@ namespace IntVersion2 {
 		bool longJumpStoped{};
 
 		Character& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
-		void Update();
+		bool Update() override;
 		void AttachPlatform(xx::Weak<Platform> platform);
 	};
 
@@ -58,18 +60,30 @@ namespace IntVersion2 {
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
 		void FillWayout();
 		std::pair<XYi, PushOutWays> PushOut(XYi const& cPos, XYi const& cSize) const;
-		void Update();
 	};
 
 	struct Platform : Item {
 		xx::Listi32<xx::Weak<Character>> attachedCharacters;
+		Platform& Init(Scene* scene_, XYi const& pos_, int32_t len_);
+		void AssignOffset(XYp const& offset);
+	};
 
-		int32_t lineNumber{}, i{};
-		FX64 xOriginal{}, xOffset{};
+	struct Platform_Slide : Platform {
+		int32_t lineNumber{}, idleFrames{}, i{}, moveFrames{};
+		XYi posFrom{}, posTo{};
+		XYp posInc{};
+		Platform_Slide& Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
+			, int32_t len_, int32_t moveDurationMS_, int32_t idleDurationMS_);
+		bool Update() override;
+	};
 
-		Platform& Init(Scene* scene_, XYi const& pos_ = {}, int32_t len_ = cResSize.x);
-		void Update();
-		void AssignOffset();
+	struct Platform_Swing : Platform {
+		int32_t lineNumber{}, idleDurationMS{};
+		XYi posFrom{}, posTo{};
+		FX64 angle{}, angleSpeed{};
+		Platform_Swing& Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
+		, int32_t len_, int32_t moveDurationMS, int32_t idleDurationMS);
+		bool Update() override;
 	};
 
 	struct Scene : xx::SceneBase {
