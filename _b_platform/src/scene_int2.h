@@ -17,6 +17,7 @@ namespace IntVersion2 {
 
 		virtual ~Item();
 		void Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_);
+		bool IsCross(XYi const& cPos, XYi const& cSize) const;
 		virtual bool Update();
 		void Draw();
 	};
@@ -56,8 +57,7 @@ namespace IntVersion2 {
 		//Block* prev{}, * next{};						// for space index
 		int32_t indexAtItems{ -1 }, indexAtCells{ -1 };	// for space index
 
-		Block& Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
-		bool IsCross(XYi const& cPos, XYi const& cSize) const;
+		xx::Shared<Block> Init(Scene* scene_, XYi const& pos_ = {}, XYi const& size_ = cResSize);
 		void FillWayout();
 		std::pair<XYi, PushOutWays> PushOut(XYi const& cPos, XYi const& cSize) const;
 	};
@@ -86,11 +86,18 @@ namespace IntVersion2 {
 		bool Update() override;
 	};
 
+	struct BornPlace : Item {
+		bool touched{};
+		BornPlace& Init(Scene* scene_, XYi const& pos_);
+		bool Update() override;
+	};
+
 	struct Scene : xx::SceneBase {
-		XYi rebirthPos{}, lastCharacterPos{};
+		XYi bornPos{}, lastCharacterPos{};
 		xx::Shared<Character> character;
 		xx::SpaceIndexBox<Block, false> blocks;
 		xx::Listi32<xx::Shared<Platform>> platforms;	// todo: space index
+		xx::Listi32<BornPlace> bornPlaces;
 
 		void Init() override;
 		void Update() override;

@@ -9,6 +9,23 @@ namespace IntVersion2 {
 		color = color_;
 	}
 
+	XX_INLINE bool Item::IsCross(XYi const& cPos, XYi const& cSize) const {
+		if (cPos.x >= pos.x) {
+			if (cPos.y >= pos.y) {
+				if (cPos.x < pos.x + size.x) return cPos.y < pos.y + size.y;
+			} else /* cPos.y < pos.y */ {
+				if (cPos.x < pos.x + size.x) return cPos.y + cSize.y > pos.y;
+			}
+		} else /* cPos.x < pos.x */ {
+			if (cPos.y >= pos.y) {
+				if (cPos.x + cSize.x > pos.x) return cPos.y < pos.y + size.y;
+			} else /* cPos.y < pos.y */ {
+				if (cPos.x + cSize.x > pos.x) return cPos.y + cSize.y > pos.y;
+			}
+		}
+		return false;
+	}
+
 	inline void Item::Draw() {
 		auto& frame = *gRes.quad;
 		auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame.tex->GetValue(), 1);
@@ -286,29 +303,9 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	inline Block& Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
+	inline xx::Shared<Block> Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
 		Item::Init(scene_, pos_, size_, xx::RGBA8_Red);
-		return *this;
-	}
-
-	XX_INLINE bool Block::IsCross(XYi const& cPos, XYi const& cSize) const {
-		if (cPos.x >= pos.x) {
-			if (cPos.y >= pos.y) {
-				if (cPos.x < pos.x + size.x) return cPos.y < pos.y + size.y;
-			}
-			else /* cPos.y < pos.y */ {
-				if (cPos.x < pos.x + size.x) return cPos.y + cSize.y > pos.y;
-			}
-		}
-		else /* cPos.x < pos.x */ {
-			if (cPos.y >= pos.y) {
-				if (cPos.x + cSize.x > pos.x) return cPos.y < pos.y + size.y;
-			}
-			else /* cPos.y < pos.y */ {
-				if (cPos.x + cSize.x > pos.x) return cPos.y + cSize.y > pos.y;
-			}
-		}
-		return false;
+		return xx::SharedFromThis(this);
 	}
 
 	inline void Block::FillWayout() {
@@ -414,6 +411,9 @@ namespace IntVersion2 {
 		}
 	}
 
+	/***************************************************************************************/
+	/***************************************************************************************/
+
 	inline Platform_Slide& Platform_Slide::Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
 		, int32_t len_, int32_t moveDurationMS_, int32_t idleDurationMS_) {
 		Item::Init(scene_, posFrom_, { len_, 1 }, xx::RGBA8_Green);
@@ -445,12 +445,59 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
+	inline Platform_Swing& Platform_Swing::Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
+		, int32_t len_, int32_t moveDurationMS_, int32_t idleDurationMS_) {
+		Item::Init(scene_, posFrom_, { len_, 1 }, xx::RGBA8_Green);
+		posFrom = posFrom_;
+		posTo = posTo_;
+		// todo
+		return *this;
+	}
+
+	inline bool Platform_Swing::Update() {
+		XX_BEGIN;
+				XX_YIELD_F;
+		XX_YIELD_F_TO_BEGIN
+			XX_END;
+		return false;
+	}
+
+	/***************************************************************************************/
+	/***************************************************************************************/
+
+	inline BornPlace& BornPlace::Init(Scene* scene_, XYi const& pos_) {
+		Item::Init(scene_, pos_ + XYi{ 24, 24 }, { 16, 16 }, xx::RGBA8_White);
+		return *this;
+	}
+
+	inline bool BornPlace::Update() {
+		if (!touched) {
+			if (auto c = scene->character.pointer) {
+				if (IsCross(c->pos, c->size)) {
+					for (auto& o : scene->bornPlaces) {
+						if (&o == this) continue;
+						o.touched = false;
+						o.color = xx::RGBA8_White;
+					}
+					touched = true;
+					color = xx::RGBA8_Green;
+					scene->bornPos = pos;
+				}
+			}
+		}
+		return false;
+	}
+
+	/***************************************************************************************/
+	/***************************************************************************************/
+
 	inline void Scene::Init() {
 
 #if 1
 		// Ｂ					block
 		// ｃ					character
-		// １２３４５６７８９		shortcuts
+		// ｂ					born place
+		// １２３４５６７８９		custom items
 		static std::u32string_view mapText{ UR"(
 ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
@@ -458,9 +505,9 @@ namespace IntVersion2 {
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　ｃ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
+Ｂ　　　　　　　　　　　　　　ＢＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　ｃ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　ｂ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｂ　　　　　
 ＢＢＢＢＢＢＢ　Ｂ　　ＢＢＢＢＢＢ　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢ１　　　　　　　　　　２ＢＢＢ１　　　　　　　　　　２ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
 ＢＢＢＢＢＢＢＢＢ　　ＢＢＢＢＢＢ　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
 ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
@@ -497,26 +544,28 @@ namespace IntVersion2 {
 				++y;
 				continue;
 			case U'ｃ':
-				rebirthPos = { 64 * x, 64 * y };
+				bornPos = { 64 * x, 64 * y };
 				break;
+			case U'ｂ': {
+				bornPlaces.Emplace().Init(this, { 64 * x, 64 * y });
+				break;
+			}
 			case U'Ｂ': {
-				auto block = xx::MakeShared<Block>();
-				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
-				blocks.Add(std::move(block));
+				blocks.Add(xx::MakeShared<Block>()->Init(this, { 64 * x, 64 * y }, { 64, 64 }));
 				break;
 			}
 			case U'１': {
 				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
 					, { 64 * x, 64 * y }
 					, { 64 * x + 64 * 4, 64 * y }
-					, 64 * 2, 500, 1000);
+					, 64 * 2, 500, 500);
 				break;
 			}
 			case U'２': {
 				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
 					, { 64 * x - 64, 64 * y }
 					, { 64 * x - 64 * 5, 64 * y }
-					, 64 * 2, 500, 1000);
+					, 64 * 2, 500, 500);
 				break;
 			}
 			}
@@ -630,12 +679,13 @@ namespace IntVersion2 {
 
 		for (auto& o : blocks.items) o->FillWayout();
 
-		lastCharacterPos = rebirthPos;
+		lastCharacterPos = bornPos;
 		gLooper.camera.SetOriginal({ lastCharacterPos.x, blocks.gridSize.y / 2 });
 	}
 
 	inline void Scene::Update() {
 		for (auto& o : blocks.items) o->Update();
+		for (auto& o : bornPlaces) o.Update();
 		for (auto& o : platforms) o->Update();
 
 		if (character) {
@@ -645,23 +695,15 @@ namespace IntVersion2 {
 				character.Reset();	// simulate death
 			}
 		} else {
-			character.Emplace()->Init(this, rebirthPos, { 32, 48 });	// simulate reborn
+			character.Emplace()->Init(this, bornPos, { 32, 48 });	// simulate reborn
 		}
 
 		gLooper.camera.SetOriginal({ lastCharacterPos.x, blocks.gridSize.y / 2 });
-
-		
-
-		//// performance test
-		//auto secs = xx::NowEpochSeconds();
-		//for (int i = 0; i < 100000000; ++i) {
-		//	platforms[0].Update();
-		//}
-		//xx::CoutN(xx::NowEpochSeconds(secs));
 	}
 
 	inline void Scene::Draw() {
 		for (auto& o : blocks.items) o->Draw();
+		for (auto& o : bornPlaces) o.Draw();
 		for (auto& o : platforms) o->Draw();
 		if (character) {
 			character->Draw();
@@ -670,3 +712,11 @@ namespace IntVersion2 {
 	}
 
 }
+
+
+//// performance test
+//auto secs = xx::NowEpochSeconds();
+//for (int i = 0; i < 100000000; ++i) {
+//	platforms[0].Update();
+//}
+//xx::CoutN(xx::NowEpochSeconds(secs));

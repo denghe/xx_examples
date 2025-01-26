@@ -31,7 +31,8 @@ namespace xx {
 			items.Reserve(cap);
 		}
 
-		xx::Shared<T>& Add(xx::Shared<T> c) {
+		template<typename U>
+		xx::Shared<U>& Add(xx::Shared<U> c) requires std::is_base_of_v<T, U> {
 			assert(c && c->indexAtItems == -1 && c->indexAtCells == -1);
 			auto cri = PosToColRowIndex(c->pos);
 			auto ci = ColRowIndexToCellIndex(cri);
@@ -56,7 +57,7 @@ namespace xx {
 
 			// store
 			c->indexAtItems = items.len;
-			return items.Emplace(std::move(c));
+			return (xx::Shared<U>&)items.Emplace(std::move(c));
 		}
 
 		void Remove(T* c) {
