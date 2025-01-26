@@ -78,8 +78,9 @@ namespace IntVersion2 {
 	};
 
 	struct Platform_Swing : Platform {
-		int32_t lineNumber{}, idleDurationMS{};
+		int32_t lineNumber{}, idleFrames{}, i{}, moveFrames{};
 		XYi posFrom{}, posTo{};
+		XYp centerPos{};
 		FX64 angle{}, angleSpeed{};
 		Platform_Swing& Init(Scene* scene_, XYi const& posFrom_, XYi const& posTo_
 		, int32_t len_, int32_t moveDurationMS, int32_t idleDurationMS);
@@ -97,7 +98,7 @@ namespace IntVersion2 {
 		xx::Shared<Character> character;
 		xx::SpaceIndexBox<Block, false> blocks;
 		xx::Listi32<xx::Shared<Platform>> platforms;	// todo: space index
-		xx::Listi32<BornPlace> bornPlaces;
+		xx::Listi32<BornPlace> bornPlaces;				// todo: space index
 
 		void Init() override;
 		void Update() override;

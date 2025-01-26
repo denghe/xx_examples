@@ -7,7 +7,7 @@ namespace xx {
 
 	// space index with size limited boxs
 	// requires T:: (XYi) pos size  (int32_t) indexAtItems indexAtCells
-	// requires T:: ( T* )prev next
+	// requires T:: ( T* )prev next	      ( if enableDoubleLink == true )
 	template<typename T, bool enableDoubleLink>
 	struct SpaceIndexBox {
 		XYi cellSize{}, gridSize{};					// gridSize = cellSize * numCR

@@ -304,7 +304,7 @@ namespace IntVersion2 {
 	/***************************************************************************************/
 
 	inline xx::Shared<Block> Block::Init(Scene* scene_, XYi const& pos_, XYi const& size_) {
-		Item::Init(scene_, pos_, size_, xx::RGBA8_Red);
+		Item::Init(scene_, pos_, size_, {128,64,0,255});
 		return xx::SharedFromThis(this);
 	}
 
@@ -420,8 +420,8 @@ namespace IntVersion2 {
 		posFrom = posFrom_;
 		posTo = posTo_;
 		moveFrames = (FX64{ moveDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
-		posInc = XYp{ posTo - posFrom } / moveFrames;
 		idleFrames = (FX64{ idleDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
+		posInc = XYp{ posTo - posFrom } / moveFrames;
 		return *this;
 	}
 
@@ -450,15 +450,54 @@ namespace IntVersion2 {
 		Item::Init(scene_, posFrom_, { len_, 1 }, xx::RGBA8_Green);
 		posFrom = posFrom_;
 		posTo = posTo_;
-		// todo
+		moveFrames = (FX64{ moveDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
+		idleFrames = (FX64{ idleDurationMS_ } / FX64{ 1000 } / FX64{ Cfg::frameDelay }).ToInt();
+		if (posFrom.x < posTo.x) {
+			angle = FX64_PI;
+			angleSpeed = FX64_NPI / moveFrames;
+			centerPos = { posFrom.x + size.x / 2 + (posTo.x - posFrom.x) / 2, posFrom.y };
+		} else {
+			angle = FX64_NPI;
+			angleSpeed = FX64_PI / moveFrames;
+			centerPos = { posFrom.x + size.x / 2 - (posFrom.x - posTo.x) / 2, posFrom.y };
+		}
 		return *this;
 	}
 
 	inline bool Platform_Swing::Update() {
 		XX_BEGIN;
-				XX_YIELD_F;
+		for (i = 0; i < moveFrames; ++i) {
+			angle += angleSpeed;
+			{
+				auto radius = (posTo.x - posFrom.x) / 2;
+				XYp v{ angle.CosFastest(), angle.SinFastest() };
+				auto newPos = v * radius + centerPos - XYi{ size.x / 2, 0 };
+				AssignOffset(newPos - _pos);
+			}
+			XX_YIELD_F;
+		}
+		_pos = pos = posTo;
+		for (i = 0; i < idleFrames; ++i) {
+			XX_YIELD_F;
+		}
+		angleSpeed = -angleSpeed;
+		for (i = 0; i < moveFrames; ++i) {
+			angle += angleSpeed;
+			{
+				auto radius = (posTo.x - posFrom.x) / 2;
+				XYp v{ angle.CosFastest(), angle.SinFastest() };
+				auto newPos = v * radius + centerPos - XYi{ size.x / 2, 0 };
+				AssignOffset(newPos - _pos);
+			}
+			XX_YIELD_F;
+		}
+		_pos = pos = posFrom;
+		for (i = 0; i < idleFrames; ++i) {
+			XX_YIELD_F;
+		}
+		angleSpeed = -angleSpeed;
 		XX_YIELD_F_TO_BEGIN
-			XX_END;
+		XX_END;
 		return false;
 	}
 
@@ -493,27 +532,27 @@ namespace IntVersion2 {
 
 	inline void Scene::Init() {
 
-#if 1
 		// Ｂ					block
 		// ｃ					character
 		// ｂ					born place
 		// １２３４５６７８９		custom items
 		static std::u32string_view mapText{ UR"(
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　ＢＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　ｃ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　ｂ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｂ　　　　　
-ＢＢＢＢＢＢＢ　Ｂ　　ＢＢＢＢＢＢ　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢ１　　　　　　　　　　２ＢＢＢ１　　　　　　　　　　２ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-ＢＢＢＢＢＢＢＢＢ　　ＢＢＢＢＢＢ　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　３　　　　　　　　　　　　　　　　　　　　　　４　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　ＢＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｃ　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　ｂ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　ｂ　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｂ　　　　　　　
+ＢＢＢＢＢＢＢ　Ｂ　　ＢＢＢＢＢＢ　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢ１　　　　　　　　　　２ＢＢＢ１　　　　　　　　　　２ＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢ　　ＢＢＢＢＢＢ　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
 )" };
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
 
@@ -568,114 +607,23 @@ namespace IntVersion2 {
 					, 64 * 2, 500, 500);
 				break;
 			}
-			}
-			++x;
-		}
-
-#else
-		static constexpr std::string_view mapText{ R"(
-####################
-#        O         #
-#      //vv\\      #
-#                  #
-##                 #
-# #   >>>    <<<   #
-#  #            #  #
-#   #----------### #
-#    #        #    #
-####################
-)" };
-		// detect map max size
-		int32_t maxX{}, x{}, y{};
-		for (int i = 0; i < mapText.size(); ++i) {
-			auto c = mapText[i];
-			if (c == '\n') {
-				if (maxX < x) maxX = x;
-				x = 0;
-				++y;
-			} else {
-				++x;
-			}
-		}
-		blocks.Init(y - 1, maxX, { 64, 64 });
-
-		// fill map contents
-		x = 0;
-		y = -1;
-		for (int i = 0; i < mapText.size(); ++i) {
-			switch (auto c = mapText[i]) {
-			case '\n':
-				x = 0;
-				++y;
-				continue;
-			case 'O':
-				character.Emplace()->Init(this, { 64 * x, 64 * y }, {32, 48});
-				break;
-			case '#': {
-				auto block = xx::MakeShared<Block>();
-				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
-				blocks.Add(std::move(block));
-				break;
-			}
-			case '-': {
-				// todo: combine
-				platforms.Emplace().Emplace()->Init(this, { 64 * x, 64 * y }, 64);
-				break;
-			}
-			case '>': {
-				// todo: combine
-				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+			case U'３': {
+				platforms.Emplace().Emplace<Platform_Swing>()->Init(this
 					, { 64 * x, 64 * y }
-					, { 64 * x + 64 * 2, 64 * y }
-					, 64
-					, 500
-					, 1000);
+					, { 64 * x + 64 * 10, 64 * y }
+					, 64 * 3, 1000, 500);
 				break;
 			}
-			case '<': {
-				// todo: combine
-				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+			case U'４': {
+				platforms.Emplace().Emplace<Platform_Swing>()->Init(this
 					, { 64 * x, 64 * y }
-					, { 64 * x - 64 * 2, 64 * y }
-					, 64
-					, 500
-					, 1000);
-				break;
-			}
-			case 'v': {
-				// todo: combine
-				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
-					, { 64 * x, 64 * y }
-					, { 64 * x, 64 * y + 64 * 2 }
-					, 64
-					, 240
-					, 10);
-				break;
-			}
-			case '/': {
-				// todo: combine
-				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
-					, { 64 * x, 64 * y }
-					, { 64 * x - 64 * 2, 64 * y + 64 * 2 }
-					, 64
-					, 60
-					, 10);
-				break;
-			}
-			case '\\': {
-				// todo: combine
-				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
-					, { 64 * x, 64 * y }
-					, { 64 * x + 64 * 2, 64 * y + 64 * 2 }
-					, 64
-					, 120
-					, 10);
+					, { 64 * x - 64 * 10, 64 * y }
+					, 64 * 3, 1000, 500);
 				break;
 			}
 			}
 			++x;
 		}
-#endif
 
 		for (auto& o : blocks.items) o->FillWayout();
 
