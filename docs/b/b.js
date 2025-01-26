@@ -557,7 +557,7 @@ var Y,
     e: (a, b, c, d) => {
       ha(`Assertion failed: ${G(a)}, at: ` + [b ? G(b) : "unknown filename", c, d ? G(d) : "unknown function"]);
     },
-    t: (a, b, c) => {
+    o: (a, b, c) => {
       var d = new Ha(a);
       A[d.va + 16 >> 2] = 0;
       A[d.va + 4 >> 2] = b;
@@ -576,7 +576,7 @@ var Y,
       }
     },
     M: () => 1,
-    r: () => {
+    s: () => {
       ha("");
     },
     N: () => Date.now(),
@@ -753,8 +753,8 @@ var Y,
     i: a => {
       Y.bindVertexArray(hb[a]);
     },
-    o: a => Y.blendEquation(a),
-    p: (a, b) => Y.blendFunc(a, b),
+    p: a => Y.blendEquation(a),
+    q: (a, b) => Y.blendFunc(a, b),
     j: (a, b, c, d) => {
       c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
@@ -777,7 +777,7 @@ var Y,
       X[b] = Y.createShader(a);
       return b;
     },
-    q: (a, b) => {
+    r: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2],
           f = fb[d];
@@ -869,7 +869,7 @@ var Y,
     x: (a, b, c) => {
       c && (35716 == b ? (a = Y.getShaderInfoLog(X[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = Y.getShaderSource(X[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = Y.getShaderParameter(X[a], b));
     },
-    s: (a, b) => {
+    t: (a, b) => {
       b = G(b);
       if (a = V[a]) {
         var c = a,

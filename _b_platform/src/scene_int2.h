@@ -87,6 +87,7 @@ namespace IntVersion2 {
 	};
 
 	struct Scene : xx::SceneBase {
+		XYi rebirthPos{}, lastCharacterPos{};
 		xx::Shared<Character> character;
 		xx::SpaceIndexBox<Block, false> blocks;
 		xx::Listi32<xx::Shared<Platform>> platforms;	// todo: space index

@@ -132,13 +132,18 @@ namespace IntVersion2 {
 			}
 		}
 
+		// prepare
+		auto& bs = scene->blocks;
+		auto posBR = pos + size;
+
+
+		// out of map check
+		if (pos.x < 0 || pos.y < 0) return true;
+		if (posBR.x >= bs.gridSize.x || posBR.y >= bs.gridSize.y) return true;
+
 
 		// handle blocks
 		PushOutWays pushOutWays{};
-		auto& bs = scene->blocks;
-		//if (pos.x < 0 || pos.x >= bs.gridSize.x || pos.y < 0 || pos.y >= bs.gridSize.y) return;
-		auto posBR = pos + size;
-		//if (posBR.x < 0 || posBR.x >= bs.gridSize.x || posBR.y < 0 || posBR.y >= bs.gridSize.y) return;
 		auto criFrom = scene->blocks.PosToColRowIndex(pos);
 		auto criTo = scene->blocks.PosToColRowIndex(posBR);
 		assert(criFrom.x - criTo.x <= 1 && criFrom.y - criTo.y <= 1);
@@ -255,6 +260,7 @@ namespace IntVersion2 {
 			}
 		}
 		lastJumpPressed = jumpPressed;
+
 
 		return false;
 	}
@@ -441,6 +447,83 @@ namespace IntVersion2 {
 
 	inline void Scene::Init() {
 
+#if 1
+		// Ｂ					block
+		// ｃ					character
+		// １２３４５６７８９		shortcuts
+		static std::u32string_view mapText{ UR"(
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　ｃ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　
+ＢＢＢＢＢＢＢ　Ｂ　　ＢＢＢＢＢＢ　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢ１　　　　　　　　　　２ＢＢＢ１　　　　　　　　　　２ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢ　　ＢＢＢＢＢＢ　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+)" };
+		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
+
+		// detect map max size
+		int32_t maxX{}, x{}, y{};
+		for (int i = 0; i < mapText.size(); ++i) {
+			auto c = mapText[i];
+			switch (auto c = mapText[i]) {
+			case U'\r': continue;
+			case U'\n':
+				if (maxX < x) maxX = x;
+				x = 0;
+				++y;
+				continue;
+			}
+			++x;
+		}
+		blocks.Init(y + 1, maxX, { 64, 64 });
+
+		// fill map contents
+		x = 0;
+		y = 0;
+		for (int i = 0; i < mapText.size(); ++i) {
+			switch (auto c = mapText[i]) {
+			case U'\r': continue;
+			case U'\n':
+				x = 0;
+				++y;
+				continue;
+			case U'ｃ':
+				rebirthPos = { 64 * x, 64 * y };
+				break;
+			case U'Ｂ': {
+				auto block = xx::MakeShared<Block>();
+				block->Init(this, { 64 * x, 64 * y }, { 64, 64 });
+				blocks.Add(std::move(block));
+				break;
+			}
+			case U'１': {
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x, 64 * y }
+					, { 64 * x + 64 * 4, 64 * y }
+					, 64 * 2, 500, 1000);
+				break;
+			}
+			case U'２': {
+				platforms.Emplace().Emplace<Platform_Slide>()->Init(this
+					, { 64 * x - 64, 64 * y }
+					, { 64 * x - 64 * 5, 64 * y }
+					, 64 * 2, 500, 1000);
+				break;
+			}
+			}
+			++x;
+		}
+
+#else
 		static constexpr std::string_view mapText{ R"(
 ####################
 #        O         #
@@ -543,20 +626,31 @@ namespace IntVersion2 {
 			}
 			++x;
 		}
+#endif
 
 		for (auto& o : blocks.items) o->FillWayout();
 
-
-		gLooper.camera.SetOriginal({ 64 * maxX / 2, 64 * y / 2 });
-
+		lastCharacterPos = rebirthPos;
+		gLooper.camera.SetOriginal({ lastCharacterPos.x, blocks.gridSize.y / 2 });
 	}
 
 	inline void Scene::Update() {
 		for (auto& o : blocks.items) o->Update();
 		for (auto& o : platforms) o->Update();
-		character->Update();
 
-		//gLooper.camera.SetOriginal(character->pos);
+		if (character) {
+			auto r = character->Update();
+			lastCharacterPos = character->pos;
+			if (r) {
+				character.Reset();	// simulate death
+			}
+		} else {
+			character.Emplace()->Init(this, rebirthPos, { 32, 48 });	// simulate reborn
+		}
+
+		gLooper.camera.SetOriginal({ lastCharacterPos.x, blocks.gridSize.y / 2 });
+
+		
 
 		//// performance test
 		//auto secs = xx::NowEpochSeconds();
@@ -569,7 +663,9 @@ namespace IntVersion2 {
 	inline void Scene::Draw() {
 		for (auto& o : blocks.items) o->Draw();
 		for (auto& o : platforms) o->Draw();
-		character->Draw();
+		if (character) {
+			character->Draw();
+		}
 		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(play)  move: A / D     jump: SPACE      down jump: S+SPACE", xx::RGBA8_Green, { 0.5f, 1 });
 	}
 
