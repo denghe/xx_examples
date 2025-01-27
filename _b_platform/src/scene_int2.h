@@ -18,6 +18,7 @@ namespace IntVersion2 {
 		virtual ~Item();
 		void Init(Scene* scene_, XYi const& pos_, XYi const& size_, xx::RGBA8 color_);
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
+		int32_t CalcCrossLenX(int32_t cPosX, int32_t cSizeX) const;
 		virtual bool Update();
 		void Draw();
 	};
@@ -35,6 +36,8 @@ namespace IntVersion2 {
 
 		FX64 ySpeed{};
 		xx::Weak<Platform> attachedPlatform;
+		xx::Weak<Platform> needAttachPlatform;
+		int32_t needAttachPlatformIntersectLength{};
 		int32_t attachedPlatformIndex{ -1 };
 		int32_t lastXMoveDirection{};		// -1: left  0: stoped  1: right
 		int32_t fallingFrameCount{};		// for coyote time

@@ -26,6 +26,12 @@ namespace IntVersion2 {
 		return false;
 	}
 
+	int32_t Item::CalcCrossLenX(int32_t cPosX, int32_t cSizeX) const {
+		auto xLeft = std::min(pos.x, cPosX);
+		auto xRight = std::max(pos.x + size.x, cPosX + cSizeX);
+		return size.x + cSizeX - (xRight - xLeft);
+	}
+
 	inline void Item::Draw() {
 		auto& frame = *gRes.quad;
 		auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(frame.tex->GetValue(), 1);
@@ -56,6 +62,12 @@ namespace IntVersion2 {
 	inline bool Character::Update() {
 		auto bak = pos;
 		auto bakRB = bak + size;
+
+		if (needAttachPlatform) {
+			AttachPlatform(needAttachPlatform);
+			needAttachPlatform.Reset();
+			needAttachPlatformIntersectLength = {};
+		}
 
 		// left right move command check
 		int32_t moveDir;
@@ -97,6 +109,7 @@ namespace IntVersion2 {
 			_pos.y += ySpeed;
 		}
 		pos = _pos.As<int32_t>();
+		XYi posRB;// = pos + size;
 
 		if (ySpeed > FX64_0) {
 			++fallingFrameCount;
@@ -108,61 +121,49 @@ namespace IntVersion2 {
 		if (attachedPlatform) {
 			auto a = attachedPlatform.pointer();
 			_pos.y = pos.y = a->pos.y - size.y;		// force sync pos
+			posRB = pos + size;
 			AttachPlatform({});						// detach
 			goto LabCheckPlatform;
+		} else {
+			posRB = pos + size;
 		}
+
 		if (ySpeed > FX64_0) {
-		LabCheckPlatform:							// handle platforms( maybe cross 2 platforms )
-			auto posRB = pos + size;
-			std::array<xx::Weak<Platform>, 2> ps;
-			int32_t psi{};
+		LabCheckPlatform:
+			Platform* p{};
+			int32_t pCrossLen{};
 			for (auto& o : scene->platforms) {
 				if (bakRB.y <= o->pos.y && o->pos.y <= posRB.y) {						// y cross
 					if (!(posRB.x <= o->pos.x || pos.x >= o->pos.x + o->size.x)) {		// stand on the platform
-						ps[psi++] = o;
+						auto d = o->CalcCrossLenX(pos.x, size.x);
+						if (d > pCrossLen) {
+							pCrossLen = d;
+							p = o.pointer;
+						}
 					}
 				}
 			}
-			if (psi) {
+			if (p) {
 				longJumpStoped = doubleJumped = jumping = false;
 				fallingFrameCount = bigJumpFrameCount = 0;
 				ySpeed = 0;
-				_pos.y = pos.y = ps[0]->pos.y - size.y;
-			}
-			if (psi == 1) {
-				AttachPlatform(std::move(ps[0]));
-			} else if (psi == 2) {
-				auto a = ps[0].pointer();
-				auto b = ps[1].pointer();
-				assert(a->pos.x < b->pos.x);
-				auto ad = a->pos.x + a->size.x - pos.x;
-				auto bd = pos.x + size.x - b->pos.x;
-				assert(ad >= 0 && bd >= 0);
-				if (ad >= bd) {									// compare intersect len
-					AttachPlatform(std::move(ps[0]));
-				} else {
-					AttachPlatform(std::move(ps[1]));
-				}
-			} else {
-				assert(psi == 0);
-				AttachPlatform({});
+				_pos.y = pos.y = p->pos.y - size.y;
+				AttachPlatform(xx::WeakFromThis(p));
 			}
 		}
 
 		// prepare
 		auto& bs = scene->blocks;
-		auto posBR = pos + size;
-
 
 		// out of map check
 		if (pos.x < 0 || pos.y < 0) return true;
-		if (posBR.x >= bs.gridSize.x || posBR.y >= bs.gridSize.y) return true;
+		if (posRB.x >= bs.gridSize.x || posRB.y >= bs.gridSize.y) return true;
 
 
 		// handle blocks
 		PushOutWays pushOutWays{};
 		auto criFrom = scene->blocks.PosToColRowIndex(pos);
-		auto criTo = scene->blocks.PosToColRowIndex(posBR);
+		auto criTo = scene->blocks.PosToColRowIndex(posRB);
 		assert(criFrom.x - criTo.x <= 1 && criFrom.y - criTo.y <= 1);
 		// bb
 		// bf
@@ -261,7 +262,7 @@ namespace IntVersion2 {
 			if (firstJumpPressed && !doubleJumped) {
 				doubleJumped = true;
 				longJumpStoped = false;
-				bigJumpFrameCount = 0;
+				fallingFrameCount = bigJumpFrameCount = 0;
 				ySpeed = cYSpeedInit;
 			}
 			else if (longJumpPressed && !longJumpStoped) {
@@ -404,10 +405,33 @@ namespace IntVersion2 {
 
 	XX_INLINE void Platform::AssignOffset(XYp const& offset) {
 		_pos += offset;
+		auto bak = pos;
 		pos = _pos.As<int32_t>();
-		for (auto& c : attachedCharacters) {
-			c->_pos += offset;
-			c->pos = c->_pos.As<int32_t>();
+
+		// check char is cross
+		Character* c{};
+		if (offset.y < FX64_0) {
+			if ((c = scene->character.pointer)) {
+				if (c->attachedPlatform.TryGetPointer() != this) {
+					auto bakRB = bak + size;
+					auto posRB = pos + size;
+					auto cPosRB = c->pos + c->size;
+					if (bakRB.y >= cPosRB.y && cPosRB.y >= posRB.y) {						// y cross
+						if (!(posRB.x <= c->pos.x || pos.x >= c->pos.x + c->size.x)) {		// stand on the platform
+							auto d = CalcCrossLenX(c->pos.x, c->size.x);
+							if (c->needAttachPlatformIntersectLength < d) {
+								c->needAttachPlatformIntersectLength = d;
+								c->needAttachPlatform = xx::WeakFromThis(this);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		for (auto& ac : attachedCharacters) {
+			ac->_pos += offset;
+			ac->pos = ac->_pos.As<int32_t>();
 		}
 	}
 
@@ -545,7 +569,7 @@ namespace IntVersion2 {
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
 Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
 Ｂ　　　　　　　　　　　　　　ＢＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
-Ｂ　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｃ　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
+Ｂ　　　ｃ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　Ｂ
 Ｂ　　　ｂ　　　　　　　　　　ＢＢ　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　　　ｂ　　　　　　　　　　　　　　　　ｂ　　　ＢＢ　　　　　　　　　　　　　　　　　　　　　　　　　　　　ｂ　　　　　　　
 ＢＢＢＢＢＢＢ　Ｂ　　ＢＢＢＢＢＢ　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢ１　　　　　　　　　　２ＢＢＢ１　　　　　　　　　　２ＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
 ＢＢＢＢＢＢＢＢＢ　　ＢＢＢＢＢＢ　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　Ｂ　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢ　　　　　　　　　　　　　　　　　　　　　　ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
