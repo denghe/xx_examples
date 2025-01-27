@@ -250,6 +250,7 @@ namespace IntVersion2 {
 		if (!jumping) {
 			if (firstJumpPressed && fallingFrameCount < cCoyoteNumFrames) {
 				ySpeed = cYSpeedInit;
+				fallingFrameCount = bigJumpFrameCount = 0;
 				jumping = true;
 				AttachPlatform({});
 			}
