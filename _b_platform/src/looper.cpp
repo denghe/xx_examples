@@ -1,6 +1,13 @@
 ﻿#include "pch.h"
 #include "looper.h"
 
+#include "scene_float.hpp"
+#include "scene_int.hpp"
+#include "scene_int2.hpp"
+#include "scene_cd.hpp"
+#include "scene_cd2.hpp"
+#include "scene_ai.hpp"
+
 Looper gLooper;
 ResTpFrames& gRes(gLooper.res);
 bool gIsServer{};
@@ -33,30 +40,30 @@ xx::Task<> Looper::MainTask() {
 
 	float x{}, y{ 50 };
 
-	//y -= 50;
-	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play float version", [&]() {
-	//	scene.Emplace<FloatVersion::Scene>()->Init();
-	//});
+	y -= 50;
+	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"restart", [&]() {
+		scene.Emplace<AI::Scene>()->Init();
+	});
 
 	//y -= 50;
 	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play int version", [&]() {
 	//	scene.Emplace<IntVersion::Scene>()->Init();
 	//});
 
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play", [&]() {
-		scene.Emplace<IntVersion2::Scene>()->Init();
-	});
+	//y -= 50;
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"play", [&]() {
+	//	scene.Emplace<IntVersion2::Scene>()->Init();
+	//});
 
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout test", [&]() {
-		scene.Emplace<CollisionDetection::Scene>()->Init();
-	});
+	//y -= 50;
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout test", [&]() {
+	//	scene.Emplace<CollisionDetection::Scene>()->Init();
+	//});
 
-	y -= 50;
-	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout2 test", [&]() {
-		scene.Emplace<CollisionDetection2::Scene>()->Init();
-	});
+	//y -= 50;
+	//ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"pushout2 test", [&]() {
+	//	scene.Emplace<CollisionDetection2::Scene>()->Init();
+	//});
 
 	// ...
 
@@ -66,7 +73,7 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
-	scene.Emplace<IntVersion2::Scene>()->Init();
+	scene.Emplace<AI::Scene>()->Init();
 }
 
 void Looper::Draw() {
@@ -75,9 +82,3 @@ void Looper::Draw() {
 		DrawNode(ui);
 	}
 }
-
-//#include "scene_float.hpp"
-//#include "scene_int.hpp"
-#include "scene_int2.hpp"
-#include "scene_cd.hpp"
-#include "scene_cd2.hpp"

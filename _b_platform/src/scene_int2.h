@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "xx_space_box.h"
 
 namespace IntVersion2 {
 
