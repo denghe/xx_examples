@@ -2,10 +2,6 @@
 
 namespace AI {
 
-	/***************************************************************************************/
-	/***************************************************************************************/
-	// astar
-
 	struct AStarCell {
 		int32_t x{}, y{}, walkable{};
 		AStarCell* parent{};
@@ -16,8 +12,8 @@ namespace AI {
 	};
 
 	struct AStarGrid {
-		int32_t width{}, height{};						// map size
-		AStarCell* startCell{}, * endCell{};					// tmp
+		int32_t width{}, height{};							// map size
+		AStarCell* startCell{}, * endCell{};				// tmp
 		xx::Listi32<AStarCell> cells;						// map data
 		xx::Listi32<AStarCell*> openList;					// tmp
 		xx::Listi32<AStarCell*> path;						// search result
@@ -166,7 +162,8 @@ namespace AI {
 		//}
 	};
 
-
+	/***************************************************************************************/
+	/***************************************************************************************/
 
 	inline void Item::Init(Scene* scene_, XYi const& pos_) {
 		scene = scene_;
