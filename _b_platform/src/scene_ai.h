@@ -24,7 +24,7 @@ namespace AI {
 	struct Character : Item {
 		static constexpr XYi cResSize{ 64, 64 };					// todo: generate from res
 		static constexpr XY cAnchor{ 0.5, 0 };
-		static constexpr float cScale{ 5 };
+		static constexpr float cScale{ 1 };
 		static constexpr float cRadians{ 0 };
 		static constexpr float cSpeed{ 400 / Cfg::fps };
 

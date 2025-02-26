@@ -22,9 +22,9 @@ namespace AI {
 			{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}
 		};
 
-		XX_INLINE AStarCell& At(int32_t x, int32_t y) {
+		XX_INLINE AStarCell* At(int32_t x, int32_t y) {
 			assert(x >= 0 && y >= 0 && x < width && y < height);
-			return cells[(size_t)y * width + x];
+			return &cells[(size_t)y * width + x];
 		}
 
 		XX_INLINE void OpenListAdd(AStarCell* c) {
@@ -51,8 +51,8 @@ namespace AI {
 			assert(!path.len);
 			assert(from != to);
 
-			auto startCell = &At(from.x, from.y);
-			auto endCell = &At(to.x, to.y);
+			auto startCell = At(from.x, from.y);
+			auto endCell = At(to.x, to.y);
 
 			OpenListAdd(startCell);
 			while (!openList.Empty()) {
@@ -65,20 +65,20 @@ namespace AI {
 				}
 				auto cx = c->x;
 				auto cy = c->y;
-				for (auto&& o : neighborOffsets) {
-					auto&& n = At(o.x + cx, o.y + cy);
-					if (!n.walkable || n.closed) continue;
-					auto len = c->startToCurLen + ((n.x == cx || n.y == cy) ? 1.0f : sqrt_2);
-					if (!n.opened || len < n.startToCurLen) {
-						n.startToCurLen = len;
-						if (!n.heuristicCurToEndLen_hasValue) {
-							n.heuristicCurToEndLen = std::sqrtf(float((n.x - endCell->x) * (n.x - endCell->x) + (n.y - endCell->y) * (n.y - endCell->y)));
-							n.heuristicCurToEndLen_hasValue = 1;
+				for (auto& o : neighborOffsets) {
+					auto n = At(o.x + cx, o.y + cy);
+					if (!n->walkable || n->closed) continue;
+					auto len = c->startToCurLen + ((n->x == cx || n->y == cy) ? 1.0f : sqrt_2);
+					if (!n->opened || len < n->startToCurLen) {
+						n->startToCurLen = len;
+						if (!n->heuristicCurToEndLen_hasValue) {
+							n->heuristicCurToEndLen = std::sqrtf(float((n->x - endCell->x) * (n->x - endCell->x) + (n->y - endCell->y) * (n->y - endCell->y)));
+							n->heuristicCurToEndLen_hasValue = 1;
 						}
-						n.heuristicStartToEndLen = n.startToCurLen + n.heuristicCurToEndLen;
-						n.parent = c;
-						if (!n.opened) {
-							OpenListAdd(&n);
+						n->heuristicStartToEndLen = n->startToCurLen + n->heuristicCurToEndLen;
+						n->parent = c;
+						if (!n->opened) {
+							OpenListAdd(n);
 						}
 					}
 				}
@@ -101,31 +101,30 @@ namespace AI {
 			width = width_;
 			height = height_;
 			cells.Resize((size_t)width * height);
-			// next step, need InitCell all cells
+			// next step, need InitCell all cells by caller
 		}
 
 		void InitCell(int32_t x, int32_t y, int32_t walkable) {
-			auto& c = At(x, y);
-			c.x = x;
-			c.y = y;
-			c.walkable = walkable;
+			auto c = At(x, y);
+			c->x = x;
+			c->y = y;
+			c->walkable = walkable;
 		}
 
 		std::string Dump(XYi const& from, XYi const& to) {
 			std::string s;
 			for (int32_t y = 0; y < height; ++y) {
 				for (int32_t x = 0; x < width; ++x) {
-					auto o = &At(x, y);
-					if (o->walkable) s.push_back(' ');
+					if (At(x, y)->walkable) s.push_back(' ');
 					else s.push_back('#');
 				}
 				s.push_back('\n');
 			}
 			for (auto& c : path) {
-				s[c->y * width + c->x] = '+';
+				s[c->y * (width + 1) + c->x] = '+';
 			}
-			s[from.y * width + from.x] = 'o';
-			s[to.y * width + to.x] = '*';
+			s[from.y * (width + 1) + from.x] = 'o';
+			s[to.y * (width + 1) + to.x] = '*';
 			return s;
 		}
 	};
@@ -333,10 +332,13 @@ namespace AI {
 	inline void Scene::Init() {
 		// Ｂ					block
 		// ｃ					character
+		// ｅ					end pos
 		static std::u32string_view mapText{ UR"(
-　　Ｂ　Ｂ　　ｃ　
-　Ｂ　Ｂ　Ｂ　Ｂ　
-Ｂ　　　Ｂ　Ｂ　Ｂ
+ＢＢＢＢＢＢＢＢＢＢ
+Ｂｃ　　　　　　　Ｂ
+ＢＢＢＢＢＢＢＢ　Ｂ
+Ｂｅ　　　　　　　Ｂ
+ＢＢＢＢＢＢＢＢＢＢ
 )" };	// last new line is required
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
 
@@ -354,7 +356,9 @@ namespace AI {
 			}
 			++x;
 		}
-		blocks.Init(y + 1, maxX, { 64, 64 });
+		blocks.Init(y + 1, maxX, MapCfg::cellSize);
+
+		XYi beginPos{}, endPos{};
 
 		// fill map contents
 		x = 0;
@@ -367,7 +371,10 @@ namespace AI {
 				++y;
 				continue;
 			case U'ｃ':
-				character.Emplace()->Init(this, { x, y });
+				beginPos = { x, y };
+				break;
+			case U'ｅ':
+				endPos = { x, y };
 				break;
 			case U'Ｂ': {
 				blocks.Add(xx::MakeShared<Block>()->Init(this, { x, y }));
@@ -376,10 +383,27 @@ namespace AI {
 			}
 			++x;
 		}
-
 		for (auto& o : blocks.items) o->FillWayout();
 
+		character.Emplace()->Init(this, beginPos);
+
 		gLooper.camera.SetOriginal({ character->_pos.x, blocks.gridSize.y / 2 });
+
+		// astar test
+
+		auto width = blocks.numCols;
+		auto height = blocks.numRows;
+		AStarGrid asg;
+		asg.Init(width, height);
+		for (int32_t y = 0; y < height; ++y) {
+			for (int32_t x = 0; x < width; ++x) {
+				asg.InitCell(x, y, blocks.At({ x, y }) ? 0 : 1);
+			}
+		}
+
+		auto b = asg.Search(beginPos, endPos);
+
+		auto s = asg.Dump(beginPos, endPos);
 	}
 
 	inline void Scene::Update() {
