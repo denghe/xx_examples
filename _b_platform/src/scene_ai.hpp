@@ -13,7 +13,6 @@ namespace AI {
 
 	struct AStarGrid {
 		int32_t width{}, height{};							// map size
-		AStarCell* startCell{}, * endCell{};				// tmp
 		xx::Listi32<AStarCell> cells;						// map data
 		xx::Listi32<AStarCell*> openList;					// tmp
 		xx::Listi32<AStarCell*> path;						// search result
@@ -26,10 +25,6 @@ namespace AI {
 		XX_INLINE AStarCell& At(int32_t x, int32_t y) {
 			assert(x >= 0 && y >= 0 && x < width && y < height);
 			return cells[(size_t)y * width + x];
-		}
-
-		XX_INLINE float Heuristic(int32_t x, int32_t y) {
-			return sqrtf(float((x - endCell->x) * (x - endCell->x) + (y - endCell->y) * (y - endCell->y)));
 		}
 
 		XX_INLINE void OpenListAdd(AStarCell* c) {
@@ -51,14 +46,18 @@ namespace AI {
 			return first;
 		}
 
-		bool FindPath() {
+		bool Search(XYi const& from, XYi const& to) {
 			assert(width && height);
-			assert(!startCell && !endCell);
+			assert(!path.len);
+			assert(from != to);
+
+			auto startCell = &At(from.x, from.y);
+			auto endCell = &At(to.x, to.y);
+
 			OpenListAdd(startCell);
 			while (!openList.Empty()) {
 				auto c = OpenListPop();
 				if (c == endCell) {
-					path.Clear();
 					do {
 						path.Emplace(c);
 					} while ((c = c->parent));
@@ -73,7 +72,7 @@ namespace AI {
 					if (!n.opened || len < n.startToCurLen) {
 						n.startToCurLen = len;
 						if (!n.heuristicCurToEndLen_hasValue) {
-							n.heuristicCurToEndLen = Heuristic(n.x, n.y);
+							n.heuristicCurToEndLen = std::sqrtf(float((n.x - endCell->x) * (n.x - endCell->x) + (n.y - endCell->y) * (n.y - endCell->y)));
 							n.heuristicCurToEndLen_hasValue = 1;
 						}
 						n.heuristicStartToEndLen = n.startToCurLen + n.heuristicCurToEndLen;
@@ -87,79 +86,48 @@ namespace AI {
 			return false;
 		}
 
+		// for next Search but use old map data
 		XX_INLINE void Cleanup() {
 			openList.Clear();
+			path.Clear();
 			for (auto&& c : cells) {
 				memset(&c.heuristicStartToEndLen, 0, 4 * 4);	// heuristicStartToEndLen ~ closed
 			}
 		}
 
-		//void LoadByFile(char const* fileName) {
-		//	std::ifstream f(fileName);
-		//	std::string tmp;
-		//	std::vector<std::string> ss;
-		//	while (getline(f, tmp)) {
-		//		if (tmp[tmp.size() - 1] < 36) {
-		//			tmp.resize(tmp.size() - 1);
-		//		}
-		//		ss.push_back(tmp);
-		//	}
-		//	width = (int32_t)ss[0].size();
-		//	height = (int32_t)ss.size();
-		//	cells.Resize((size_t)width * height);
-		//	path.Clear();
-		//	startCell = nullptr;
-		//	endCell = nullptr;
-		//	for (int32_t y = 0; y < height; ++y) {
-		//		auto& s = ss[y];
-		//		for (int32_t x = 0; x < width; ++x) {
-		//			switch (s[x]) {
-		//			case '@':
-		//				startCell = &At(x, y);
-		//				At(x, y).walkable = 1;
-		//				break;
-		//			case '*':
-		//				endCell = &At(x, y);
-		//			case ' ':
-		//				At(x, y).walkable = 1;
-		//				break;
-		//			default:
-		//				At(x, y).walkable = 0;
-		//			}
-		//		}
-		//	}
-		//	for (int32_t y = 0; y < height; ++y) {
-		//		for (int32_t x = 0; x < width; ++x) {
-		//			At(x, y).x = x;
-		//			At(x, y).y = y;
-		//		}
-		//	}
-		//}
+		void Init(int32_t width_, int32_t height_) {
+			cells.Clear();
+			Cleanup();
+			width = width_;
+			height = height_;
+			cells.Resize((size_t)width * height);
+			// next step, need InitCell all cells
+		}
 
-		//void Dump() {
-		//	for (int32_t y = 0; y < height; ++y) {
-		//		for (int32_t x = 0; x < width; ++x) {
-		//			auto o = &At(x, y);
-		//			if (o == startCell) {
-		//				std::cout << "o";
-		//			}
-		//			else if (o == endCell) {
-		//				std::cout << "*";
-		//			}
-		//			else if (path.len && std::find(path.buf, path.buf + path.len, o) != nullptr) {
-		//				std::cout << "+";
-		//			}
-		//			else if (o->walkable) {
-		//				std::cout << " ";
-		//			}
-		//			else {
-		//				std::cout << "#";
-		//			}
-		//		}
-		//		std::cout << std::endl;
-		//	}
-		//	std::cout << std::endl;
-		//}
+		void InitCell(int32_t x, int32_t y, int32_t walkable) {
+			auto& c = At(x, y);
+			c.x = x;
+			c.y = y;
+			c.walkable = walkable;
+		}
+
+		std::string Dump(XYi const& from, XYi const& to) {
+			std::string s;
+			for (int32_t y = 0; y < height; ++y) {
+				for (int32_t x = 0; x < width; ++x) {
+					auto o = &At(x, y);
+					if (o->walkable) s.push_back(' ');
+					else s.push_back('#');
+				}
+				s.push_back('\n');
+			}
+			for (auto& c : path) {
+				s[c->y * width + c->x] = '+';
+			}
+			s[from.y * width + from.x] = 'o';
+			s[to.y * width + to.x] = '*';
+			return s;
+		}
 	};
 
 	/***************************************************************************************/
