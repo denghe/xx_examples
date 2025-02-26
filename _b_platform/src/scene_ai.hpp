@@ -334,9 +334,11 @@ namespace AI {
 		// ｃ					character
 		// ｅ					end pos
 		static std::u32string_view mapText{ UR"(
-ＢＢＢＢＢＢＢＢＢＢ
+　　　　　　　　　　
+Ｂ　　　　　　　　Ｂ
 Ｂｃ　　　　　　　Ｂ
 ＢＢＢＢＢＢＢＢ　Ｂ
+Ｂ　　　　　　　　Ｂ
 Ｂｅ　　　　　　　Ｂ
 ＢＢＢＢＢＢＢＢＢＢ
 )" };	// last new line is required
@@ -397,7 +399,9 @@ namespace AI {
 		asg.Init(width, height);
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				asg.InitCell(x, y, blocks.At({ x, y }) ? 0 : 1);
+				if (!blocks.At({ x, y })) {
+					asg.InitCell(x, y, blocks.At({ x, y + 1 }) ? 1 : 0);
+				}
 			}
 		}
 
@@ -408,13 +412,13 @@ namespace AI {
 			xx::CoutN(s);
 		}
 
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; ++i) {
-			auto b = asg.Search(beginPos, endPos);
-			//auto s = asg.Dump(beginPos, endPos);
-			asg.Cleanup();
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs));
+		//auto secs = xx::NowEpochSeconds();
+		//for (int i = 0; i < 10000000; ++i) {
+		//	auto b = asg.Search(beginPos, endPos);
+		//	//auto s = asg.Dump(beginPos, endPos);
+		//	asg.Cleanup();
+		//}
+		//xx::CoutN(xx::NowEpochSeconds(secs));
 	}
 
 	inline void Scene::Update() {
