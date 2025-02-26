@@ -4,6 +4,7 @@ namespace AI {
 
 	struct AStarCell {
 		int32_t x{}, y{}, walkable{};
+		int32_t neighborsIndex{}, neighborsCount{};
 		AStarCell* parent{};
 
 		// memory packed to 4 * 4 = 16 bytes
@@ -12,18 +13,22 @@ namespace AI {
 	};
 
 	struct AStarGrid {
-		int32_t width{}, height{};							// map size
-		xx::Listi32<AStarCell> cells;						// map data
-		xx::Listi32<AStarCell*> openList;					// tmp
-		xx::Listi32<AStarCell*> path;						// search result
+		AStarCell empty{};
+		int32_t width{}, height{};								// map size
+		xx::Listi32<AStarCell> cells;							// map data
+		xx::Listi32<AStarCell*> openList;						// tmp
+		xx::Listi32<AStarCell*> path;							// search result
+		xx::Listi32<std::pair<AStarCell*, float>> neighbors;	// global container. pair.second: distance
 
 		static constexpr float sqrt_2 = 1.414213562373095;
-		static constexpr std::array<XYi, 8> neighborOffsets = { XYi
-			{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}
-		};
 
 		XX_INLINE AStarCell* At(int32_t x, int32_t y) {
 			assert(x >= 0 && y >= 0 && x < width && y < height);
+			return &cells[(size_t)y * width + x];
+		}
+
+		XX_INLINE AStarCell* TryAt(int32_t x, int32_t y) {
+			if (x < 0 || y < 0 || x >= width || y >= height) return &empty;
 			return &cells[(size_t)y * width + x];
 		}
 
@@ -63,13 +68,11 @@ namespace AI {
 					} while ((c = c->parent));
 					return true;
 				}
-				auto cx = c->x;
-				auto cy = c->y;
-				for (auto& o : neighborOffsets) {
-					auto n = At(o.x + cx, o.y + cy);
+				for (int32_t i = 0; i < c->neighborsCount; ++i) {
+					auto [n, d] = neighbors[c->neighborsIndex + i];
 					if (!n->walkable || n->closed) continue;
-					auto len = c->startToCurLen + ((n->x == cx || n->y == cy) ? 1.0f : sqrt_2);
-					if (!n->opened || len < n->startToCurLen) {
+					auto len = c->startToCurLen + d;
+					if (len < n->startToCurLen || !n->opened) {
 						n->startToCurLen = len;
 						if (!n->heuristicCurToEndLen_hasValue) {
 							n->heuristicCurToEndLen = std::sqrtf(float((n->x - endCell->x) * (n->x - endCell->x) + (n->y - endCell->y) * (n->y - endCell->y)));
@@ -97,18 +100,32 @@ namespace AI {
 
 		void Init(int32_t width_, int32_t height_) {
 			cells.Clear();
+			neighbors.Clear();
 			Cleanup();
 			width = width_;
 			height = height_;
 			cells.Resize((size_t)width * height);
-			// next step, need InitCell all cells by caller
+			// next step, need InitCell & InitCellNeighbors for all cells by caller
 		}
 
-		void InitCell(int32_t x, int32_t y, int32_t walkable) {
+		void InitCell(int32_t x, int32_t y, bool walkable) {
 			auto c = At(x, y);
 			c->x = x;
 			c->y = y;
-			c->walkable = walkable;
+			c->walkable = walkable ? 1 : 0;
+		}
+
+		void InitCellNeighbors(AStarCell* c, std::initializer_list<XYi> const& neighborOffsets) {
+			assert(neighborOffsets.size() > 0);
+			auto cx = c->x;
+			auto cy = c->y;
+			c->neighborsIndex = neighbors.len;
+			c->neighborsCount = (int32_t)neighborOffsets.size();
+			for (auto& o : neighborOffsets) {
+				auto len = std::sqrtf(float(o.x * o.x + o.y * o.y));
+				auto n = At(cx + o.x, cy + o.y);
+				neighbors.Emplace(n, len);
+			}
 		}
 
 		std::u32string Dump(XYi const& from, XYi const& to) {
@@ -339,7 +356,7 @@ namespace AI {
 Ｂｃ　　　　　　　Ｂ
 ＢＢＢＢＢＢＢＢ　Ｂ
 Ｂ　　　　　　　　Ｂ
-Ｂｅ　　　　　　　Ｂ
+Ｂ　ｅ　　　　　　Ｂ
 ＢＢＢＢＢＢＢＢＢＢ
 )" };	// last new line is required
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
@@ -397,13 +414,38 @@ namespace AI {
 		auto height = blocks.numRows;
 		AStarGrid asg;
 		asg.Init(width, height);
+
+		// generate cells
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
 				if (!blocks.At({ x, y })) {
-					asg.InitCell(x, y, blocks.At({ x, y + 1 }) ? 1 : 0);
+					asg.InitCell(x, y, blocks.At({ x, y + 1 }));
 				}
 			}
 		}
+
+		// fill simple neighbors
+		for (int32_t y = 0; y < height; ++y) {
+			for (int32_t x = 0; x < width; ++x) {
+				// todo: if custom neighbors continue
+				if (auto c = asg.At(x, y); c->walkable) {
+					auto left = asg.TryAt(x - 1, y);
+					auto right = asg.TryAt(x + 1, y);
+					if (left->walkable && right->walkable) {
+						asg.InitCellNeighbors(c, {{ -1, 0 }, { 1, 0 }});
+					}
+					else if (left->walkable) {
+						asg.InitCellNeighbors(c, { { -1, 0 } });
+					}
+					else if (right->walkable) {
+						asg.InitCellNeighbors(c, { { 1, 0 } });
+					}
+				}
+			}
+		}
+
+		// fill custom neighbors
+		asg.InitCellNeighbors(asg.At(7, 2), { {1, 3} });
 
 		{
 			auto b = asg.Search(beginPos, endPos);
