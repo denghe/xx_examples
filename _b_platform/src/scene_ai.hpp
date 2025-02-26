@@ -2,6 +2,172 @@
 
 namespace AI {
 
+	/***************************************************************************************/
+	/***************************************************************************************/
+	// astar
+
+	struct AStarCell {
+		int32_t x{}, y{}, walkable{};
+		AStarCell* parent{};
+
+		// memory packed to 4 * 4 = 16 bytes
+		float heuristicStartToEndLen{}, startToCurLen{}, heuristicCurToEndLen{};
+		char heuristicCurToEndLen_hasValue{}, opened{}, closed{};
+	};
+
+	struct AStarGrid {
+		int32_t width{}, height{};						// map size
+		AStarCell* startCell{}, * endCell{};					// tmp
+		xx::Listi32<AStarCell> cells;						// map data
+		xx::Listi32<AStarCell*> openList;					// tmp
+		xx::Listi32<AStarCell*> path;						// search result
+
+		static constexpr float sqrt_2 = 1.414213562373095;
+		static constexpr std::array<XYi, 8> neighborOffsets = { XYi
+			{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}
+		};
+
+		XX_INLINE AStarCell& At(int32_t x, int32_t y) {
+			assert(x >= 0 && y >= 0 && x < width && y < height);
+			return cells[(size_t)y * width + x];
+		}
+
+		XX_INLINE float Heuristic(int32_t x, int32_t y) {
+			return sqrtf(float((x - endCell->x) * (x - endCell->x) + (y - endCell->y) * (y - endCell->y)));
+		}
+
+		XX_INLINE void OpenListAdd(AStarCell* c) {
+			c->opened = 1;
+			openList.Emplace(c);
+			std::push_heap(openList.buf, openList.buf + openList.len, [](auto a, auto b) {
+				return a->heuristicStartToEndLen > b->heuristicStartToEndLen;
+			});
+		}
+
+		XX_INLINE AStarCell* OpenListPop() {
+			auto first = openList[0];
+			first->opened = 0;
+			first->closed = 1;
+			std::pop_heap(openList.buf, openList.buf + openList.len, [](auto a, auto b) {
+				return a->heuristicStartToEndLen > b->heuristicStartToEndLen;
+			});
+			openList.PopBack();
+			return first;
+		}
+
+		bool FindPath() {
+			assert(width && height);
+			assert(!startCell && !endCell);
+			OpenListAdd(startCell);
+			while (!openList.Empty()) {
+				auto c = OpenListPop();
+				if (c == endCell) {
+					path.Clear();
+					do {
+						path.Emplace(c);
+					} while ((c = c->parent));
+					return true;
+				}
+				auto cx = c->x;
+				auto cy = c->y;
+				for (auto&& o : neighborOffsets) {
+					auto&& n = At(o.x + cx, o.y + cy);
+					if (!n.walkable || n.closed) continue;
+					auto len = c->startToCurLen + ((n.x == cx || n.y == cy) ? 1.0f : sqrt_2);
+					if (!n.opened || len < n.startToCurLen) {
+						n.startToCurLen = len;
+						if (!n.heuristicCurToEndLen_hasValue) {
+							n.heuristicCurToEndLen = Heuristic(n.x, n.y);
+							n.heuristicCurToEndLen_hasValue = 1;
+						}
+						n.heuristicStartToEndLen = n.startToCurLen + n.heuristicCurToEndLen;
+						n.parent = c;
+						if (!n.opened) {
+							OpenListAdd(&n);
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+		XX_INLINE void Cleanup() {
+			openList.Clear();
+			for (auto&& c : cells) {
+				memset(&c.heuristicStartToEndLen, 0, 4 * 4);	// heuristicStartToEndLen ~ closed
+			}
+		}
+
+		//void LoadByFile(char const* fileName) {
+		//	std::ifstream f(fileName);
+		//	std::string tmp;
+		//	std::vector<std::string> ss;
+		//	while (getline(f, tmp)) {
+		//		if (tmp[tmp.size() - 1] < 36) {
+		//			tmp.resize(tmp.size() - 1);
+		//		}
+		//		ss.push_back(tmp);
+		//	}
+		//	width = (int32_t)ss[0].size();
+		//	height = (int32_t)ss.size();
+		//	cells.Resize((size_t)width * height);
+		//	path.Clear();
+		//	startCell = nullptr;
+		//	endCell = nullptr;
+		//	for (int32_t y = 0; y < height; ++y) {
+		//		auto& s = ss[y];
+		//		for (int32_t x = 0; x < width; ++x) {
+		//			switch (s[x]) {
+		//			case '@':
+		//				startCell = &At(x, y);
+		//				At(x, y).walkable = 1;
+		//				break;
+		//			case '*':
+		//				endCell = &At(x, y);
+		//			case ' ':
+		//				At(x, y).walkable = 1;
+		//				break;
+		//			default:
+		//				At(x, y).walkable = 0;
+		//			}
+		//		}
+		//	}
+		//	for (int32_t y = 0; y < height; ++y) {
+		//		for (int32_t x = 0; x < width; ++x) {
+		//			At(x, y).x = x;
+		//			At(x, y).y = y;
+		//		}
+		//	}
+		//}
+
+		//void Dump() {
+		//	for (int32_t y = 0; y < height; ++y) {
+		//		for (int32_t x = 0; x < width; ++x) {
+		//			auto o = &At(x, y);
+		//			if (o == startCell) {
+		//				std::cout << "o";
+		//			}
+		//			else if (o == endCell) {
+		//				std::cout << "*";
+		//			}
+		//			else if (path.len && std::find(path.buf, path.buf + path.len, o) != nullptr) {
+		//				std::cout << "+";
+		//			}
+		//			else if (o->walkable) {
+		//				std::cout << " ";
+		//			}
+		//			else {
+		//				std::cout << "#";
+		//			}
+		//		}
+		//		std::cout << std::endl;
+		//	}
+		//	std::cout << std::endl;
+		//}
+	};
+
+
+
 	inline void Item::Init(Scene* scene_, XYi const& pos_) {
 		scene = scene_;
 		pos = pos_;
@@ -203,14 +369,15 @@ namespace AI {
 		// Ｂ					block
 		// ｃ					character
 		static std::u32string_view mapText{ UR"(
-　　　ｃ　　　　　　　　　　
-ＢＢＢＢＢＢＢＢＢＢＢＢＢＢ
+　　Ｂ　Ｂ　　ｃ　
+　Ｂ　Ｂ　Ｂ　Ｂ　
+Ｂ　　　Ｂ　Ｂ　Ｂ
 )" };	// last new line is required
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
 
 		// detect map max size
 		int32_t maxX{}, x{}, y{};
-		for (int i = 0; i < mapText.size(); ++i) {
+		for (int32_t i = 0; i < mapText.size(); ++i) {
 			auto c = mapText[i];
 			switch (auto c = mapText[i]) {
 			case U'\r': continue;
@@ -227,7 +394,7 @@ namespace AI {
 		// fill map contents
 		x = 0;
 		y = 0;
-		for (int i = 0; i < mapText.size(); ++i) {
+		for (int32_t i = 0; i < mapText.size(); ++i) {
 			switch (auto c = mapText[i]) {
 			case U'\r': continue;
 			case U'\n':
