@@ -21,6 +21,9 @@ int32_t main() {
 }
 #else
 int32_t main() {
+#ifdef WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
 	gLooper.showFps = true;
 	gLooper.title = "xx_examples_b_platform";
 	gLooper.Init();

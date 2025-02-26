@@ -111,20 +111,20 @@ namespace AI {
 			c->walkable = walkable;
 		}
 
-		std::string Dump(XYi const& from, XYi const& to) {
-			std::string s;
+		std::u32string Dump(XYi const& from, XYi const& to) {
+			std::u32string s;
 			for (int32_t y = 0; y < height; ++y) {
 				for (int32_t x = 0; x < width; ++x) {
-					if (At(x, y)->walkable) s.push_back(' ');
-					else s.push_back('#');
+					if (At(x, y)->walkable) s.push_back(U'　');
+					else s.push_back(U'Ｂ');
 				}
 				s.push_back('\n');
 			}
 			for (auto& c : path) {
-				s[c->y * (width + 1) + c->x] = '+';
+				s[c->y * (width + 1) + c->x] = U'＊';
 			}
-			s[from.y * (width + 1) + from.x] = 'o';
-			s[to.y * (width + 1) + to.x] = '*';
+			s[from.y * (width + 1) + from.x] = U'ｃ';
+			s[to.y * (width + 1) + to.x] = U'ｅ';
 			return s;
 		}
 	};
@@ -401,9 +401,20 @@ namespace AI {
 			}
 		}
 
-		auto b = asg.Search(beginPos, endPos);
+		{
+			auto b = asg.Search(beginPos, endPos);
+			auto s = asg.Dump(beginPos, endPos);
+			asg.Cleanup();
+			xx::CoutN(s);
+		}
 
-		auto s = asg.Dump(beginPos, endPos);
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; ++i) {
+			auto b = asg.Search(beginPos, endPos);
+			//auto s = asg.Dump(beginPos, endPos);
+			asg.Cleanup();
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs));
 	}
 
 	inline void Scene::Update() {
