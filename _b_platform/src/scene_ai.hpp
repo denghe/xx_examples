@@ -354,7 +354,7 @@ namespace AI {
 		static std::u32string_view mapText{ UR"(
 　　　　　　　　　　
 Ｂ　　　　　　　　Ｂ
-Ｂｃ　　　　　　　Ｂ
+Ｂｃ　ＢＢ　Ｂ　　Ｂ
 ＢＢＢＢＢＢＢＢ　Ｂ
 Ｂ　　　　　　　　Ｂ
 Ｂ　ｅ　　　　　　Ｂ
@@ -419,9 +419,10 @@ namespace AI {
 		// generate cells
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				if (!blocks.At({ x, y })) {
-					asg.InitCell(x, y, blocks.At({ x, y + 1 }));
-				}
+				//if (!blocks.At({ x, y })) {
+				//	asg.InitCell(x, y, blocks.At({ x, y + 1 }));
+				//}
+				asg.InitCell(x, y, !blocks.At({ x, y }));
 			}
 		}
 
@@ -441,33 +442,133 @@ namespace AI {
 		// fill neighbors		// todo: custom neighbors support
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				if (auto c = asg.At(x, y); c->walkable) {
-					auto left = asg.TryAt(x - 1, y);
-					auto right = asg.TryAt(x + 1, y);
-					if (left->walkable && right->walkable) {
-						static XYi nos[] = { { -1, 0 }, { 1, 0 } };
-						asg.InitCellNeighbors(c, nos, 2);
+				// keyboard number area style
+				// 7 8 9
+				// 4 5 6
+				// 1 2 3
+
+				// [???]
+				// [?.?]
+				// [???]
+				if (auto c5 = asg.At(x, y); c5->walkable) {
+					auto c1 = asg.TryAt(x - 1, y + 1)->walkable;
+					auto c2 = asg.TryAt(x, y + 1)->walkable;
+					auto c3 = asg.TryAt(x + 1, y + 1)->walkable;
+					auto c4 = asg.TryAt(x - 1, y)->walkable;
+					auto c6 = asg.TryAt(x + 1, y)->walkable;
+					auto c7 = asg.TryAt(x - 1, y - 1)->walkable;
+					auto c8 = asg.TryAt(x, y - 1)->walkable;
+					auto c9 = asg.TryAt(x + 1, y - 1)->walkable;
+
+					// can't move( in the sky )
+					// [???]
+					// [?c?]
+					// [?.?]
+					if (c2) continue;
+
+					// can't move
+					// [B?B]
+					// [BcB]
+					// [?B?]
+					if (!c7 && !c9 && c4 && !c6 && !c2) continue;
+
+					// can jump to 7
+					// [..B]
+					// [BcB]
+					// [?B?]
+					if (c7 && c8 && !c9 && !c4 && !c6 && !c2) {
+
 					}
-					else if (left->walkable) {
-						if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
-							XYi nos[] = { { -1, 0 }, { 1, *fy } };
-							asg.InitCellNeighbors(c, nos, 2);
-						}
-						else {
-							static XYi no{ -1, 0 };
-							asg.InitCellNeighbors(c, &no, 1);
-						}
-					}
-					else if (right->walkable) {
-						if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
-							XYi nos[] = { { 1, 0 }, { -1, *fy } };
-							asg.InitCellNeighbors(c, nos, 2);
-						}
-						else {
-							static XYi no{ 1, 0 };
-							asg.InitCellNeighbors(c, &no, 1);
-						}
-					}
+
+					// can jump to 9
+					// [B..]
+					// [BcB]
+					// [?B?]
+
+					// can jump to 7 or 9
+					// [...]
+					// [BcB]
+					// [?B?]
+
+					// can jump to 7 or move to 6
+					// [..?]
+					// [Bc.]
+					// [?BB]
+
+					// can move to 4 or jump to 9
+					// [?..]
+					// [.cB]
+					// [BB?]
+
+					// can move to 4
+					// [??B]
+					// [.cB]
+					// [BB?]
+
+					// can move to 6
+					// [B??]
+					// [Bc.]
+					// [?BB]
+
+					// can move to 4 or 6
+					// [???]
+					// [.c.]
+					// [BBB]
+
+					// can falling to 3 or bellow
+					// [B??]
+					// [Bc.]
+					// [?B.]
+					// 
+					// [??B]
+
+					// can falling to 1 or bellow
+					// [??B]
+					// [.cB]
+					// [.B?]
+					// 
+					// [B??]
+
+					// can move to 4 or falling to 3 or bellow
+					// [???]
+					// [.c.]
+					// [?B.]
+					// 
+					// [??B]
+
+					// can move to 6 or falling to 1 or bellow
+					// [???]
+					// [.c.]
+					// [.B?]
+					// 
+					// [B??]
+
+
+
+					//if (left->walkable && right->walkable) {
+					//	static XYi nos[] = { { -1, 0 }, { 1, 0 } };
+					//	asg.InitCellNeighbors(c, nos, 2);
+					//}
+					//else if (left->walkable) {
+					//	if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
+					//		XYi nos[] = { { -1, 0 }, { 1, *fy } };
+					//		asg.InitCellNeighbors(c, nos, 2);
+					//	}
+					//	else {
+					//		static XYi no{ -1, 0 };
+					//		asg.InitCellNeighbors(c, &no, 1);
+					//	}
+					//}
+					//else if (right->walkable) {
+					//	if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
+					//		XYi nos[] = { { 1, 0 }, { -1, *fy } };
+					//		asg.InitCellNeighbors(c, nos, 2);
+					//	}
+					//	else {
+					//		static XYi no{ 1, 0 };
+					//		asg.InitCellNeighbors(c, &no, 1);
+					//	}
+					//}
 				}
 			}
 		}
