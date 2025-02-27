@@ -352,54 +352,19 @@ namespace AI {
 		// ｃ					character
 		// ｅ					end pos
 
-#define ENABLE_CODE_1
-
-#ifdef ENABLE_CODE_1
 		static std::u32string_view mapText{ UR"(
 　　　　　　　　　　
-Ｂ　　　　　　　　Ｂ
-Ｂ　　　Ｂ　Ｂ　　Ｂ
-Ｂｃ　ＢＢＢＢ　　Ｂ
-ＢＢＢＢＢＢＢＢ　Ｂ
-Ｂ　　　　　　　　Ｂ
-Ｂ　ｅ　　　　　　Ｂ
-ＢＢＢＢＢＢＢＢＢＢ
+Ｂ　　　　　　　　　　Ｂ
+Ｂ　　　Ｂ　Ｂ　　　　Ｂ
+Ｂｃ　ＢＢＢＢ　　　　Ｂ
+ＢＢＢＢＢＢＢＢ　　　Ｂ
+ＢＢＢＢＢＢＢＢＢＢ　Ｂ
+Ｂ　　　　　　　　　　Ｂ
+Ｂ　　　　　ＢＢＢＢＢＢ
+Ｂ　　　　　　ＢＢＢＢＢ
+Ｂ　ｅ　　　　　　　　Ｂ
+ＢＢＢＢＢＢＢＢＢＢＢＢ
 )" };
-#endif
-
-#ifdef ENABLE_CODE_2
-		static std::u32string_view mapText{ UR"(
-Ｂ　　　Ｂ
-Ｂｃ　ｅＢ
-ＢＢＢＢＢ
-)" };
-#endif
-
-#ifdef ENABLE_CODE_3
-		static std::u32string_view mapText{ UR"(
-Ｂ　　　Ｂ
-ＢｃＢｅＢ
-ＢＢＢＢＢ
-)" };
-#endif
-
-#ifdef ENABLE_CODE_4
-		static std::u32string_view mapText{ UR"(
-Ｂ　　　　　　　Ｂ
-Ｂ　　ＢＢＢ　　Ｂ
-ＢｃＢ　　　ＢｅＢ
-ＢＢＢＢＢＢＢＢＢ
-)" };
-#endif
-
-#ifdef ENABLE_CODE_5
-		static std::u32string_view mapText{ UR"(
-Ｂ　　ｅＢ
-Ｂｃ　ＢＢ
-ＢＢＢＢＢ
-)" };
-#endif
-
 
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
 
@@ -520,6 +485,43 @@ namespace AI {
 					// [?B?]
 					if (!c7 && !c9 && !c4 && !c6 && !c2) 
 						continue;
+
+					// can move to 4 or falling to 3 / bellow
+					// [???]
+					// [.c.]
+					// [BB.]
+					// ~~~~~
+					// [??B]
+					if (c4 && c6 && !c1 && !c2 && c3) {
+						XYi nos[] = { { -1, 0 }, { 1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
+
+					// can move to 6 or falling to 1 / bellow
+					// [???]
+					// [.c.]
+					// [.BB]
+					// ~~~~~
+					// [B??]
+					if (c4 && c6 && c1 && !c2 && !c3) {
+						XYi nos[] = { { 1, 0 }, { -1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
+
 
 					// can jump to 7
 					// [..B]
@@ -686,68 +688,6 @@ namespace AI {
 						continue;
 					}
 
-					// can move to 4 or falling to 3 / bellow
-					// [???]
-					// [.c.]
-					// [?B.]
-					// ~~~~~
-					// [??B]
-					if (c4 && c6 && !c2 & c3) {
-						XYi nos[] = { { -1, 0 }, { 1, 0 } };
-						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
-							nos[1].y = *fy;
-							asg.InitCellNeighbors(c5, nos, 2);
-						}
-						else {
-							asg.InitCellNeighbors(c5, nos, 1);
-						}
-						continue;
-					}
-
-					// can move to 6 or falling to 1 / bellow
-					// [???]
-					// [.c.]
-					// [.B?]
-					// ~~~~~
-					// [B??]
-					if (c4 && c6 && c1 & !c2) {
-						XYi nos[] = { { 1, 0 }, { -1, 0 } };
-						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
-							nos[1].y = *fy;
-							asg.InitCellNeighbors(c5, nos, 2);
-						}
-						else {
-							asg.InitCellNeighbors(c5, nos, 1);
-						}
-						continue;
-					}
-
-
-
-					//if (left->walkable && right->walkable) {
-					//	static XYi nos[] = { { -1, 0 }, { 1, 0 } };
-					//	asg.InitCellNeighbors(c, nos, 2);
-					//}
-					//else if (left->walkable) {
-					//	if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
-					//		XYi nos[] = { { -1, 0 }, { 1, *fy } };
-					//		asg.InitCellNeighbors(c, nos, 2);
-					//	}
-					//	else {
-					//		static XYi no{ -1, 0 };
-					//		asg.InitCellNeighbors(c, &no, 1);
-					//	}
-					//}
-					//else if (right->walkable) {
-					//	if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
-					//		XYi nos[] = { { 1, 0 }, { -1, *fy } };
-					//		asg.InitCellNeighbors(c, nos, 2);
-					//	}
-					//	else {
-					//		static XYi no{ 1, 0 };
-					//		asg.InitCellNeighbors(c, &no, 1);
-					//	}
-					//}
 				}
 			}
 		}
