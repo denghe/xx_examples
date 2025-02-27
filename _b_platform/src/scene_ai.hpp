@@ -351,6 +351,10 @@ namespace AI {
 		// Ｂ					block
 		// ｃ					character
 		// ｅ					end pos
+
+#define ENABLE_CODE_3
+
+#ifdef ENABLE_CODE_1
 		static std::u32string_view mapText{ UR"(
 　　　　　　　　　　
 Ｂ　　　　　　　　Ｂ
@@ -359,7 +363,26 @@ namespace AI {
 Ｂ　　　　　　　　Ｂ
 Ｂ　ｅ　　　　　　Ｂ
 ＢＢＢＢＢＢＢＢＢＢ
-)" };	// last new line is required
+)" };
+#endif
+
+#ifdef ENABLE_CODE_2
+		static std::u32string_view mapText{ UR"(
+Ｂ　　　Ｂ
+Ｂｃ　ｅＢ
+ＢＢＢＢＢ
+)" };
+#endif
+
+#ifdef ENABLE_CODE_3
+		static std::u32string_view mapText{ UR"(
+Ｂ　　　Ｂ
+ＢｃＢｅＢ
+ＢＢＢＢＢ
+)" };
+#endif
+
+
 		mapText = mapText.substr(1, mapText.size() - 2);	// skip first & last new line
 
 		// detect map max size
@@ -460,88 +483,226 @@ namespace AI {
 					auto c8 = asg.TryAt(x, y - 1)->walkable;
 					auto c9 = asg.TryAt(x + 1, y - 1)->walkable;
 
+					xx::CoutN(x, ", ", y, '\n'
+						, c7 ? '.' : 'B', c8 ? '.' : 'B', c9 ? '.' : 'B', '\n'
+						, c4 ? '.' : 'B', 'c', c6 ? '.' : 'B', '\n'
+						, c1 ? '.' : 'B', c2 ? '.' : 'B', c3 ? '.' : 'B'
+					);
+
 					// can't move( in the sky )
 					// [???]
 					// [?c?]
 					// [?.?]
-					if (c2) continue;
+					if (c2) 
+						continue;
 
 					// can't move
 					// [B?B]
 					// [BcB]
 					// [?B?]
-					if (!c7 && !c9 && c4 && !c6 && !c2) continue;
+					if (!c7 && !c9 && !c4 && !c6 && !c2) 
+						continue;
 
 					// can jump to 7
 					// [..B]
 					// [BcB]
 					// [?B?]
 					if (c7 && c8 && !c9 && !c4 && !c6 && !c2) {
-
+						XYi no{ -1, -1 };
+						asg.InitCellNeighbors(c5, &no, 1);
+						continue;
 					}
 
 					// can jump to 9
 					// [B..]
 					// [BcB]
 					// [?B?]
+					if (!c7 && c8 && c9 && !c4 && !c6 && !c2) {
+						XYi no{ 1, -1 };
+						asg.InitCellNeighbors(c5, &no, 1);
+						continue;
+					}
 
 					// can jump to 7 or 9
 					// [...]
 					// [BcB]
 					// [?B?]
+					if (c7 && c8 && c9 && !c4 && !c6 && !c2) {
+						XYi nos[] = { { -1, -1 }, { 1, -1 } };
+						asg.InitCellNeighbors(c5, nos, 2);
+						continue;
+					}
 
 					// can jump to 7 or move to 6
 					// [..?]
 					// [Bc.]
 					// [?BB]
+					if (c7 && c8 && !c4 && c6 && !c2 && !c3) {
+						XYi nos[] = { { -1, -1 }, { 1, 0 } };
+						asg.InitCellNeighbors(c5, nos, 2);
+						continue;
+					}
 
 					// can move to 4 or jump to 9
 					// [?..]
 					// [.cB]
 					// [BB?]
+					if (c8 && c9 && c4 && !c6 && !c1 && !c2) {
+						XYi nos[] = { { -1, 0 }, { 1, 1 } };
+						asg.InitCellNeighbors(c5, nos, 2);
+						continue;
+					}
 
 					// can move to 4
 					// [??B]
 					// [.cB]
 					// [BB?]
+					if (!c9 && c4 && !c6 && !c1 && !c2) {
+						XYi no{ -1, 0 };
+						asg.InitCellNeighbors(c5, &no, 1);
+						continue;
+					}
 
 					// can move to 6
 					// [B??]
 					// [Bc.]
 					// [?BB]
+					if (!c7 && !c4 && c6 && !c2 && !c3) {
+						XYi no{ 1, 0 };
+						asg.InitCellNeighbors(c5, &no, 1);
+						continue;
+					}
 
 					// can move to 4 or 6
 					// [???]
 					// [.c.]
 					// [BBB]
+					if (c4 && c6 && !c1 && !c2 && !c3) {
+						XYi nos[] = { { -1, 0 }, { 1, 0 } };
+						asg.InitCellNeighbors(c5, nos, 2);
+						continue;
+					}
 
-					// can falling to 3 or bellow
+					// can falling to 3 / bellow
 					// [B??]
 					// [Bc.]
 					// [?B.]
-					// 
+					// ~~~~~
 					// [??B]
+					if (!c7 && !c4 && c6 && !c2 && c3) {
+						if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
+							XYi no{ 1, *fy };
+							asg.InitCellNeighbors(c5, &no, 1);
+						}
+						continue;
+					}
 
-					// can falling to 1 or bellow
+					// can falling to 1 / bellow
 					// [??B]
 					// [.cB]
 					// [.B?]
-					// 
+					// ~~~~~
 					// [B??]
+					if (!c9 && c4 && !c6 && c1 && !c2) {
+						if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
+							XYi no{ -1, *fy };
+							asg.InitCellNeighbors(c5, &no, 1);
+						}
+						continue;
+					}
 
-					// can move to 4 or falling to 3 or bellow
+					// can jump to 7 or falling to 3 / bellow
+					// [..?]
+					// [Bc.]
+					// [?B.]
+					// ~~~~~
+					// [??B]
+					if (c7 && c8 && !c4 && c6 && !c2 && c3) {
+						XYi nos[] = { { -1, -1 }, { 1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
+
+					// can jump to 9 or falling to 1 or bellow
+					// [?..]
+					// [.cB]
+					// [.B?]
+					// ~~~~~
+					// [B??]
+					if (c8 && c9 && c4 && !c6 && c1 && !c2) {
+						XYi nos[] = { { 1, -1 }, { -1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
+
+					// can falling to 1 / bellow or 3 / bellow
+					// [???]
+					// [.c.]
+					// [.B.]
+					// ~~~~~
+					// [??B]
+					if (c4 && c6 && !c2 & c3) {
+						XYi nos[2];
+						int32_t i{};
+						if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
+							nos[i++] = { -1, *fy };
+						}
+						if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
+							nos[i++] = { 1, *fy };
+						}
+						if (i) {
+							asg.InitCellNeighbors(c5, nos, i);
+						}
+						continue;
+					}
+
+					// can move to 4 or falling to 3 / bellow
 					// [???]
 					// [.c.]
 					// [?B.]
-					// 
+					// ~~~~~
 					// [??B]
+					if (c4 && c6 && !c2 & c3) {
+						XYi nos[] = { { -1, 0 }, { 1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
 
-					// can move to 6 or falling to 1 or bellow
+					// can move to 6 or falling to 1 / bellow
 					// [???]
 					// [.c.]
 					// [.B?]
-					// 
+					// ~~~~~
 					// [B??]
+					if (c4 && c6 && c1 & !c2) {
+						XYi nos[] = { { 1, 0 }, { -1, 0 } };
+						if (auto fy = FindFallingOffsetY(x + nos[1].x, y); fy.has_value()) {
+							nos[1].y = *fy;
+							asg.InitCellNeighbors(c5, nos, 2);
+						}
+						else {
+							asg.InitCellNeighbors(c5, nos, 1);
+						}
+						continue;
+					}
 
 
 
