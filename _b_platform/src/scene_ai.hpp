@@ -158,24 +158,42 @@ namespace AI {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	inline Character& Character::Init(Scene* scene_, XYi const& crIndex) {
-
+	XX_INLINE XYi Character::CRIndexToPos(XYi const& crIndex) const {
 		auto p = MapCfg::cellSize * crIndex;	// calculate top left point pos
-
-		// calculate bottom center point pos
-		p.x += MapCfg::cellSize.x >> 1;
+		p.x += MapCfg::cellSize.x >> 1;	// calculate bottom center point pos
 		p.y += MapCfg::cellSize.y;
+		assert(p.x >= 0 && p.y >= 0);
+		return p;
+	}
 
+	inline Character& Character::Init(Scene* scene_, XYi const& crIndex) {
+		auto p = CRIndexToPos(crIndex);
 		Item::Init(scene_, p);
-
-		// sync float version
-		_pos = p;
-
+		_pos = p;	// sync float version
 		return *this;
 	}
 
 	inline bool Character::Update() {
 		// todo: AI search path logic
+		// todo: run actions
+		if (actions.Empty()) return false;
+		auto& action = actions.Top();
+		switch (action.type) {
+		case ActionTypes::Move: {
+			auto& a = (Action_Move&)action;
+			auto tarPos = CRIndexToPos(a.tarCRIndex);
+			if (pos != tarPos) {
+				// todo: move logic
+			}
+			break;
+		}
+		case ActionTypes::Jump: {
+			break;
+		}
+		case ActionTypes::Fall: {
+			break;
+		}
+		}
 		return false;
 	}
 
@@ -695,8 +713,43 @@ namespace AI {
 		{
 			auto b = asg.Search(beginPos, endPos);
 			auto s = asg.Dump(beginPos, endPos);
-			asg.Cleanup();
 			xx::CoutN(s);
+
+			// path to character actions
+			if (auto pathLen = asg.path.len; pathLen > 1) {
+				auto& cas = character->actions;
+				cas.Reserve(pathLen - 1);
+				for (auto i = pathLen - 2; i >= 0; --i) {
+					auto c = asg.path[i];
+					auto lc = asg.path[i + 1];
+					auto dx = c->x - lc->x;
+					auto dy = c->y - lc->y;
+					if (dy == 0) {		// walk
+						assert(dx != 0);
+						auto& a = (Action_Move&)cas.Emplace();
+						a.type = ActionTypes::Move;
+						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
+						a.tarCRIndex = { c->x, c->y };
+					}
+					else if (dy > 0) {	// jump
+						assert(dx != 0);
+						auto& a = (Action_Jump&)cas.Emplace();
+						a.type = ActionTypes::Jump;
+						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
+						a.tarCRIndex = { c->x, c->y };
+					}
+					else {
+						assert(dy < 0);	// fall
+						assert(dx != 0);
+						auto& a = (Action_Fall&)cas.Emplace();
+						a.type = ActionTypes::Fall;
+						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
+						a.tarCRIndex = { c->x, c->y };
+					}
+				}
+			}
+
+			asg.Cleanup();
 		}
 
 		//auto secs = xx::NowEpochSeconds();

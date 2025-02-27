@@ -8,9 +8,13 @@ namespace AI {
 		Unknown = 0, Up = 1, Right = 2, Down = 4, Left = 8
 	};
 
+	/*********************************************************************************************/
+
 	struct MapCfg {
 		static constexpr XYi cellSize{ 64, 64 };
 	};
+
+	/*********************************************************************************************/
 
 	struct Item {
 		Scene* scene{};
@@ -21,6 +25,69 @@ namespace AI {
 		virtual ~Item() {};
 	};
 
+	/*********************************************************************************************/
+
+	enum class ActionTypes : int32_t {
+		Move,
+		Jump,
+		Fall,
+		//Attack,
+		//Defend,
+		//Heal,
+		//Count,
+		//// ...
+		MaxValue
+	};
+	static_assert((int32_t)ActionTypes::MaxValue <= 64);	// uint64_t actionFlags limit 
+
+	/*********************************************************************************************/
+	// base data struct
+
+	struct alignas(8) Action {
+		union {
+			std::array<uint64_t, 2> _;	// resize it if need more space
+			struct {
+				ActionTypes type;
+				int32_t __;
+			};
+		};
+	};
+
+	template<typename A>
+	constexpr bool ActionStructCheck = alignof(Action) == alignof(A) && sizeof(A) <= sizeof(Action);
+
+	/*********************************************************************************************/
+	// Actions
+
+	struct alignas(8) Action_Move {
+		static constexpr ActionTypes cType{ ActionTypes::Move };
+		ActionTypes type;	// need fill by Init
+		//int32_t timeoutFrameNumber;
+		XYi tarCRIndex;
+		// todo: more fields here
+	};
+	static_assert(ActionStructCheck<Action_Move>);
+
+	struct alignas(8) Action_Jump {
+		static constexpr ActionTypes cType{ ActionTypes::Jump };
+		ActionTypes type;	// need fill by Init
+		//int32_t timeoutFrameNumber;
+		XYi tarCRIndex;
+		// todo: more fields here
+	};
+	static_assert(ActionStructCheck<Action_Jump>);
+
+	struct alignas(8) Action_Fall {
+		static constexpr ActionTypes cType{ ActionTypes::Fall };
+		ActionTypes type;	// need fill by Init
+		//int32_t timeoutFrameNumber;
+		XYi tarCRIndex;
+		// todo: more fields here
+	};
+	static_assert(ActionStructCheck<Action_Fall>);
+
+	/*********************************************************************************************/
+
 	struct Character : Item {
 		static constexpr XYi cResSize{ 64, 64 };					// todo: generate from res
 		static constexpr XY cAnchor{ 0.5, 0 };
@@ -28,12 +95,16 @@ namespace AI {
 		static constexpr float cRadians{ 0 };
 		static constexpr float cSpeed{ 400 / Cfg::fps };
 
+		xx::Queue<Action> actions;
 		XYf _pos{};													// for update & draw
 
+		XYi CRIndexToPos(XYi const& crIndex) const;
 		Character& Init(Scene* scene_, XYi const& crIndex);			// crIndex: column row index in the map
 		bool Update() override;
 		void Draw() override;
 	};
+
+	/*********************************************************************************************/
 
 	struct Block : Item {
 		static constexpr XYi cResSize{ 64, 64 };
