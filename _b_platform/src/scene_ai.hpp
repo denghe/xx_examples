@@ -352,13 +352,14 @@ namespace AI {
 		// ｃ					character
 		// ｅ					end pos
 
-#define ENABLE_CODE_3
+#define ENABLE_CODE_1
 
 #ifdef ENABLE_CODE_1
 		static std::u32string_view mapText{ UR"(
 　　　　　　　　　　
 Ｂ　　　　　　　　Ｂ
-Ｂｃ　ＢＢ　Ｂ　　Ｂ
+Ｂ　　　Ｂ　Ｂ　　Ｂ
+Ｂｃ　ＢＢＢＢ　　Ｂ
 ＢＢＢＢＢＢＢＢ　Ｂ
 Ｂ　　　　　　　　Ｂ
 Ｂ　ｅ　　　　　　Ｂ
@@ -378,6 +379,23 @@ namespace AI {
 		static std::u32string_view mapText{ UR"(
 Ｂ　　　Ｂ
 ＢｃＢｅＢ
+ＢＢＢＢＢ
+)" };
+#endif
+
+#ifdef ENABLE_CODE_4
+		static std::u32string_view mapText{ UR"(
+Ｂ　　　　　　　Ｂ
+Ｂ　　ＢＢＢ　　Ｂ
+ＢｃＢ　　　ＢｅＢ
+ＢＢＢＢＢＢＢＢＢ
+)" };
+#endif
+
+#ifdef ENABLE_CODE_5
+		static std::u32string_view mapText{ UR"(
+Ｂ　　ｅＢ
+Ｂｃ　ＢＢ
 ＢＢＢＢＢ
 )" };
 #endif
@@ -548,7 +566,7 @@ namespace AI {
 					// [.cB]
 					// [BB?]
 					if (c8 && c9 && c4 && !c6 && !c1 && !c2) {
-						XYi nos[] = { { -1, 0 }, { 1, 1 } };
+						XYi nos[] = { { -1, 0 }, { 1, -1 } };
 						asg.InitCellNeighbors(c5, nos, 2);
 						continue;
 					}
