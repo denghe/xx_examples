@@ -115,13 +115,14 @@ namespace AI {
 			c->walkable = walkable ? 1 : 0;
 		}
 
-		void InitCellNeighbors(AStarCell* c, std::initializer_list<XYi> const& neighborOffsets) {
-			assert(neighborOffsets.size() > 0);
+		void InitCellNeighbors(AStarCell* c, XYi* neighborOffsets, int32_t neighborsCount) {
+			assert(neighborOffsets && neighborsCount > 0);
 			auto cx = c->x;
 			auto cy = c->y;
 			c->neighborsIndex = neighbors.len;
-			c->neighborsCount = (int32_t)neighborOffsets.size();
-			for (auto& o : neighborOffsets) {
+			c->neighborsCount = neighborsCount;
+			for (int32_t i = 0; i < neighborsCount; ++i) {
+				auto& o = neighborOffsets[i];
 				auto len = std::sqrtf(float(o.x * o.x + o.y * o.y));
 				auto n = At(cx + o.x, cy + o.y);
 				neighbors.Emplace(n, len);
@@ -424,28 +425,52 @@ namespace AI {
 			}
 		}
 
-		// fill simple neighbors
+		// for search falling block
+		auto FindFallingOffsetY = [&](int32_t x, int32_t y)->std::optional<int32_t> {
+			std::optional<int32_t> r;
+			if (x < 0 || y < 0 || x >= width || y >= height || blocks.At({ x, y })) return r;
+			for (auto i = y + 1; i < height; ++i) {
+				if (blocks.At({ x, i })) {
+					r = i - y - 1;
+					break;
+				}
+			}
+			return r;
+		};
+
+		// fill neighbors		// todo: custom neighbors support
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				// todo: if custom neighbors continue
 				if (auto c = asg.At(x, y); c->walkable) {
 					auto left = asg.TryAt(x - 1, y);
 					auto right = asg.TryAt(x + 1, y);
 					if (left->walkable && right->walkable) {
-						asg.InitCellNeighbors(c, {{ -1, 0 }, { 1, 0 }});
+						static XYi nos[] = { { -1, 0 }, { 1, 0 } };
+						asg.InitCellNeighbors(c, nos, 2);
 					}
 					else if (left->walkable) {
-						asg.InitCellNeighbors(c, { { -1, 0 } });
+						if (auto fy = FindFallingOffsetY(x + 1, y); fy.has_value()) {
+							XYi nos[] = { { -1, 0 }, { 1, *fy } };
+							asg.InitCellNeighbors(c, nos, 2);
+						}
+						else {
+							static XYi no{ -1, 0 };
+							asg.InitCellNeighbors(c, &no, 1);
+						}
 					}
 					else if (right->walkable) {
-						asg.InitCellNeighbors(c, { { 1, 0 } });
+						if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
+							XYi nos[] = { { 1, 0 }, { -1, *fy } };
+							asg.InitCellNeighbors(c, nos, 2);
+						}
+						else {
+							static XYi no{ 1, 0 };
+							asg.InitCellNeighbors(c, &no, 1);
+						}
 					}
 				}
 			}
 		}
-
-		// fill custom neighbors
-		asg.InitCellNeighbors(asg.At(7, 2), { {1, 3} });
 
 		{
 			auto b = asg.Search(beginPos, endPos);
