@@ -691,7 +691,7 @@ namespace AI {
 					// [.B.]
 					// ~~~~~
 					// [??B]
-					if (c4 && c6 && !c2 & c3) {
+					if (c4 && c6 && c1 && !c2 && c3) {
 						XYi nos[2];
 						int32_t i{};
 						if (auto fy = FindFallingOffsetY(x - 1, y); fy.has_value()) {
