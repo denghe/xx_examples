@@ -451,19 +451,19 @@ namespace IntVersion2 {
 	}
 
 	inline bool Platform_Slide::Update() {
-		XX_BEGIN;
+		XX_BEGIN(lineNumber);
 		while (true) {
 			for (i = 0; i < moveFrames; ++i) {
 				AssignOffset(posInc);
-				XX_YIELD_F;
+				XX_YIELD_F(lineNumber);
 			}
 			for (i = 0; i < idleFrames; ++i) {
-				XX_YIELD_F;
+				XX_YIELD_F(lineNumber);
 			}
 			posInc = -posInc;
 		}
-		XX_YIELD_F_TO_BEGIN
-		XX_END;
+		XX_YIELD_F_TO_BEGIN(lineNumber);
+		XX_END(lineNumber);
 		return false;
 	}
 
@@ -490,7 +490,7 @@ namespace IntVersion2 {
 	}
 
 	inline bool Platform_Swing::Update() {
-		XX_BEGIN;
+		XX_BEGIN(lineNumber);
 		for (i = 0; i < moveFrames; ++i) {
 			angle += angleSpeed;
 			{
@@ -499,11 +499,11 @@ namespace IntVersion2 {
 				auto newPos = v * radius + centerPos - XYi{ size.x / 2, 0 };
 				AssignOffset(newPos - _pos);
 			}
-			XX_YIELD_F;
+			XX_YIELD_F(lineNumber);
 		}
 		_pos = pos = posTo;
 		for (i = 0; i < idleFrames; ++i) {
-			XX_YIELD_F;
+			XX_YIELD_F(lineNumber);
 		}
 		angleSpeed = -angleSpeed;
 		for (i = 0; i < moveFrames; ++i) {
@@ -514,15 +514,15 @@ namespace IntVersion2 {
 				auto newPos = v * radius + centerPos - XYi{ size.x / 2, 0 };
 				AssignOffset(newPos - _pos);
 			}
-			XX_YIELD_F;
+			XX_YIELD_F(lineNumber);
 		}
 		_pos = pos = posFrom;
 		for (i = 0; i < idleFrames; ++i) {
-			XX_YIELD_F;
+			XX_YIELD_F(lineNumber);
 		}
 		angleSpeed = -angleSpeed;
-		XX_YIELD_F_TO_BEGIN
-		XX_END;
+		XX_YIELD_F_TO_BEGIN(lineNumber);
+		XX_END(lineNumber);
 		return false;
 	}
 

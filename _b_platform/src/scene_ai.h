@@ -93,14 +93,16 @@ namespace AI {
 		static constexpr XY cAnchor{ 0.5, 0 };
 		static constexpr float cScale{ 1 };
 		static constexpr float cRadians{ 0 };
-		static constexpr float cSpeed{ 400 / Cfg::fps };
+		static constexpr float cSpeed{ 40 / Cfg::fps };
 
 		xx::Queue<Action> actions;
 		XYf _pos{};													// for update & draw
+		int32_t moveLineNumber{};									// for move logic
 
 		XYi CRIndexToPos(XYi const& crIndex) const;
 		Character& Init(Scene* scene_, XYi const& crIndex);			// crIndex: column row index in the map
 		bool Update() override;
+		bool Move(XYi const& tarPos);
 		void Draw() override;
 	};
 

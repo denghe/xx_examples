@@ -175,6 +175,7 @@ namespace AI {
 
 	inline bool Character::Update() {
 		// todo: AI search path logic
+		// todo: action condition check
 		// todo: run actions
 		if (actions.Empty()) return false;
 		auto& action = actions.Top();
@@ -182,8 +183,8 @@ namespace AI {
 		case ActionTypes::Move: {
 			auto& a = (Action_Move&)action;
 			auto tarPos = CRIndexToPos(a.tarCRIndex);
-			if (pos != tarPos) {
-				// todo: move logic
+			if (Move(tarPos)) {
+				actions.Pop();
 			}
 			break;
 		}
@@ -195,6 +196,23 @@ namespace AI {
 		}
 		}
 		return false;
+	}
+
+	XX_INLINE bool Character::Move(XYi const& tarPos) {
+		assert(pos.y == _pos.y);
+		assert(pos.y == tarPos.y);
+		auto tp = tarPos.As<float>();
+		auto dx = tp.x - _pos.x;
+		if (dx <= cSpeed) {
+			_pos.x = tp.x;
+			pos.x = (int32_t)_pos.x;
+			return true;
+		}
+		else {
+			_pos.x += cSpeed;
+			pos.x = (int32_t)_pos.x;
+			return false;
+		}
 	}
 
 	inline void Character::Draw() {
