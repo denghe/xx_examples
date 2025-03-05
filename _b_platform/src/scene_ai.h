@@ -27,64 +27,12 @@ namespace AI {
 
 	/*********************************************************************************************/
 
-	enum class ActionTypes : int32_t {
-		Move,
-		Jump,
-		Fall,
-		//Attack,
-		//Defend,
-		//Heal,
-		//Count,
-		//// ...
+	enum class TodoTypes {
+		Idle,
+		MoveTo,
+		// ...
 		MaxValue
 	};
-	static_assert((int32_t)ActionTypes::MaxValue <= 64);	// uint64_t actionFlags limit 
-
-	/*********************************************************************************************/
-	// base data struct
-
-	struct alignas(8) Action {
-		union {
-			std::array<uint64_t, 2> _;	// resize it if need more space
-			struct {
-				ActionTypes type;
-				int32_t __;
-			};
-		};
-	};
-
-	template<typename A>
-	constexpr bool ActionStructCheck = alignof(Action) == alignof(A) && sizeof(A) <= sizeof(Action);
-
-	/*********************************************************************************************/
-	// Actions
-
-	struct alignas(8) Action_Move {
-		static constexpr ActionTypes cType{ ActionTypes::Move };
-		ActionTypes type;	// need fill by Init
-		//int32_t timeoutFrameNumber;
-		XYi tarCRIndex;
-		// todo: more fields here
-	};
-	static_assert(ActionStructCheck<Action_Move>);
-
-	struct alignas(8) Action_Jump {
-		static constexpr ActionTypes cType{ ActionTypes::Jump };
-		ActionTypes type;	// need fill by Init
-		//int32_t timeoutFrameNumber;
-		XYi tarCRIndex;
-		// todo: more fields here
-	};
-	static_assert(ActionStructCheck<Action_Jump>);
-
-	struct alignas(8) Action_Fall {
-		static constexpr ActionTypes cType{ ActionTypes::Fall };
-		ActionTypes type;	// need fill by Init
-		//int32_t timeoutFrameNumber;
-		XYi tarCRIndex;
-		// todo: more fields here
-	};
-	static_assert(ActionStructCheck<Action_Fall>);
 
 	/*********************************************************************************************/
 
@@ -95,11 +43,16 @@ namespace AI {
 		static constexpr float cRadians{ 0 };
 		static constexpr float cSpeed{ 40 / Cfg::fps };
 
-		xx::Queue<Action> actions;
 		XYf _pos{};													// for update & draw
 		int32_t moveLineNumber{};									// for move logic
 
-		XYi CRIndexToPos(XYi const& crIndex) const;
+		TodoTypes todo{};
+		XYi moveToCRIndex{};
+
+		static int32_t CIndexToPosX(int32_t const& cIndex);
+		static int32_t RIndexToPosY(int32_t const& rIndex);
+		static XYi CRIndexToPos(XYi const& crIndex);
+		XYi GetCRIndex() const;
 		Character& Init(Scene* scene_, XYi const& crIndex);			// crIndex: column row index in the map
 		bool Update() override;
 		bool Move(XYi const& tarPos);
@@ -120,9 +73,10 @@ namespace AI {
 		xx::RGBA8 color{ xx::RGBA8_White };
 		xx::Math::BlockWayout wayout{};
 
+		XYi crIndex{};
 		xx::Weak<BlockGroup> blockGroup;	// fill after Init
 
-		xx::Shared<Block> Init(Scene* scene_, XYi const& crIndex);
+		xx::Shared<Block> Init(Scene* scene_, XYi const& crIndex_);
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
 		int32_t CalcCrossLenX(int32_t cPosX, int32_t cSizeX) const;
 		void Draw();
@@ -134,7 +88,7 @@ namespace AI {
 
 	struct BlockGroup {
 		int32_t index{};
-		xx::List<xx::Weak<Block>> blocks;
+		xx::List<xx::Weak<Block>> blocks;		// todo: refine
 		xx::Listi32<int32_t> navigationTips;
 	};
 

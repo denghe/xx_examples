@@ -10,43 +10,132 @@ namespace AI {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	XX_INLINE XYi Character::CRIndexToPos(XYi const& crIndex) const {
-		auto p = MapCfg::cellSize * crIndex;	// calculate top left point pos
-		p.x += MapCfg::cellSize.x >> 1;	// calculate bottom center point pos
-		p.y += MapCfg::cellSize.y;
-		assert(p.x >= 0 && p.y >= 0);
-		return p;
+	XX_INLINE int32_t Character::CIndexToPosX(int32_t const& cIndex) {
+		return MapCfg::cellSize.x * cIndex + (MapCfg::cellSize.x >> 1);
+	}
+
+	XX_INLINE int32_t Character::RIndexToPosY(int32_t const& rIndex) {
+		return MapCfg::cellSize.y * rIndex + MapCfg::cellSize.y - 1;
+	}
+
+	XX_INLINE XYi Character::CRIndexToPos(XYi const& crIndex) {
+		return { CIndexToPosX(crIndex.x), RIndexToPosY(crIndex.y) };
+	}
+
+	XX_INLINE XYi Character::GetCRIndex() const {
+		return scene->blocks.PosToColRowIndex(pos);
 	}
 
 	inline Character& Character::Init(Scene* scene_, XYi const& crIndex) {
 		auto p = CRIndexToPos(crIndex);
 		Item::Init(scene_, p);
 		_pos = p;	// sync float version
+		todo = TodoTypes::Idle;
 		return *this;
 	}
 
 	inline bool Character::Update() {
-		// todo: AI search path logic
-		// todo: action condition check
-		// todo: run actions
-		if (actions.Empty()) return false;
-		auto& action = actions.Top();
-		switch (action.type) {
-		case ActionTypes::Move: {
-			auto& a = (Action_Move&)action;
-			auto tarPos = CRIndexToPos(a.tarCRIndex);
-			if (Move(tarPos)) {
-				actions.Pop();
+
+		switch (todo) {
+		case TodoTypes::Idle:
+			break;
+		case TodoTypes::MoveTo: {
+			// pos to cri
+			auto crIndex = GetCRIndex();
+
+			// try get current block
+			auto block = scene->blocks.TryAt(crIndex + XYi{ 0, 1 });
+
+			// flying?
+			if (!block)
+				break;
+
+			// calculate max y in current cell
+			auto tarPosY = RIndexToPosY(crIndex.y);
+
+			// flying?
+			if (pos.y != tarPosY)
+				break;
+			
+			// get current block group
+			auto blockGroup = block->blockGroup.GetPointer();
+			assert(blockGroup);
+
+			// get target block
+			auto tarBlock = scene->blocks.TryAt(moveToCRIndex + XYi{ 0, 1 });
+			assert(tarBlock);
+
+			// get target block group
+			auto tarBlockGroup = tarBlock->blockGroup.GetPointer();
+			assert(tarBlockGroup);
+
+			// same block group?
+			if (blockGroup == tarBlockGroup) {
+				auto tarPosX = CIndexToPosX(moveToCRIndex.x);
+				if (Move({ tarPosX, tarPosY })) {
+					todo = TodoTypes::Idle;
+				}
+				break;
 			}
+
+			// todo: move to current group's edge beside next group
+
+			// todo: calculate nearest block in block group with target neighbor
+			
+			auto nextBlockGroupIndex = blockGroup->navigationTips[tarBlockGroup->index];
+			auto nextBlockGroup = scene->blockGroups[nextBlockGroupIndex].pointer;
+
+			auto blockGroupLeftCRIndex = blockGroup->blocks[0]->crIndex;
+			auto blockGroupRightCIndex = blockGroup->blocks.Back()->crIndex.x;
+
+			auto nextBlockGroupLeftCRIndex = nextBlockGroup->blocks[0]->crIndex;
+			auto nextBlockGroupRightCIndex = nextBlockGroup->blocks.Back()->crIndex.x;
+
+			if (blockGroupLeftCRIndex.y == nextBlockGroupLeftCRIndex.y) {
+				// far jump
+				// 1. move to edge ( need calc )  2. jump   3. move to tar
+				// #################
+				// 1--- 2---
+				// #################
+				// 2--- 1---
+
+				// todo
+			}
+			else if (blockGroupLeftCRIndex.y > nextBlockGroupLeftCRIndex.y) {
+				// fall
+				// 1. move to edge ( need calc )  2. fall   3. move to tar
+				// #################
+				//     1---
+				//   2-------
+				// #################
+				// 1---
+				//   2---
+				// #################
+				//   1---
+				// 2---
+
+				// todo
+			}
+			else {
+				// high jump
+				// 1. move to tar edge +-1 ( need calc )  2. jump   3. move to tar
+				// #################
+				//      2---
+				//   1-----------
+				// #################
+				//   2---
+				//      1-----------
+				// #################
+				//          2---
+				// 1----------
+
+				// todo
+			}
+
 			break;
 		}
-		case ActionTypes::Jump: {
-			break;
 		}
-		case ActionTypes::Fall: {
-			break;
-		}
-		}
+
 		return false;
 	}
 
@@ -82,14 +171,13 @@ namespace AI {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
-	inline xx::Shared<Block> Block::Init(Scene* scene_, XYi const& crIndex) {
-
-		auto p = MapCfg::cellSize * crIndex;	// calculate top left point pos
-
+	inline xx::Shared<Block> Block::Init(Scene* scene_, XYi const& crIndex_) {
+		auto p = MapCfg::cellSize * crIndex_;	// calculate top left point pos
 		Item::Init(scene_, p);
-
 		size = MapCfg::cellSize;
 		color = { 128,64,0,255 };
+
+		crIndex = crIndex_;
 
 		return xx::SharedFromThis(this);
 	}
@@ -151,22 +239,22 @@ namespace AI {
 		if (cri.y == 0) {
 			wayout.up = false; atEdge = true;
 		}
-		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
+		else wayout.up = !bs.TryAt({ cri.x, cri.y - 1 });
 
 		if (cri.y + 1 == bs.numRows) {
 			wayout.down = false; atEdge = true;
 		}
-		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
+		else wayout.down = !bs.TryAt({ cri.x, cri.y + 1 });
 
 		if (cri.x == 0) {
 			wayout.left = false; atEdge = true;
 		}
-		else wayout.left = !bs.At({ cri.x - 1, cri.y });
+		else wayout.left = !bs.TryAt({ cri.x - 1, cri.y });
 
 		if (cri.x + 1 == bs.numCols) {
 			wayout.right = false;
 		}
-		else wayout.right = !bs.At({ cri.x + 1, cri.y });
+		else wayout.right = !bs.TryAt({ cri.x + 1, cri.y });
 
 		if (atEdge && !(uint8_t&)wayout) {
 			if (cri.y != 0) wayout.up = true;
@@ -272,7 +360,7 @@ namespace AI {
 		}
 		blocks.Init(y + 1, maxX, MapCfg::cellSize);
 
-		XYi beginPos{}, endPos{};
+		XYi beginCRIndex{}, endCRIndex{};
 
 		// fill map contents
 		x = 0;
@@ -285,10 +373,10 @@ namespace AI {
 				++y;
 				continue;
 			case U'ｃ':
-				beginPos = { x, y };
+				beginCRIndex = { x, y };
 				break;
 			case U'ｅ':
-				endPos = { x, y };
+				endCRIndex = { x, y };
 				break;
 			case U'Ｂ': {
 				blocks.Add(xx::MakeShared<Block>()->Init(this, { x, y }));
@@ -299,7 +387,7 @@ namespace AI {
 		}
 		for (auto& o : blocks.items) o->FillWayout();
 
-		character.Emplace()->Init(this, beginPos);
+		character.Emplace()->Init(this, beginCRIndex);
 
 		gLooper.camera.SetOriginal({ character->_pos.x, blocks.gridSize.y / 2 });
 
@@ -313,9 +401,6 @@ namespace AI {
 		// generate cells
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				//if (!blocks.At({ x, y })) {
-				//	asg.InitCell(x, y, blocks.At({ x, y + 1 }));
-				//}
 				asg.InitCell(x, y, !blocks.At({ x, y }));
 			}
 		}
@@ -428,63 +513,29 @@ namespace AI {
 			}
 		}
 
-		{
-			auto b = asg.Search(beginPos, endPos);
-			auto s = asg.Dump(beginPos, endPos);
-			xx::CoutN(s);
-
-			// path to character actions
-			if (auto pathLen = asg.path.len; pathLen > 1) {
-				auto& cas = character->actions;
-				cas.Reserve(pathLen - 1);
-				for (auto i = pathLen - 2; i >= 0; --i) {
-					auto c = asg.path[i];
-					auto lc = asg.path[i + 1];
-					auto dx = c->x - lc->x;
-					auto dy = c->y - lc->y;
-					if (dy == 0) {		// walk
-						assert(dx != 0);
-						auto& a = (Action_Move&)cas.Emplace();
-						a.type = ActionTypes::Move;
-						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
-						a.tarCRIndex = { c->x, c->y };
-					}
-					else if (dy > 0) {	// jump
-						assert(dx != 0);
-						auto& a = (Action_Jump&)cas.Emplace();
-						a.type = ActionTypes::Jump;
-						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
-						a.tarCRIndex = { c->x, c->y };
-					}
-					else {
-						assert(dy < 0);	// fall
-						assert(dx != 0);
-						auto& a = (Action_Fall&)cas.Emplace();
-						a.type = ActionTypes::Fall;
-						//a.timeoutFrameNumber = gLooper.frameNumber + Cfg::fps * 0.5f;
-						a.tarCRIndex = { c->x, c->y };
-					}
-				}
-			}
-
-			asg.Cleanup();
-		}
-
+		// performance test
 		//auto secs = xx::NowEpochSeconds();
 		//for (int i = 0; i < 10000000; ++i) {
-		//	auto b = asg.Search(beginPos, endPos);
-		//	//auto s = asg.Dump(beginPos, endPos);
+		//	auto b = asg.Search(beginCRIndex, endCRIndex);
+		//	//auto s = asg.Dump(beginCRIndex, endCRIndex);
 		//	asg.Cleanup();
 		//}
 		//xx::CoutN(xx::NowEpochSeconds(secs));
+
+		// show search result
+		{
+			auto b = asg.Search(beginCRIndex, endCRIndex);
+			xx::CoutN(asg.Dump(beginCRIndex, endCRIndex));
+			asg.Cleanup();
+		}
 
 		// fill block groups
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
 				if (asg.TryAt(x, y)->walkable && !asg.TryAt(x, y + 1)->walkable) {
-					auto block = blocks.At({ x, y + 1 });
+					auto block = blocks.TryAt({ x, y + 1 });
 					if (asg.TryAt(x - 1, y)->walkable && !asg.TryAt(x - 1, y + 1)->walkable) {
-						block->blockGroup = blocks.At({ x - 1, y + 1 })->blockGroup;
+						block->blockGroup = blocks.TryAt({ x - 1, y + 1 })->blockGroup;
 					}
 					else {
 						auto index = blockGroups.len;
@@ -530,6 +581,33 @@ namespace AI {
 				}
 				asg.Cleanup();
 			}
+		}
+
+		// test navigation
+		{
+			auto beginBlock = blocks.At(beginCRIndex + XYi{ 0, 1 });
+			assert(beginBlock);
+			auto beginGroup = beginBlock->blockGroup.TryGetPointer();
+			assert(beginGroup);
+
+			auto endBlock = blocks.At(endCRIndex + XYi{ 0, 1 });
+			assert(endBlock);
+			auto endGroup = endBlock->blockGroup.TryGetPointer();
+			assert(endGroup);
+
+			auto gIndex = beginGroup->index;
+			xx::Cout(gIndex);
+			while (gIndex != endGroup->index) {
+				gIndex = blockGroups[gIndex]->navigationTips[endGroup->index];
+				xx::Cout(" -- ", gIndex);
+			}
+			xx::CoutN();
+		}
+
+		// set character todo
+		{
+			character->todo = TodoTypes::MoveTo;
+			character->moveToCRIndex = endCRIndex;
 		}
 	}
 

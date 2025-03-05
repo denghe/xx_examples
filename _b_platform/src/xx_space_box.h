@@ -160,10 +160,19 @@ namespace xx {
 		}
 
 		// out of range: return nullptr
-		XX_INLINE T* At(XYi const& cri) const {
+		XX_INLINE T* TryAt(XYi const& cri) const {
 			if (cri.x < 0 || cri.x >= numCols) return nullptr;
 			if (cri.y < 0 || cri.y >= numRows) return nullptr;
 			auto ci = cri.y * numCols + cri.x;
+			assert(ci >= 0 && ci < cellsLen);
+			return cells[ci];
+		}
+
+		XX_INLINE T* At(XYi const& cri) const {
+			assert(cri.x >= 0 && cri.x < numCols);
+			assert(cri.y >= 0 && cri.y < numRows);
+			auto ci = cri.y * numCols + cri.x;
+			assert(ci >= 0 && ci < cellsLen);
 			return cells[ci];
 		}
 

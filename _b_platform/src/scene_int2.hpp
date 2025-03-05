@@ -168,28 +168,28 @@ namespace IntVersion2 {
 		// bb
 		// bf
 		if (criFrom == criTo) {
-			if (auto bc = bs.At(criFrom - 1); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt(criFrom - 1); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At({ criFrom.x - 1, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt({ criFrom.x - 1, criFrom.y }); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At({ criFrom.x, criFrom.y - 1 }); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt({ criFrom.x, criFrom.y - 1 }); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt(criFrom); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
@@ -200,28 +200,28 @@ namespace IntVersion2 {
 		// fc
 		// ct
 		else {
-			if (auto bc = bs.At(criFrom); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt(criFrom); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At({ criTo.x, criFrom.y }); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt({ criTo.x, criFrom.y }); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At({ criFrom.x, criTo.y }); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt({ criFrom.x, criTo.y }); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
 					(uint32_t&)pushOutWays |= (uint32_t&)pushOutWay;
 				}
 			}
-			if (auto bc = bs.At(criTo); bc && (bc->IsCross(pos, size))) {
+			if (auto bc = bs.TryAt(criTo); bc && (bc->IsCross(pos, size))) {
 				auto [newPos, pushOutWay] = bc->PushOut(pos, size);
 				if (pushOutWay != PushOutWays::Unknown) {
 					pos = newPos;
@@ -319,22 +319,22 @@ namespace IntVersion2 {
 		if (cri.y == 0) {
 			wayout.up = false; atEdge = true;
 		}
-		else wayout.up = !bs.At({ cri.x, cri.y - 1 });
+		else wayout.up = !bs.TryAt({ cri.x, cri.y - 1 });
 
 		if (cri.y + 1 == bs.numRows) {
 			wayout.down = false; atEdge = true;
 		}
-		else wayout.down = !bs.At({ cri.x, cri.y + 1 });
+		else wayout.down = !bs.TryAt({ cri.x, cri.y + 1 });
 
 		if (cri.x == 0) {
 			wayout.left = false; atEdge = true;
 		}
-		else wayout.left = !bs.At({ cri.x - 1, cri.y });
+		else wayout.left = !bs.TryAt({ cri.x - 1, cri.y });
 
 		if (cri.x + 1 == bs.numCols) {
 			wayout.right = false;
 		}
-		else wayout.right = !bs.At({ cri.x + 1, cri.y });
+		else wayout.right = !bs.TryAt({ cri.x + 1, cri.y });
 
 		if (atEdge && !(uint8_t&)wayout) {
 			if (cri.y != 0) wayout.up = true;
