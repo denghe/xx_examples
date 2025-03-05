@@ -52,6 +52,7 @@ namespace xx {
 				assert(c->prev != c);
 			} else {
 				assert(!cells[ci]);
+				c->indexAtCells = ci;
 				cells[ci] = c;
 			}
 
@@ -150,6 +151,12 @@ namespace xx {
 			auto ci = cri.y * numCols + cri.x;
 			assert(ci >= 0 && ci < cellsLen);
 			return ci;
+		}
+
+		XX_INLINE XYi CellIndexToColRowIndex(int32_t ci) const {
+			assert(ci >= 0 && ci < cellsLen);
+			auto ri = ci / numCols;
+			return { ci - ri * numCols, ri };
 		}
 
 		// out of range: return nullptr

@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "res_tp_frames.h"
 struct Cfg : xx::GDesign<1920, 1080, 120> {};
+#include "xx_astar.h"
 #include "xx_space_box.h"
 #include "scene_float.h"
 #include "scene_int.h"

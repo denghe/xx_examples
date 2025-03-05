@@ -108,6 +108,7 @@ namespace AI {
 
 	/*********************************************************************************************/
 
+	struct BlockGroup;
 	struct Block : Item {
 		static constexpr XYi cResSize{ 64, 64 };
 		static constexpr XY cAnchor{ 0, 1 };
@@ -119,6 +120,8 @@ namespace AI {
 		xx::RGBA8 color{ xx::RGBA8_White };
 		xx::Math::BlockWayout wayout{};
 
+		xx::Weak<BlockGroup> blockGroup;	// fill after Init
+
 		xx::Shared<Block> Init(Scene* scene_, XYi const& crIndex);
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
 		int32_t CalcCrossLenX(int32_t cPosX, int32_t cSizeX) const;
@@ -127,9 +130,20 @@ namespace AI {
 		std::pair<XYi, PushOutWays> PushOut(XYi const& cPos, XYi const& cSize) const;
 	};
 
+	/*********************************************************************************************/
+
+	struct BlockGroup {
+		int32_t index{};
+		xx::List<xx::Weak<Block>> blocks;
+		xx::Listi32<int32_t> navigationTips;
+	};
+
+	/*********************************************************************************************/
+
 	struct Scene : xx::SceneBase {
 		xx::Shared<Character> character;
 		xx::SpaceIndexBox<Block, false> blocks;
+		xx::Listi32<xx::Shared<BlockGroup>> blockGroups;
 
 		void Init() override;
 		void Update() override;
