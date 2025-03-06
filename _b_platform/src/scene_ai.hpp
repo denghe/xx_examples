@@ -30,16 +30,43 @@ namespace AI {
 		auto p = CRIndexToPos(crIndex);
 		Item::Init(scene_, p);
 		_pos = p;	// sync float version
-		todo = TodoTypes::Idle;
+		plan = PlanTypes::Idle;
 		return *this;
 	}
 
 	inline bool Character::Update() {
 
-		switch (todo) {
-		case TodoTypes::Idle:
+	LabAction:
+		if (currentActionIndex >= 0) {
+			auto& currAction = actions[currentActionIndex];
+			switch (currAction.type) {
+			case ActionTypes::None: {
+				currentActionIndex = -1;
+				goto LabAction;
+			}
+			case ActionTypes::Move: {
+				auto& a = (Action_Move&)currAction;
+				if (Move(a.tarPos)) {
+					++currentActionIndex;
+				}
+				break;
+			}
+			case ActionTypes::Jump: {
+				break;
+			}
+			case ActionTypes::Fall: {
+				break;
+			}
+			}
+
+			return false;
+		}
+
+	LabPlan:
+		switch (plan) {
+		case PlanTypes::Idle:
 			break;
-		case TodoTypes::MoveTo: {
+		case PlanTypes::MoveTo: {
 			// pos to cri
 			auto crIndex = GetCRIndex();
 
@@ -73,37 +100,28 @@ namespace AI {
 			if (blockGroup == tarBlockGroup) {
 				auto tarPosX = CIndexToPosX(moveToCRIndex.x);
 				if (Move({ tarPosX, tarPosY })) {
-					todo = TodoTypes::Idle;
+					plan = PlanTypes::Idle;
 				}
 				break;
 			}
 
-			// todo: move to current group's edge beside next group
-
-			// todo: calculate nearest block in block group with target neighbor
-			
+			// fill actions
 			auto nextBlockGroupIndex = blockGroup->navigationTips[tarBlockGroup->index];
 			auto nextBlockGroup = scene->blockGroups[nextBlockGroupIndex].pointer;
 
-			auto blockGroupLeftCRIndex = blockGroup->blocks[0]->crIndex;
-			auto blockGroupRightCIndex = blockGroup->blocks.Back()->crIndex.x;
-
-			auto nextBlockGroupLeftCRIndex = nextBlockGroup->blocks[0]->crIndex;
-			auto nextBlockGroupRightCIndex = nextBlockGroup->blocks.Back()->crIndex.x;
-
-			if (blockGroupLeftCRIndex.y == nextBlockGroupLeftCRIndex.y) {
+			if (blockGroup->rIndex == nextBlockGroup->rIndex) {
 				// far jump
-				// 1. move to edge ( need calc )  2. jump   3. move to tar
+				// 1. move to edge ( need calc )  2. jump   3. next step
 				// #################
 				// 1--- 2---
 				// #################
 				// 2--- 1---
 
-				// todo
+				xx::CoutN("todo ", __LINE__);
 			}
-			else if (blockGroupLeftCRIndex.y > nextBlockGroupLeftCRIndex.y) {
+			else if (blockGroup->rIndex < nextBlockGroup->rIndex) {
 				// fall
-				// 1. move to edge ( need calc )  2. fall   3. move to tar
+				// 1. move to edge ( need calc )  2. fall   3. next step
 				// #################
 				//     1---
 				//   2-------
@@ -114,22 +132,55 @@ namespace AI {
 				//   1---
 				// 2---
 
-				// todo
+				xx::CoutN("todo ", __LINE__);
 			}
 			else {
-				// high jump
-				// 1. move to tar edge +-1 ( need calc )  2. jump   3. move to tar
-				// #################
-				//      2---
-				//   1-----------
-				// #################
-				//   2---
-				//      1-----------
-				// #################
-				//          2---
-				// 1----------
+				// jump / climb
+				// 1. move to tar edge +-1 ( need calc )  2. jump   3. next step
 
-				// todo
+				if (blockGroup->cIndexRange.from < nextBlockGroup->cIndexRange.from) {
+					//       2--...
+					// 1...--
+					currentActionIndex = 0;
+					{
+						// move to g1's right edge
+						auto& a = (Action_Move&)actions[0];
+						a.type = a.cType;
+						auto tx = CIndexToPosX(blockGroup->cIndexRange.to);
+						a.tarPos = { tx, tarPosY };
+					}
+					{
+						// jump to g2's left edge
+						auto& a = (Action_Jump&)actions[1];
+						a.type = a.cType;
+						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.from);
+						auto ty = RIndexToPosY(nextBlockGroup->rIndex);
+						a.tarPos = { tx, ty };
+					}
+					actions[2].type = ActionTypes::None;
+				}
+				else {
+					// 2...--
+					//       1--...
+					currentActionIndex = 0;
+					{
+						// move to g1's left edge
+						auto& a = (Action_Move&)actions[0];
+						a.type = a.cType;
+						auto tx = CIndexToPosX(blockGroup->cIndexRange.from);
+						a.tarPos = { tx, tarPosY };
+					}
+					{
+						// jump to g2's right edge
+						auto& a = (Action_Jump&)actions[1];
+						a.type = a.cType;
+						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.to);
+						auto ty = RIndexToPosY(nextBlockGroup->rIndex);
+						a.tarPos = { tx, ty };
+					}
+					actions[2].type = ActionTypes::None;
+				}
+
 			}
 
 			break;
@@ -532,15 +583,20 @@ namespace AI {
 		// fill block groups
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				if (asg.TryAt(x, y)->walkable && !asg.TryAt(x, y + 1)->walkable) {
-					auto block = blocks.TryAt({ x, y + 1 });
-					if (asg.TryAt(x - 1, y)->walkable && !asg.TryAt(x - 1, y + 1)->walkable) {
-						block->blockGroup = blocks.TryAt({ x - 1, y + 1 })->blockGroup;
+				auto by = y + 1;
+				if (asg.TryAt(x, y)->walkable && !asg.TryAt(x, by)->walkable) {
+					auto block = blocks.TryAt({ x, by });
+					if (asg.TryAt(x - 1, y)->walkable && !asg.TryAt(x - 1, by)->walkable) {
+						block->blockGroup = blocks.TryAt({ x - 1, by })->blockGroup;
+						block->blockGroup->cIndexRange.to = x;
 					}
 					else {
 						auto index = blockGroups.len;
-						block->blockGroup = blockGroups.Emplace().Emplace<BlockGroup>();
-						block->blockGroup->index = index;
+						auto& g = blockGroups.Emplace().Emplace<BlockGroup>();
+						block->blockGroup = g;
+						g->index = index;
+						g->rIndex = by;
+						g->cIndexRange.from = g->cIndexRange.to = x;
 					}
 					block->blockGroup->blocks.Add(xx::WeakFromThis(block));
 				}
@@ -606,7 +662,7 @@ namespace AI {
 
 		// set character todo
 		{
-			character->todo = TodoTypes::MoveTo;
+			character->plan = PlanTypes::MoveTo;
 			character->moveToCRIndex = endCRIndex;
 		}
 	}

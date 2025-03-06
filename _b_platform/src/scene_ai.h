@@ -27,12 +27,63 @@ namespace AI {
 
 	/*********************************************************************************************/
 
-	enum class TodoTypes {
+	enum class PlanTypes {
 		Idle,
 		MoveTo,
 		// ...
 		MaxValue
 	};
+
+	enum class ActionTypes : int32_t {
+		None,
+		Move,
+		Jump,
+		Fall,
+		// ...
+		MaxValue
+	};
+	static_assert((int32_t)ActionTypes::MaxValue <= 64);	// uint64_t actionFlags limit 
+
+	/*********************************************************************************************/
+	// base data struct
+
+	struct alignas(8) Action {
+		union {
+			std::array<uint64_t, 2> _;	// resize it if need more space
+			struct {
+				ActionTypes type;
+				int32_t __;
+			};
+		};
+	};
+
+	template<typename A>
+	constexpr bool ActionStructCheck = alignof(Action) == alignof(A) && sizeof(A) <= sizeof(Action);
+
+	/*********************************************************************************************/
+	// Actions
+
+	struct alignas(8) Action_Move {
+		static constexpr ActionTypes cType{ ActionTypes::Move };
+		ActionTypes type;
+		XYi tarPos;
+	};
+	static_assert(ActionStructCheck<Action_Move>);
+
+	struct alignas(8) Action_Jump {
+		static constexpr ActionTypes cType{ ActionTypes::Jump };
+		ActionTypes type;
+		XYi tarPos;
+	};
+	static_assert(ActionStructCheck<Action_Jump>);
+
+	struct alignas(8) Action_Fall {
+		static constexpr ActionTypes cType{ ActionTypes::Fall };
+		ActionTypes type;
+		XYi tarPos;
+	};
+	static_assert(ActionStructCheck<Action_Fall>);
+
 
 	/*********************************************************************************************/
 
@@ -46,8 +97,10 @@ namespace AI {
 		XYf _pos{};													// for update & draw
 		int32_t moveLineNumber{};									// for move logic
 
-		TodoTypes todo{};
-		XYi moveToCRIndex{};
+		Action actions[4];
+		int32_t currentActionIndex{};
+		PlanTypes plan{};
+		XYi moveToCRIndex{};	// fields for plan
 
 		static int32_t CIndexToPosX(int32_t const& cIndex);
 		static int32_t RIndexToPosY(int32_t const& rIndex);
@@ -87,9 +140,14 @@ namespace AI {
 	/*********************************************************************************************/
 
 	struct BlockGroup {
-		int32_t index{};
-		xx::List<xx::Weak<Block>> blocks;		// todo: refine
-		xx::Listi32<int32_t> navigationTips;
+		int32_t index{};						// scene.blockGroups[ index ]
+
+		// cache for easy use & speed up
+		int32_t rIndex{};						// blocks[0].crIndex.y
+		xx::FromTo<int32_t> cIndexRange{};		// blocks[0].crIndex.x ~ blocks.Back().crIndex.x
+
+		xx::List<xx::Weak<Block>> blocks;		// children
+		xx::Listi32<int32_t> navigationTips;	// for character's Plan
 	};
 
 	/*********************************************************************************************/
