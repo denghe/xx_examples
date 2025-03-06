@@ -490,7 +490,6 @@ namespace AI {
 	xx::Shared<Space> Space::Init(XYi const& crIndex_) {
 		pos = MapCfg::cellSize * crIndex_;	// calculate top left point pos
 		size = MapCfg::cellSize;
-		crIndex = crIndex_;
 		return xx::SharedFromThis(this);
 	}
 

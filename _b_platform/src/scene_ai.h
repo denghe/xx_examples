@@ -141,7 +141,6 @@ namespace AI {
 	struct Space {
 		XYi pos{}, size{};								// for space index( same as Block )
 		int32_t indexAtItems{ -1 }, indexAtCells{ -1 };	// for space index
-		XYi crIndex{};									// cache
 		int32_t spaceGroupIndex{};						// scene.spaceGroups[ index ]
 		bool bottomHasBlock{};							// blocks.At(crIndex + { 0, 1 }) != null
 
