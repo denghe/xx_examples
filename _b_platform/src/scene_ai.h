@@ -109,6 +109,7 @@ namespace AI {
 		Character& Init(Scene* scene_, XYi const& crIndex);			// crIndex: column row index in the map
 		bool Update() override;
 		bool Move(XYi const& tarPos);
+		bool Jump(XYi const& tarPos);
 		void Draw() override;
 	};
 

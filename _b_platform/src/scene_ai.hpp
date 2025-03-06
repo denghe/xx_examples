@@ -52,9 +52,14 @@ namespace AI {
 				break;
 			}
 			case ActionTypes::Jump: {
+				auto& a = (Action_Jump&)currAction;
+				if (Jump(a.tarPos)) {
+					++currentActionIndex;
+				}
 				break;
 			}
 			case ActionTypes::Fall: {
+				xx::CoutN("todo ", __LINE__);
 				break;
 			}
 			}
@@ -62,7 +67,7 @@ namespace AI {
 			return false;
 		}
 
-	LabPlan:
+	//LabPlan:
 		switch (plan) {
 		case PlanTypes::Idle:
 			break;
@@ -154,7 +159,7 @@ namespace AI {
 						auto& a = (Action_Jump&)actions[1];
 						a.type = a.cType;
 						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.from);
-						auto ty = RIndexToPosY(nextBlockGroup->rIndex);
+						auto ty = RIndexToPosY(nextBlockGroup->rIndex - 1);
 						a.tarPos = { tx, ty };
 					}
 					actions[2].type = ActionTypes::None;
@@ -175,7 +180,7 @@ namespace AI {
 						auto& a = (Action_Jump&)actions[1];
 						a.type = a.cType;
 						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.to);
-						auto ty = RIndexToPosY(nextBlockGroup->rIndex);
+						auto ty = RIndexToPosY(nextBlockGroup->rIndex - 1);
 						a.tarPos = { tx, ty };
 					}
 					actions[2].type = ActionTypes::None;
@@ -195,9 +200,40 @@ namespace AI {
 		assert(pos.y == tarPos.y);
 		auto tp = tarPos.As<float>();
 		auto dx = tp.x - _pos.x;
-		if (dx <= cSpeed) {
+		if (dx * dx <= cSpeed * cSpeed) {
+			pos.x = tarPos.x;
 			_pos.x = tp.x;
+			return true;
+		}
+		else {
+			_pos.x += cSpeed;
 			pos.x = (int32_t)_pos.x;
+			return false;
+		}
+	}
+
+	XX_INLINE bool Character::Jump(XYi const& tarPos) {
+		auto tp = tarPos.As<float>();
+		if (_pos.y > tp.y) {
+			assert(pos.x == _pos.x);
+			auto dy = tp.y - _pos.y;
+			if (dy * dy <= cSpeed * cSpeed) {
+				pos.y = tarPos.y;
+				_pos.y = tp.y;
+			}
+			else {
+				_pos.y -= cSpeed;
+				pos.y = (int32_t)_pos.y;
+			}
+			return false;
+		}
+	//LabMove:
+		assert(pos.y == tarPos.y);
+		auto dx = tp.x - _pos.x;
+		if (dx * dx <= cSpeed * cSpeed) {
+			pos.x = tarPos.x;
+			_pos.x = tp.x;
+			assert(pos.y == _pos.y);
 			return true;
 		}
 		else {
