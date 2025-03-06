@@ -502,7 +502,7 @@ namespace AI {
 		// ｃ					character
 		// ｅ					end pos
 
-		static std::u32string_view mapText{ UR"(
+		std::u32string_view mapText{ UR"(
 ＢＢＢＢＢＢＢＢＢＢＢＢ
 Ｂ　　　　　　　　　　Ｂ
 Ｂ　　　Ｂ　Ｂ　　　　Ｂ
