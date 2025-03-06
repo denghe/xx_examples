@@ -36,37 +36,35 @@ namespace AI {
 
 	inline bool Character::Update() {
 
-	LabAction:
-		if (currentActionIndex >= 0) {
+	//LabAction:
+		if (currentActionIndex < numActions) {
 			auto& currAction = actions[currentActionIndex];
 			switch (currAction.type) {
-			case ActionTypes::None: {
-				currentActionIndex = -1;
-				goto LabAction;
-			}
 			case ActionTypes::Move: {
 				auto& a = (Action_Move&)currAction;
-				if (Move(a.tarPos)) {
-					++currentActionIndex;
-				}
-				break;
+				if (Move(a.tarPos)) goto LabNextAction;
+				else return false;
 			}
 			case ActionTypes::Jump: {
 				auto& a = (Action_Jump&)currAction;
-				if (Jump(a.tarPos)) {
-					++currentActionIndex;
-				}
-				break;
+				if (Jump(a.tarPos)) goto LabNextAction;
+				else return false;
 			}
 			case ActionTypes::Fall: {
 			auto& a = (Action_Fall&)currAction;
-				if (Fall(a.tarPos)) {
-					++currentActionIndex;
-				}
-				break;
+				if (Fall(a.tarPos)) goto LabNextAction;
+				else return false;
 			}
+			default:
+				assert(false);
+				return false;
 			}
 
+		LabNextAction:
+			++currentActionIndex;
+			if (currentActionIndex == numActions) {
+				numActions = 0;
+			}
 			return false;
 		}
 
@@ -157,6 +155,7 @@ namespace AI {
 						// 
 						// 2--...
 						currentActionIndex = 0;
+						numActions = 2;
 						auto tx = CIndexToPosX(spaceGroup->cIndexRange.from - 1);
 						{
 							// move to g1's left edge outside
@@ -171,7 +170,6 @@ namespace AI {
 							auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 							a.tarPos = { tx, ty };
 						}
-						actions[2].type = ActionTypes::None;
 					}
 					else {
 					LabFallRight:
@@ -180,6 +178,7 @@ namespace AI {
 						// 
 						//   2--...
 						currentActionIndex = 0;
+						numActions = 2;
 						auto tx = CIndexToPosX(spaceGroup->cIndexRange.to + 1);
 						{
 							// move to g1's right edge outside
@@ -194,7 +193,6 @@ namespace AI {
 							auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 							a.tarPos = { tx, ty };
 						}
-						actions[2].type = ActionTypes::None;
 					}
 				}
 				else if (spaceGroup->leftEdgeCanFall) goto LabFallLeft;
@@ -208,6 +206,7 @@ namespace AI {
 					//       2--...
 					// 1...--
 					currentActionIndex = 0;
+					numActions = 2;
 					{
 						// move to g1's right edge
 						auto& a = (Action_Move&)actions[0];
@@ -223,12 +222,12 @@ namespace AI {
 						auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 						a.tarPos = { tx, ty };
 					}
-					actions[2].type = ActionTypes::None;
 				}
 				else {
 					// 2...--
 					//       1--...
 					currentActionIndex = 0;
+					numActions = 2;
 					{
 						// move to g1's left edge
 						auto& a = (Action_Move&)actions[0];
@@ -244,7 +243,6 @@ namespace AI {
 						auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 						a.tarPos = { tx, ty };
 					}
-					actions[2].type = ActionTypes::None;
 				}
 
 			}
@@ -567,7 +565,7 @@ namespace AI {
 
 		character.Emplace()->Init(this, beginCRIndex);
 
-		gLooper.camera.SetOriginal({ character->_pos.x, blocks.gridSize.y / 2 });
+		gLooper.camera.SetOriginal({ blocks.gridSize.x / 2, blocks.gridSize.y / 2 });
 
 		// astar begin
 		auto width = blocks.numCols;
@@ -766,6 +764,12 @@ namespace AI {
 			}
 		}
 
+		// set character init plan
+		{
+			character->plan = PlanTypes::MoveTo;
+			character->moveToCRIndex = endCRIndex;
+		}
+
 		// test navigation
 		{
 			auto beginSpace = spaces.At(beginCRIndex);
@@ -781,19 +785,23 @@ namespace AI {
 			xx::CoutN();
 		}
 
-		// set character todo
-		{
-			character->plan = PlanTypes::MoveTo;
-			character->moveToCRIndex = endCRIndex;
+		// performance test( 14700k, 1'800'000 ~= 120 fps without draw )
+		for (int i = 0; i < 200'000; ++i) {
+			auto& c = characters.Emplace().Emplace()->Init(this, beginCRIndex);
+			c.plan = PlanTypes::MoveTo;
+			c.moveToCRIndex = endCRIndex;
 		}
+
 	}
 
 	inline void Scene::Update() {
 		character->Update();
+		for (auto& o : characters) o->Update();
 	}
 
 	inline void Scene::Draw() {
 		for (auto& o : blocks.items) o->Draw();
+		for (auto& o : characters) o->Draw();
 		character->Draw();
 		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(ai) mouse click for move char", xx::RGBA8_Green, { 0.5f, 1 });
 	}

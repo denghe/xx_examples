@@ -98,7 +98,8 @@ namespace AI {
 		XYf _pos{};													// for update & draw
 		int32_t moveLineNumber{};									// for move logic
 
-		Action actions[4];
+		int32_t numActions{};
+		Action actions[2];
 		int32_t currentActionIndex{};
 		PlanTypes plan{};
 		XYi moveToCRIndex{};	// fields for plan
@@ -160,6 +161,7 @@ namespace AI {
 
 	struct Scene : xx::SceneBase {
 		xx::Shared<Character> character;
+		xx::Listi32<xx::Shared<Character>> characters;
 		xx::SpaceIndexBox<Block, false> blocks;
 		xx::SpaceIndexBox<Space, false> spaces;
 		xx::Listi32<SpaceGroup> spaceGroups;
