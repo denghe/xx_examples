@@ -59,7 +59,10 @@ namespace AI {
 				break;
 			}
 			case ActionTypes::Fall: {
-				xx::CoutN("todo ", __LINE__);
+			auto& a = (Action_Fall&)currAction;
+				if (Fall(a.tarPos)) {
+					++currentActionIndex;
+				}
 				break;
 			}
 			}
@@ -75,46 +78,42 @@ namespace AI {
 			// pos to cri
 			auto crIndex = GetCRIndex();
 
-			// try get current block
-			auto block = scene->blocks.TryAt(crIndex + XYi{ 0, 1 });
+			// try get current space
+			auto space = scene->spaces.TryAt(crIndex);
+			assert(space);
 
-			// flying?
-			if (!block)
-				break;
+			// calculate y in current row
+			auto cellPosY = RIndexToPosY(crIndex.y);
 
-			// calculate max y in current cell
-			auto tarPosY = RIndexToPosY(crIndex.y);
-
-			// flying?
-			if (pos.y != tarPosY)
-				break;
+			assert(space->bottomHasBlock);
+			assert(pos.y == cellPosY);
 			
-			// get current block group
-			auto blockGroup = block->blockGroup.GetPointer();
-			assert(blockGroup);
+			// get current space group
+			auto spaceGroup = &scene->spaceGroups[space->spaceGroupIndex];
+			assert(spaceGroup);
 
-			// get target block
-			auto tarBlock = scene->blocks.TryAt(moveToCRIndex + XYi{ 0, 1 });
-			assert(tarBlock);
+			// get target space
+			auto tarSpace = scene->spaces.TryAt(moveToCRIndex);
+			assert(tarSpace);
 
-			// get target block group
-			auto tarBlockGroup = tarBlock->blockGroup.GetPointer();
-			assert(tarBlockGroup);
+			// get target space group
+			auto tarSpaceGroup = &scene->spaceGroups[tarSpace->spaceGroupIndex];
+			assert(tarSpaceGroup);
 
 			// same block group?
-			if (blockGroup == tarBlockGroup) {
+			if (spaceGroup == tarSpaceGroup) {
 				auto tarPosX = CIndexToPosX(moveToCRIndex.x);
-				if (Move({ tarPosX, tarPosY })) {
+				if (Move({ tarPosX, cellPosY })) {
 					plan = PlanTypes::Idle;
 				}
 				break;
 			}
 
 			// fill actions
-			auto nextBlockGroupIndex = blockGroup->navigationTips[tarBlockGroup->index];
-			auto nextBlockGroup = scene->blockGroups[nextBlockGroupIndex].pointer;
+			auto nextSpaceGroupIndex = spaceGroup->navigationTips[tarSpace->spaceGroupIndex];
+			auto nextSpaceGroup = &scene->spaceGroups[nextSpaceGroupIndex];
 
-			if (blockGroup->rIndex == nextBlockGroup->rIndex) {
+			if (spaceGroup->rIndex == nextSpaceGroup->rIndex) {
 				// far jump
 				// 1. move to edge ( need calc )  2. jump   3. next step
 				// #################
@@ -124,32 +123,88 @@ namespace AI {
 
 				xx::CoutN("todo ", __LINE__);
 			}
-			else if (blockGroup->rIndex < nextBlockGroup->rIndex) {
+			else if (spaceGroup->rIndex < nextSpaceGroup->rIndex) {
 				// fall
 				// 1. move to edge ( need calc )  2. fall   3. next step
-				// #################
-				if (blockGroup->cIndexRange.from > nextBlockGroup->cIndexRange.from
-					&& blockGroup->cIndexRange.to < nextBlockGroup->cIndexRange.to) {
-					//   1--...--
-					// 2--.......--
-				}
-				else if (blockGroup->cIndexRange.from > nextBlockGroup->cIndexRange.from) {
-					//   1--...
-					// 2--...
-				}
-				else {
-					assert(blockGroup->cIndexRange.to < nextBlockGroup->cIndexRange.to);
-					// 1--...
-					//   2--...
-				}
 
-				xx::CoutN("todo ", __LINE__);
+				if (spaceGroup->leftEdgeCanFall && spaceGroup->rightEdgeCanFall) {
+					if (spaceGroup->cIndexRange.from > nextSpaceGroup->cIndexRange.from
+						&& spaceGroup->cIndexRange.to < nextSpaceGroup->cIndexRange.to) {
+						// compare & choose short one
+						//   1--...--
+						// 
+						// 2--.......--
+						if (spaceGroup->cIndexRange.from - nextSpaceGroup->cIndexRange.from
+						> nextSpaceGroup->cIndexRange.to - spaceGroup->cIndexRange.to
+							&& spaceGroup->leftEdgeCanFall) {
+							// from left
+							//   1-c...--
+							// 
+							// 2--.......--
+							goto LabFallLeft;
+						}
+						else {
+							// from right
+							//   1--...c-
+							// 
+							// 2--.......--
+							goto LabFallRight;
+						}
+					}
+					else if (spaceGroup->cIndexRange.from > nextSpaceGroup->cIndexRange.from) {
+					LabFallLeft:
+						//   1--...
+						// 
+						// 2--...
+						currentActionIndex = 0;
+						auto tx = CIndexToPosX(spaceGroup->cIndexRange.from - 1);
+						{
+							// move to g1's left edge outside
+							auto& a = (Action_Move&)actions[0];
+							a.type = a.cType;
+							a.tarPos = { tx, cellPosY };
+						}
+						{
+							// fall to g2
+							auto& a = (Action_Fall&)actions[1];
+							a.type = a.cType;
+							auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
+							a.tarPos = { tx, ty };
+						}
+						actions[2].type = ActionTypes::None;
+					}
+					else {
+					LabFallRight:
+						assert(spaceGroup->cIndexRange.to < nextSpaceGroup->cIndexRange.to);
+						// 1--...
+						// 
+						//   2--...
+						currentActionIndex = 0;
+						auto tx = CIndexToPosX(spaceGroup->cIndexRange.to + 1);
+						{
+							// move to g1's right edge outside
+							auto& a = (Action_Move&)actions[0];
+							a.type = a.cType;
+							a.tarPos = { tx, cellPosY };
+						}
+						{
+							// fall to g2
+							auto& a = (Action_Fall&)actions[1];
+							a.type = a.cType;
+							auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
+							a.tarPos = { tx, ty };
+						}
+						actions[2].type = ActionTypes::None;
+					}
+				}
+				else if (spaceGroup->leftEdgeCanFall) goto LabFallLeft;
+				else goto LabFallRight;
 			}
 			else {
 				// jump / climb
 				// 1. move to tar edge +-1 ( need calc )  2. jump   3. next step
 
-				if (blockGroup->cIndexRange.from < nextBlockGroup->cIndexRange.from) {
+				if (spaceGroup->cIndexRange.from < nextSpaceGroup->cIndexRange.from) {
 					//       2--...
 					// 1...--
 					currentActionIndex = 0;
@@ -157,15 +212,15 @@ namespace AI {
 						// move to g1's right edge
 						auto& a = (Action_Move&)actions[0];
 						a.type = a.cType;
-						auto tx = CIndexToPosX(blockGroup->cIndexRange.to);
-						a.tarPos = { tx, tarPosY };
+						auto tx = CIndexToPosX(spaceGroup->cIndexRange.to);
+						a.tarPos = { tx, cellPosY };
 					}
 					{
 						// jump to g2's left edge
 						auto& a = (Action_Jump&)actions[1];
 						a.type = a.cType;
-						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.from);
-						auto ty = RIndexToPosY(nextBlockGroup->rIndex - 1);
+						auto tx = CIndexToPosX(nextSpaceGroup->cIndexRange.from);
+						auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 						a.tarPos = { tx, ty };
 					}
 					actions[2].type = ActionTypes::None;
@@ -178,15 +233,15 @@ namespace AI {
 						// move to g1's left edge
 						auto& a = (Action_Move&)actions[0];
 						a.type = a.cType;
-						auto tx = CIndexToPosX(blockGroup->cIndexRange.from);
-						a.tarPos = { tx, tarPosY };
+						auto tx = CIndexToPosX(spaceGroup->cIndexRange.from);
+						a.tarPos = { tx, cellPosY };
 					}
 					{
 						// jump to g2's right edge
 						auto& a = (Action_Jump&)actions[1];
 						a.type = a.cType;
-						auto tx = CIndexToPosX(nextBlockGroup->cIndexRange.to);
-						auto ty = RIndexToPosY(nextBlockGroup->rIndex - 1);
+						auto tx = CIndexToPosX(nextSpaceGroup->cIndexRange.to);
+						auto ty = RIndexToPosY(nextSpaceGroup->rIndex);
 						a.tarPos = { tx, ty };
 					}
 					actions[2].type = ActionTypes::None;
@@ -205,16 +260,29 @@ namespace AI {
 		assert(pos.y == _pos.y);
 		assert(pos.y == tarPos.y);
 		auto tp = tarPos.As<float>();
-		auto dx = tp.x - _pos.x;
-		if (dx * dx <= cSpeed * cSpeed) {
-			pos.x = tarPos.x;
-			_pos.x = tp.x;
-			return true;
+		if (tp.x > _pos.x) {
+			if (tp.x - _pos.x <= cMoveSpeed) {
+				pos.x = tarPos.x;
+				_pos.x = tp.x;
+				return true;
+			}
+			else {
+				_pos.x += cMoveSpeed;
+				pos.x = (int32_t)_pos.x;
+				return false;
+			}
 		}
 		else {
-			_pos.x += cSpeed;
-			pos.x = (int32_t)_pos.x;
-			return false;
+			if (_pos.x - tp.x <= cMoveSpeed) {
+				pos.x = tarPos.x;
+				_pos.x = tp.x;
+				return true;
+			}
+			else {
+				_pos.x -= cMoveSpeed;
+				pos.x = (int32_t)_pos.x;
+				return false;
+			}
 		}
 	}
 
@@ -222,60 +290,35 @@ namespace AI {
 		auto tp = tarPos.As<float>();
 		if (_pos.y > tp.y) {
 			assert(pos.x == _pos.x);
-			auto dy = tp.y - _pos.y;
-			if (dy * dy <= cSpeed * cSpeed) {
+			if (_pos.y - tp.y <= cMoveSpeed) {
 				pos.y = tarPos.y;
 				_pos.y = tp.y;
 				goto LabMove;
 			}
 			else {
-				_pos.y -= cSpeed;
+				_pos.y -= cMoveSpeed;
 				pos.y = (int32_t)_pos.y;
 			}
 			return false;
 		}
 	LabMove:
-		assert(pos.y == tarPos.y);
-		auto dx = tp.x - _pos.x;
-		if (dx * dx <= cSpeed * cSpeed) {
-			pos.x = tarPos.x;
-			_pos.x = tp.x;
-			return true;
-		}
-		else {
-			_pos.x += cSpeed;
-			pos.x = (int32_t)_pos.x;
-			return false;
-		}
+		return Move(tarPos);
 	}
 
 	XX_INLINE bool Character::Fall(XYi const& tarPos) {
 		auto tp = tarPos.As<float>();
-		assert(pos.y == tarPos.y);
-		auto dx = tp.x - _pos.x;
-		if (dx * dx <= cSpeed * cSpeed) {
-			pos.x = tarPos.x;
-			_pos.x = tp.x;
-			goto LabFall;
+		if (tp.x != _pos.x) {
+			return Move(tarPos);
+		}
+	//LabFall:
+		if (tp.y - _pos.y <= cFallSpeed) {
+			pos.y = tarPos.y;
+			_pos.y = tp.y;
+			return true;
 		}
 		else {
-			_pos.x += cSpeed;
-			pos.x = (int32_t)_pos.x;
-			return false;
-		}
-	LabFall:
-		if (_pos.y > tp.y) {
-			assert(pos.x == _pos.x);
-			auto dy = tp.y - _pos.y;
-			if (dy * dy <= cSpeed * cSpeed) {
-				pos.y = tarPos.y;
-				_pos.y = tp.y;
-				return true;
-			}
-			else {
-				_pos.y -= cSpeed;
-				pos.y = (int32_t)_pos.y;
-			}
+			_pos.y += cFallSpeed;
+			pos.y = (int32_t)_pos.y;
 			return false;
 		}
 	}
@@ -300,9 +343,6 @@ namespace AI {
 		Item::Init(scene_, p);
 		size = MapCfg::cellSize;
 		color = { 128,64,0,255 };
-
-		crIndex = crIndex_;
-
 		return xx::SharedFromThis(this);
 	}
 
@@ -447,13 +487,23 @@ namespace AI {
 	/***************************************************************************************/
 	/***************************************************************************************/
 
+	xx::Shared<Space> Space::Init(XYi const& crIndex_) {
+		pos = MapCfg::cellSize * crIndex_;	// calculate top left point pos
+		size = MapCfg::cellSize;
+		crIndex = crIndex_;
+		return xx::SharedFromThis(this);
+	}
+
+	/***************************************************************************************/
+	/***************************************************************************************/
+
 	inline void Scene::Init() {
 		// Ｂ					block
 		// ｃ					character
 		// ｅ					end pos
 
 		static std::u32string_view mapText{ UR"(
-　　　　　　　　　　　　
+ＢＢＢＢＢＢＢＢＢＢＢＢ
 Ｂ　　　　　　　　　　Ｂ
 Ｂ　　　Ｂ　Ｂ　　　　Ｂ
 Ｂｃ　ＢＢＢＢ　　　　Ｂ
@@ -483,6 +533,7 @@ namespace AI {
 			++x;
 		}
 		blocks.Init(y + 1, maxX, MapCfg::cellSize);
+		spaces.Init(y + 1, maxX, MapCfg::cellSize);
 
 		XYi beginCRIndex{}, endCRIndex{};
 
@@ -498,13 +549,17 @@ namespace AI {
 				continue;
 			case U'ｃ':
 				beginCRIndex = { x, y };
-				break;
+				goto LabDefault;
 			case U'ｅ':
 				endCRIndex = { x, y };
-				break;
+				goto LabDefault;
 			case U'Ｂ': {
 				blocks.Add(xx::MakeShared<Block>()->Init(this, { x, y }));
 				break;
+			}
+			default: {
+			LabDefault:
+				spaces.Add(xx::MakeShared<Space>()->Init({ x, y }));
 			}
 			}
 			++x;
@@ -653,42 +708,42 @@ namespace AI {
 			asg.Cleanup();
 		}
 
-		// fill block groups
+		// create spaceGroups & fill Space.spaceGroupIndex && bottomHasBlock
 		for (int32_t y = 0; y < height; ++y) {
 			for (int32_t x = 0; x < width; ++x) {
-				auto by = y + 1;
-				if (asg.TryAt(x, y)->walkable && !asg.TryAt(x, by)->walkable) {
-					auto block = blocks.TryAt({ x, by });
-					if (asg.TryAt(x - 1, y)->walkable && !asg.TryAt(x - 1, by)->walkable) {
-						block->blockGroup = blocks.TryAt({ x - 1, by })->blockGroup;
-						block->blockGroup->cIndexRange.to = x;
+				if (asg.TryAt(x, y)->walkable && !asg.TryAt(x, y + 1)->walkable) {
+					auto space = spaces.At({ x, y });
+					space->bottomHasBlock = blocks.TryAt({ x, y + 1 });
+					if (asg.TryAt(x - 1, y)->walkable && !asg.TryAt(x - 1, y + 1)->walkable) {
+						auto gIdx = spaces.At({ x - 1, y })->spaceGroupIndex;
+						space->spaceGroupIndex = gIdx;
+						auto& g = spaceGroups[gIdx];
+						g.cIndexRange.to = x;
+						g.rightEdgeCanFall = asg.TryAt(x + 1, y)->walkable;
 					}
 					else {
-						auto index = blockGroups.len;
-						auto& g = blockGroups.Emplace().Emplace<BlockGroup>();
-						block->blockGroup = g;
-						g->index = index;
-						g->rIndex = by;
-						g->cIndexRange.from = g->cIndexRange.to = x;
+						space->spaceGroupIndex = spaceGroups.len;
+						auto& g = spaceGroups.Emplace();
+						g.rIndex = y;
+						g.cIndexRange.from = g.cIndexRange.to = x;
+						g.leftEdgeCanFall = asg.TryAt(x - 1, y)->walkable;
+						g.rightEdgeCanFall = asg.TryAt(x + 1, y)->walkable;
 					}
-					block->blockGroup->blocks.Add(xx::WeakFromThis(block));
 				}
 			}
 		}
 
 		// fill navigationTips
-		for (auto numGroups = blockGroups.len, i = 0; i < numGroups; ++i) {
+		for (auto numGroups = spaceGroups.len, i = 0; i < numGroups; ++i) {
 
-			auto beginGroup = blockGroups[i].pointer;
-			auto beginBlock = beginGroup->blocks[0].GetPointer();
-			auto beginPos = blocks.CellIndexToColRowIndex(beginBlock->indexAtCells) + XY{ 0, -1 };
+			auto beginGroup = &spaceGroups[i];
+			XYi beginPos{ beginGroup->cIndexRange.from, beginGroup->rIndex };
 			beginGroup->navigationTips.Resize(numGroups);
 
 			for (int32_t j = 0; j < numGroups; ++j) {
 				if (i == j) continue;
-				auto endGroup = blockGroups[j].pointer;
-				auto endBlock = endGroup->blocks[0].GetPointer();
-				auto endPos = blocks.CellIndexToColRowIndex(endBlock->indexAtCells) + XY{ 0, -1 };
+				auto endGroup = &spaceGroups[j];
+				XYi endPos{ endGroup->cIndexRange.from, endGroup->rIndex };
 				assert(beginPos != endPos);
 
 				if (asg.Search(beginPos, endPos)) {
@@ -697,10 +752,10 @@ namespace AI {
 					// find first diff group from asg.path & fill to navigationTips
 					for (int32_t k = path.len - 1; k >= 0; --k) {
 						auto c = path[k];
-						auto b = blocks.At({ c->x, c->y + 1 });
-						auto g = b->blockGroup.GetPointer();
-						if (beginGroup != g) {
-							beginGroup->navigationTips[j] = g->index;
+						auto b = spaces.At({ c->x, c->y });
+						auto gi = b->spaceGroupIndex;
+						if (i != gi) {
+							beginGroup->navigationTips[j] = gi;
 							break;
 						}
 					}
@@ -714,20 +769,14 @@ namespace AI {
 
 		// test navigation
 		{
-			auto beginBlock = blocks.At(beginCRIndex + XYi{ 0, 1 });
-			assert(beginBlock);
-			auto beginGroup = beginBlock->blockGroup.TryGetPointer();
-			assert(beginGroup);
-
-			auto endBlock = blocks.At(endCRIndex + XYi{ 0, 1 });
-			assert(endBlock);
-			auto endGroup = endBlock->blockGroup.TryGetPointer();
-			assert(endGroup);
-
-			auto gIndex = beginGroup->index;
+			auto beginSpace = spaces.At(beginCRIndex);
+			assert(beginSpace);
+			auto endSpace = spaces.At(endCRIndex);
+			assert(endSpace);
+			auto gIndex = beginSpace->spaceGroupIndex;
 			xx::Cout(gIndex);
-			while (gIndex != endGroup->index) {
-				gIndex = blockGroups[gIndex]->navigationTips[endGroup->index];
+			while (gIndex != endSpace->spaceGroupIndex) {
+				gIndex = spaceGroups[gIndex].navigationTips[endSpace->spaceGroupIndex];
 				xx::Cout(" -- ", gIndex);
 			}
 			xx::CoutN();

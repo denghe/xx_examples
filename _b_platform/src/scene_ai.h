@@ -92,7 +92,8 @@ namespace AI {
 		static constexpr XY cAnchor{ 0.5, 0 };
 		static constexpr float cScale{ 1 };
 		static constexpr float cRadians{ 0 };
-		static constexpr float cSpeed{ 40 / Cfg::fps };
+		static constexpr float cMoveSpeed{ 200 / Cfg::fps };
+		static constexpr float cFallSpeed{ 400 / Cfg::fps };
 
 		XYf _pos{};													// for update & draw
 		int32_t moveLineNumber{};									// for move logic
@@ -116,7 +117,6 @@ namespace AI {
 
 	/*********************************************************************************************/
 
-	struct BlockGroup;
 	struct Block : Item {
 		static constexpr XYi cResSize{ 64, 64 };
 		static constexpr XY cAnchor{ 0, 1 };
@@ -128,9 +128,6 @@ namespace AI {
 		xx::RGBA8 color{ xx::RGBA8_White };
 		xx::Math::BlockWayout wayout{};
 
-		XYi crIndex{};
-		xx::Weak<BlockGroup> blockGroup;	// fill after Init
-
 		xx::Shared<Block> Init(Scene* scene_, XYi const& crIndex_);
 		bool IsCross(XYi const& cPos, XYi const& cSize) const;
 		int32_t CalcCrossLenX(int32_t cPosX, int32_t cSizeX) const;
@@ -141,14 +138,22 @@ namespace AI {
 
 	/*********************************************************************************************/
 
-	struct BlockGroup {
-		int32_t index{};						// scene.blockGroups[ index ]
+	struct Space {
+		XYi pos{}, size{};								// for space index( same as Block )
+		int32_t indexAtItems{ -1 }, indexAtCells{ -1 };	// for space index
+		XYi crIndex{};									// cache
+		int32_t spaceGroupIndex{};						// scene.spaceGroups[ index ]
+		bool bottomHasBlock{};							// blocks.At(crIndex + { 0, 1 }) != null
 
-		// cache for easy use & speed up
-		int32_t rIndex{};						// blocks[0].crIndex.y
-		xx::FromTo<int32_t> cIndexRange{};		// blocks[0].crIndex.x ~ blocks.Back().crIndex.x
+		xx::Shared<Space> Init(XYi const& crIndex_);
+	};
 
-		xx::List<xx::Weak<Block>> blocks;		// children
+	/*********************************************************************************************/
+
+	struct SpaceGroup {
+		bool leftEdgeCanFall{}, rightEdgeCanFall{};
+		int32_t rIndex{};
+		xx::FromTo<int32_t> cIndexRange{};
 		xx::Listi32<int32_t> navigationTips;	// for character's Plan
 	};
 
@@ -157,7 +162,8 @@ namespace AI {
 	struct Scene : xx::SceneBase {
 		xx::Shared<Character> character;
 		xx::SpaceIndexBox<Block, false> blocks;
-		xx::Listi32<xx::Shared<BlockGroup>> blockGroups;
+		xx::SpaceIndexBox<Space, false> spaces;
+		xx::Listi32<SpaceGroup> spaceGroups;
 
 		void Init() override;
 		void Update() override;
