@@ -128,14 +128,20 @@ namespace AI {
 				// fall
 				// 1. move to edge ( need calc )  2. fall   3. next step
 				// #################
-				//     1---
-				//   2-------
-				// #################
-				// 1---
-				//   2---
-				// #################
-				//   1---
-				// 2---
+				if (blockGroup->cIndexRange.from > nextBlockGroup->cIndexRange.from
+					&& blockGroup->cIndexRange.to < nextBlockGroup->cIndexRange.to) {
+					//   1--...--
+					// 2--.......--
+				}
+				else if (blockGroup->cIndexRange.from > nextBlockGroup->cIndexRange.from) {
+					//   1--...
+					// 2--...
+				}
+				else {
+					assert(blockGroup->cIndexRange.to < nextBlockGroup->cIndexRange.to);
+					// 1--...
+					//   2--...
+				}
 
 				xx::CoutN("todo ", __LINE__);
 			}
@@ -220,6 +226,7 @@ namespace AI {
 			if (dy * dy <= cSpeed * cSpeed) {
 				pos.y = tarPos.y;
 				_pos.y = tp.y;
+				goto LabMove;
 			}
 			else {
 				_pos.y -= cSpeed;
@@ -227,18 +234,48 @@ namespace AI {
 			}
 			return false;
 		}
-	//LabMove:
+	LabMove:
 		assert(pos.y == tarPos.y);
 		auto dx = tp.x - _pos.x;
 		if (dx * dx <= cSpeed * cSpeed) {
 			pos.x = tarPos.x;
 			_pos.x = tp.x;
-			assert(pos.y == _pos.y);
 			return true;
 		}
 		else {
 			_pos.x += cSpeed;
 			pos.x = (int32_t)_pos.x;
+			return false;
+		}
+	}
+
+	XX_INLINE bool Character::Fall(XYi const& tarPos) {
+		auto tp = tarPos.As<float>();
+		assert(pos.y == tarPos.y);
+		auto dx = tp.x - _pos.x;
+		if (dx * dx <= cSpeed * cSpeed) {
+			pos.x = tarPos.x;
+			_pos.x = tp.x;
+			goto LabFall;
+		}
+		else {
+			_pos.x += cSpeed;
+			pos.x = (int32_t)_pos.x;
+			return false;
+		}
+	LabFall:
+		if (_pos.y > tp.y) {
+			assert(pos.x == _pos.x);
+			auto dy = tp.y - _pos.y;
+			if (dy * dy <= cSpeed * cSpeed) {
+				pos.y = tarPos.y;
+				_pos.y = tp.y;
+				return true;
+			}
+			else {
+				_pos.y -= cSpeed;
+				pos.y = (int32_t)_pos.y;
+			}
 			return false;
 		}
 	}

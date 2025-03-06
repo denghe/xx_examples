@@ -110,6 +110,7 @@ namespace AI {
 		bool Update() override;
 		bool Move(XYi const& tarPos);
 		bool Jump(XYi const& tarPos);
+		bool Fall(XYi const& tarPos);
 		void Draw() override;
 	};
 
