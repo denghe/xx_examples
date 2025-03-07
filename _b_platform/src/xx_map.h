@@ -82,6 +82,8 @@ namespace xx {
 		using P = xx::MapBase<MapCell>;
 		using P::P;
 
+		xx::Listi32<xx::MapCellGroup> spaceGroups;
+
 		XX_INLINE std::optional<int32_t> FindFallingY(int32_t x, int32_t y) const {
 			assert(x >= 0 && x < size.x && y >= 0 && y < size.y);
 			assert(At(x, y)->type == MapCellTypes::Space);
@@ -161,11 +163,186 @@ namespace xx {
 				++x;
 			}
 
+			// fill cell's bottomNeighborType
 			for (int32_t y = 0; y < height - 1; ++y) {
 				for (int32_t x = 0; x < width; ++x) {
 					At(x, y)->bottomNeighborType = (*this)[x, y + 1].type;
 				}
 			}
+
+			// create space groups
+			for (int32_t y = 0; y < height; ++y) {
+				for (int32_t x = 0; x < width; ++x) {
+					auto mi = At(x, y);
+					if (mi->Walkable()) {
+						xx::MapCellGroup* g{};
+						if (x > 0 && At(x - 1, y)->Walkable()) {
+							// same group with left neighbor
+							mi->groupId = At(x - 1, y)->groupId;
+							g = &spaceGroups[mi->groupId];
+							g->mapX.to = x;
+						}
+						else {
+							// first element
+							mi->groupId = spaceGroups.len;
+							g = &spaceGroups.Emplace();
+							g->mapY = y;
+							g->mapX.from = g->mapX.to = x;
+							g->leftEdgeCanFall = x > 0
+								? At(x - 1, y)->Fallable()
+								: false;
+						}
+						g->rightEdgeCanFall = x + 1 < width
+							? At(x + 1, y)->Fallable()
+							: false;
+					}
+				}
+			}
+
+			// astar env
+			xx::AStarGrid asg;
+			asg.Init(width, height);
+
+			// init astar cells
+			for (int32_t y = 0; y < height; ++y) {
+				for (int32_t x = 0; x < width; ++x) {
+					asg.InitCell(x, y, At(x, y)->type == xx::MapCellTypes::Space);
+				}
+			}
+
+			// fill neighbors
+			xx::Listi32<XYi> nos;
+			for (int32_t y = 0; y < height; ++y) {
+				for (int32_t x = 0; x < width; ++x) {
+					// keyboard number area style
+					// 7 8 9
+					// 4 5 6
+					// 1 2 3
+
+					// [???]
+					// [?.?]
+					// [???]
+					if (IsSpaceAt(x, y)) {
+						auto c1 = IsSpaceAt(x - 1, y + 1);
+						auto c2 = IsSpaceAt(x, y + 1);
+						auto c3 = IsSpaceAt(x + 1, y + 1);
+						auto c4 = IsSpaceAt(x - 1, y);
+						auto c6 = IsSpaceAt(x + 1, y);
+						auto c7 = IsSpaceAt(x - 1, y - 1);
+						auto c8 = IsSpaceAt(x, y - 1);
+						auto c9 = IsSpaceAt(x + 1, y - 1);
+
+#if 1
+						xx::CoutN(x, ", ", y, '\n'
+							, c7 ? '.' : 'B', c8 ? '.' : 'B', c9 ? '.' : 'B', '\n'
+							, c4 ? '.' : 'B', 'c', c6 ? '.' : 'B', '\n'
+							, c1 ? '.' : 'B', c2 ? '.' : 'B', c3 ? '.' : 'B'
+							, '\n'
+						);
+#endif
+
+						if (c2) continue;
+
+						// handle 7 and 9
+						if (c8)
+						{
+							// can to 7
+							// [..?]
+							// [Bc?]
+							// [?B?]
+							if (!c4 && c7) {
+								nos.Emplace(-1, -1);
+							}
+
+							// can to 9
+							// [?..]
+							// [?cB]
+							// [?B?]
+							if (!c6 && c9) {
+								nos.Emplace(1, -1);
+							}
+						}
+
+						// handle 4
+						// [???]
+						// [.c?]
+						// [BB?]
+						if (c4 && !c1) {
+							nos.Emplace(-1, 0);
+						}
+
+						// handle 6
+						// [???]
+						// [?c.]
+						// [?BB]
+						if (c6 && !c3) {
+							nos.Emplace(1, 0);
+						}
+
+						// handle falling 1
+						// [???]
+						// [.c?]
+						// [.B?]
+						if (c4 && c1) {
+							if (auto fy = FindFallingY(x - 1, y); fy.has_value()) {
+								nos.Emplace(-1, *fy - y);
+							}
+						}
+
+						// handle falling 3
+						// [???]
+						// [?c.]
+						// [?B.]
+						if (c6 && c3) {
+							if (auto fy = FindFallingY(x + 1, y); fy.has_value()) {
+								nos.Emplace(1, *fy - y);
+							}
+						}
+
+						auto c = asg.At(x, y);
+						assert(c->walkable);
+						asg.InitCellNeighbors(c, nos.buf, nos.len);
+						nos.Clear();
+					}
+				}
+			}
+
+			// fill spaceGroups's navTips
+			for (auto n = spaceGroups.len, i = 0; i < n; ++i) {
+
+				auto beginGroup = &spaceGroups[i];
+				XYi beginPos{ beginGroup->mapX.from, beginGroup->mapY };
+				beginGroup->navTips.Resize(n);
+
+				for (int32_t j = 0; j < n; ++j) {
+					if (i == j) {
+						beginGroup->navTips[j] = j;
+						continue;
+					}
+					auto endGroup = &spaceGroups[j];
+					XYi endPos{ endGroup->mapX.from, endGroup->mapY };
+					assert(beginPos != endPos);
+
+					if (asg.Search(beginPos, endPos)) {
+						auto& path = asg.path;
+						assert(path.len);
+						// find first diff group from asg.path & fill to navTips
+						for (int32_t k = path.len - 1; k >= 0; --k) {
+							auto c = path[k];
+							auto gi = At(c->x, c->y)->groupId;
+							if (i != gi) {
+								beginGroup->navTips[j] = gi;
+								break;
+							}
+						}
+					}
+					else {
+						beginGroup->navTips[j] = -1;
+					}
+					asg.Cleanup();
+				}
+			}
+
 		}
 
 		std::u32string Dump() {
