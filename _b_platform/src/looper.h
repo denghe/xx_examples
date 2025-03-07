@@ -10,6 +10,7 @@ struct Cfg : xx::GDesign<1920, 1080, 120> {};
 #include "scene_cd.h"
 #include "scene_cd2.h"
 #include "scene_ai.h"
+#include "scene_map.h"
 
 struct Looper : xx::Engine<Looper>, Cfg {
 

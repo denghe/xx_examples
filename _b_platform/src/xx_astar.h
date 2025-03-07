@@ -139,7 +139,7 @@ namespace xx {
 					if (At(x, y)->walkable) s.push_back(U'　');
 					else s.push_back(U'Ｂ');
 				}
-				s.push_back('\n');
+				s.push_back(U'\n');
 			}
 			for (auto& c : path) {
 				s[c->y * (width + 1) + c->x] = U'＊';

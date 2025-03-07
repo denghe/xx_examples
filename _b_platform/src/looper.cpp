@@ -7,6 +7,7 @@
 #include "scene_cd.hpp"
 #include "scene_cd2.hpp"
 #include "scene_ai.hpp"
+#include "scene_map.hpp"
 
 Looper gLooper;
 ResTpFrames& gRes(gLooper.res);
@@ -45,7 +46,7 @@ xx::Task<> Looper::MainTask() {
 
 	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"restart", [&]() {
-		scene.Emplace<AI::Scene>()->Init();
+		scene.Emplace<Map::Scene>()->Init();
 	});
 
 	//y -= 50;
@@ -76,7 +77,7 @@ xx::Task<> Looper::MainTask() {
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
-	scene.Emplace<AI::Scene>()->Init();
+	scene.Emplace<Map::Scene>()->Init();
 }
 
 void Looper::Draw() {
