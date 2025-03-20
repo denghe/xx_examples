@@ -91,12 +91,12 @@ namespace Map {
 		if (gLooper.mouse.PressedMBLeft() && !gLooper.mouseEventHandler) {
 			auto mp = gLooper.camera.ToLogicPos(gLooper.mouse.pos);
 
-			// todo: calc scale
-			// todo: calculate pos in frame area & print color
-			auto anchorPos = frameSize * XY{ frameAnchor.x, 1.f - frameAnchor.y };
+			// calculate pos in frame area & print color
+			auto scaledFrameSize = frameSize * frameScale;
+			auto anchorPos = scaledFrameSize * XY{ frameAnchor.x, 1.f - frameAnchor.y };
 			xx::FromTo<XY> aabb;
-			aabb.from = framePos - anchorPos;
-			aabb.to = aabb.from + frameSize;
+			aabb.from = frameLogicPos - anchorPos;
+			aabb.to = aabb.from + scaledFrameSize;
 			
 			if (mp.x < aabb.from.x || mp.y < aabb.from.y
 				|| mp.x >= aabb.to.x || mp.y >= aabb.to.y) {
@@ -104,7 +104,7 @@ namespace Map {
 				xx::CoutN("out of range");
 			}
 			else {
-				auto localPos = (mp - aabb.from).As<int32_t>();
+				auto localPos = ((mp - aabb.from) / frameScale).As<int32_t>();
 				assert(localPos.x >= 0 && localPos.x < frameSize.x);
 				assert(localPos.y >= 0 && localPos.y < frameSize.y);
 				auto frameColors = frameColorss[(int32_t)frameIndex].get();
@@ -116,7 +116,7 @@ namespace Map {
 
 	inline void Scene::Draw() {
 		xx::Quad().SetFrame(frames[(int32_t)frameIndex])
-			.SetPosition(framePos)
+			.SetPosition(gLooper.camera.ToGLPos(frameLogicPos))
 			.SetAnchor(frameAnchor)
 			.SetScale(frameScale)
 			.Draw();

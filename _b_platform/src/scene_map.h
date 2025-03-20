@@ -11,11 +11,12 @@ namespace Map {
 		static constexpr int32_t cNumAnimFrames{ 60 };
 		static constexpr float cAnimFrameDelay{ 1.f * cAnimFPS / Cfg::fps };
 
-		XY framePos{}, frameScale{ 1,1 }, frameAnchor{ 0.5, 0 };
+		XY frameLogicPos{ 0, 400 }, frameScale{ 4, 4 }, frameAnchor{ 0.5, 0 };
 		XYi frameSize{};
 		xx::Listi32<xx::Ref<xx::Frame>> frames;
 		xx::Listi32<std::unique_ptr<xx::RGBA8[]>> frameColorss;
 		float frameIndex{};
+
 
 		void Init() override;
 		void Update() override;
