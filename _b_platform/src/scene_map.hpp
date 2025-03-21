@@ -47,12 +47,12 @@ namespace Map {
 
 		// load frames & frame colors
 		for (int32_t i = 0; i < cNumAnimFrames; ++i) {
-			auto fn = xx::ToStringFormat("pics/b_redstar_idle_{0}.png", i);
+			auto fn = xx::ToStringFormat("pics/b_redheart_idle_{0}.png", i);
 			auto& f = frames.Emplace(gLooper.LoadFrame(fn));
 			auto width = f->tex->Width();
 			auto height = f->tex->Height();
 			auto bytesLen = width * height * 4;
-			fn = xx::ToStringFormat("pics/c_redstar_idle_{0}.png", i);
+			fn = xx::ToStringFormat("pics/c_redheart_idle_{0}.png", i);
 			auto [fileData, fullPath] = gLooper.LoadFileData(fn);
 			auto data = std::make_unique_for_overwrite<xx::RGBA8[]>(bytesLen);
 			{
@@ -80,6 +80,30 @@ namespace Map {
 				frameSize.y = height;
 			}
 		}
+
+		// load frames color data
+		frameInfo = gLooper.LoadFileData<false, true>("pics/c_redheart_idle.bin.zst");
+
+		// fill frameColorsDatas
+		assert(frameInfo.len >= 20);
+		assert(memcmp(frameInfo.buf, "ANIMINFO", 8) == 0);
+		int32_t numFrames{}, maxWidth{}, maxHeight{};
+		int r = frameInfo.ReadJump(8);
+		assert(!r);
+		r = frameInfo.ReadFixed(maxWidth);
+		assert(!r);
+		r = frameInfo.ReadFixed(maxHeight);
+		assert(!r);
+		r = frameInfo.ReadFixed(numFrames);
+		assert(!r);
+		assert(frameSize.x == maxWidth);
+		assert(frameSize.y == maxHeight);
+		assert(cNumAnimFrames == numFrames);
+		frameColorsData = frameInfo.buf + frameInfo.offset;
+		frameColorDataLength = maxWidth * maxHeight;
+
+		frame_aimLine = gLooper.LoadFrame("pics/aim_line.png");
+		frame_aimArc = gLooper.LoadFrame("pics/aim_arc.png");
 	}
 
 	inline void Scene::Update() {
@@ -107,19 +131,57 @@ namespace Map {
 				auto localPos = ((mp - aabb.from) / frameScale).As<int32_t>();
 				assert(localPos.x >= 0 && localPos.x < frameSize.x);
 				assert(localPos.y >= 0 && localPos.y < frameSize.y);
+				auto colorIndex = localPos.y * frameSize.x + localPos.x;
+
+				// get color from color png
 				auto frameColors = frameColorss[(int32_t)frameIndex].get();
-				auto color = frameColors[localPos.y * frameSize.x + localPos.x];
+				auto color = frameColors[colorIndex];
 				xx::CoutN("localPos = ", localPos, " color = ", color);
+
+				// get color from color data
+				auto frameColorData = frameColorsData + frameColorDataLength * (int32_t)frameIndex;
+				auto colorData = frameColorData[colorIndex];
+				xx::CoutN("localPos = ", localPos, " colorData = ", colorData);
 			}
 		}
 	}
 
 	inline void Scene::Draw() {
-		xx::Quad().SetFrame(frames[(int32_t)frameIndex])
+		xx::Quad q;
+
+		// draw character
+		q.SetFrame(frames[(int32_t)frameIndex])
 			.SetPosition(gLooper.camera.ToGLPos(frameLogicPos))
 			.SetAnchor(frameAnchor)
 			.SetScale(frameScale)
 			.Draw();
+
+		// draw aim on mouse pos
+		auto p = gLooper.mouse.pos;
+		q.SetFrame(frame_aimLine)
+			.SetPosition(p)
+			.SetAnchor({ 1, 0.5 })
+			.SetScale(cAimScale)
+			.SetRotate(M_PI_2)
+			.Draw()
+			.SetRotate(0)
+			.Draw()
+			.SetRotate(-M_PI_2)
+			.Draw()
+			.SetRotate(-M_PI)
+			.Draw();
+		q.SetFrame(frame_aimArc)
+			.SetAnchor({ 0, 0.5 });
+		static constexpr float c2PI{ M_PI * 2 };
+		static constexpr float cStep{ c2PI / 23 };
+		static constexpr float cDistance{ 2048 - 32 };
+		for (float a = 0.f; a < c2PI; a += cStep) {
+			auto s = std::sinf(a);
+			auto c = std::cosf(a);
+			q.SetPosition(p + XY{ cDistance * cAimScale * c, cDistance * cAimScale * s })
+				.SetRotate(-a)
+				.Draw();
+		}
 
 		gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "(map) show console. mouse left button for hit check", xx::RGBA8_Green, { 0.5f, 1 });
 	}
