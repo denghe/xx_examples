@@ -8,6 +8,7 @@
 #include "scene_cd2.hpp"
 #include "scene_ai.hpp"
 #include "scene_map.hpp"
+#include "scene_light.hpp"
 
 Looper gLooper;
 ResTpFrames& gRes(gLooper.res);
@@ -46,7 +47,7 @@ xx::Task<> Looper::MainTask() {
 
 	y -= 50;
 	ui->MakeChildren<xx::Button>()->Init(1, xy7m + XY{ x, y }, xy7a, btnCfg, U"restart", [&]() {
-		scene.Emplace<Map::Scene>()->Init();
+		scene.Emplace<Light::Scene>()->Init();
 	});
 
 	//y -= 50;
@@ -73,11 +74,11 @@ xx::Task<> Looper::MainTask() {
 
 	clearColor = { 33, 33, 33, 255 };
 	
-	camera.SetMaxFrameSize(64);
+	camera.SetMaxFrameSize(128);
 	//camera.SetOriginal(Msgs::Global::Scene::mapSize_2f);
 	camera.SetScale(1.f);
 
-	scene.Emplace<Map::Scene>()->Init();
+	scene.Emplace<Light::Scene>()->Init();
 }
 
 void Looper::Draw() {
