@@ -63,9 +63,12 @@ namespace Light {
 
 		auto t2 = fb.Draw({ Cfg::width, Cfg::height }, true, xx::RGBA8{0,0,0,0}, [&]() {
 			gLooper.GLBlendFunc({ GL_SRC_ALPHA, GL_DST_ALPHA, GL_FUNC_ADD });
-			for (auto& p : lightPoss) {
-				auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(tex_light->GetValue(), 1);
-				q.pos = gLooper.camera.ToGLPos(p);
+			auto len = lightPoss.len;
+			auto buf = gLooper.ShaderBegin(gLooper.shaderQuadInstance)
+				.Draw(tex_light->GetValue(), len);
+			for (int32_t i = 0; i < len; ++i) {
+				auto& q = buf[i];
+				q.pos = gLooper.camera.ToGLPos(lightPoss[i]);
 				q.anchor = { 0.5, 0.5 };
 				q.scale = 1.f * gLooper.camera.scale;
 				q.radians = 0.f;
@@ -79,7 +82,8 @@ namespace Light {
 		});
 
 		{
-			auto& q = *gLooper.ShaderBegin(shaderLightTex).Draw(t1->GetValue(), t2->GetValue(), 1);
+			auto& q = *gLooper.ShaderBegin(shaderLightTex)
+				.Draw(t1->GetValue(), t2->GetValue(), 1);
 			q.pos = {};
 			q.anchor = { 0.5, 0.5 };
 			q.scale = 1.f * gLooper.camera.scale;
