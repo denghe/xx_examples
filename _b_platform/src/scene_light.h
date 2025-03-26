@@ -204,7 +204,6 @@ namespace Light {
 
 		xx::FrameBuffer fb;
 		void DrawTile(int32_t cx, int32_t cy, xx::UVRect const& uv);
-		void DrawTex(xx::Ref<xx::GLTexture> const& tex);
 
 		void Init() override;
 		void Update() override;

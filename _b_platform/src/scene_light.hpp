@@ -51,20 +51,6 @@ namespace Light {
 		q.texRect.data = uv.data;
 	}
 
-	inline void Scene::DrawTex(xx::Ref<xx::GLTexture> const& tex) {
-		auto& q = *gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(tex->GetValue(), 1);
-		q.pos = {};
-		q.anchor = { 0.5, 0.5 };
-		q.scale = 1.f;
-		q.radians = 0.f;
-		q.colorplus = 1;
-		q.color = xx::RGBA8_White;
-		q.texRect.x = 0;
-		q.texRect.y = 0;
-		q.texRect.w = tex->Width();
-		q.texRect.h = tex->Height();
-	};
-
 	inline void Scene::Draw() {
 
 		auto t1 = fb.Draw({ Cfg::width, Cfg::height }, true, xx::RGBA8{ 0,0,0,0 }, [&]() {
